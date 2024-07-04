@@ -1,4 +1,11 @@
-/* @keyframes slide-up {
+.nonescroll {
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@keyframes slide-up {
   0% {
     transform: translateY(100%);
   }
@@ -22,4 +29,4 @@
 
 .animate-slide-down {
   animation: slide-down 0.3s ease-out;
-} */
+}

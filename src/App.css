@@ -9,16 +9,11 @@ body {
   min-height: calc(var(--vh, 1vh) * 100);
 }
 
-/* main {
+.noScrollbar {
   -ms-overflow-style: none;
-  &::-webkit-scrollbar {
-    display: none;
-  }
+  scrollbar-width: none;
 }
 
-.nonescroll {
-  -ms-overflow-style: none;
-  &::-webkit-scrollbar {
-    display: none;
-  }
-} */
+.noScrollbar::-webkit-scrollbar {
+  display: none;
+}

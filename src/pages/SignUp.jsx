@@ -72,7 +72,7 @@ const SignUp = () => {
   };
 
   return (
-    <div className='p-4'>
+    <div className='noScrollbar p-4'>
       {renderInput("id", "아이디")}
       {renderInput("password", "비밀번호", "password")}
       {renderInput("passwordConfirm", "비밀번호 재입력", "password")}

@@ -6,18 +6,20 @@ const CategoryMenu = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
 
   const categories = [
-    { name: "과일/채소", icon: "🍎🥦" },
+    { name: "과일", icon: "🍎" },
     { name: "채소", icon: "🥬" },
     { name: "쌀/잡곡", icon: "🌾" },
     { name: "정육/계란", icon: "🥩🥚" },
     { name: "수산/건어물", icon: "🐟" },
-    { name: "김치/반찬", icon: "🥬🍱" },
+    { name: "김치/반찬", icon: "🍱" },
     { name: "유제품", icon: "🥛" },
-    { name: "소스/양념/오일", icon: "🧂" },
-    { name: "주류", icon: "🍺" },
-    { name: "생수/음료", icon: "🥤" },
-    { name: "건강식품", icon: "💊" },
-    { name: "화장지/물티슈", icon: "🧻" },
+    { name: "장/양념", icon: "🧉" },
+    { name: "친환경/유기농", icon: "🌱" },
+    // { name: "소스/양념/오일", icon: "🧂" },
+    // { name: "주류", icon: "🍺" },
+    // { name: "생수/음료", icon: "🥤" },
+    // { name: "건강식품", icon: "💊" },
+    // { name: "화장지/물티슈", icon: "🧻" },
   ];
 
   const handleCategoryClick = categoryName => {

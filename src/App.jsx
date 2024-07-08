@@ -11,6 +11,7 @@ import { useEffect } from "react";
 import MainLogin from "./components/Login/MainLogin";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
+import DetailCategory from "./pages/DetailCategory";
 
 function App() {
   // 실제 모바일 화면 vh 맞추기
@@ -42,6 +43,7 @@ function App() {
           </Route>
           <Route element={<Main />}>
             <Route path='/' element={<Home />} />
+            <Route path='/detailcategory' element={<DetailCategory />} />
             <Route path='/timesale' element={<Timesale />} />
             <Route path='/mypage' element={<Mypage />} />
             <Route path='/search' element={<Search />} />

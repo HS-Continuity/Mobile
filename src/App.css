@@ -4,18 +4,19 @@ body {
 }
 
 body {
+  background-color: rgb(243 244 246);
   min-height: 100vh;
   min-height: calc(var(--vh, 1vh) * 100);
 }
 
-main {
+/* main {
   -ms-overflow-style: none;
   &::-webkit-scrollbar {
     display: none;
   }
 }
 
-/* .nonescroll {
+.nonescroll {
   -ms-overflow-style: none;
   &::-webkit-scrollbar {
     display: none;

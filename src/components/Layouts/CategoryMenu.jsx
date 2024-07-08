@@ -1,7 +1,6 @@
-import React from "react";
 import { IoClose } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
-import "../../styles/CategoryMenu.css";
+import style from "./CategoryMenu.module.css";
 
 const CategoryMenu = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
@@ -28,12 +27,12 @@ const CategoryMenu = ({ isOpen, onClose }) => {
 
   return (
     <div
-      className={`fixed inset-0 z-50 bg-white ${isOpen ? "animate-slide-up flex" : "hidden"} flex-col`}
+      className={`fixed inset-0 z-50 bg-white ${isOpen ? style["animate-slide-up"] : "hidden"} flex flex-col`}
       style={{ maxWidth: "500px", margin: "0 auto" }}>
       <div className='flex items-center justify-between border-b p-4'>
         <h2 className='text-xl font-semibold'>카테고리</h2>
       </div>
-      <div className='nonescroll flex-grow overflow-y-auto p-4'>
+      <div className={`${style.nonescroll} flex-grow overflow-y-auto p-4`}>
         <div className='grid grid-cols-3 gap-4'>
           {categories.map(category => (
             <div
@@ -46,7 +45,7 @@ const CategoryMenu = ({ isOpen, onClose }) => {
           ))}
         </div>
       </div>
-      <div className='absolute bottom-5 left-0 right-0 flex justify-center'>
+      <div className='absolute bottom-2 left-0 right-0 flex justify-center'>
         <button onClick={onClose} className='rounded-full bg-[#00835F] p-2 text-white'>
           <IoClose size={24} />
         </button>

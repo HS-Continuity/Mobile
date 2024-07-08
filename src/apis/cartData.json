@@ -1,0 +1,49 @@
+{
+  "cart": [
+    {
+      "id": "1",
+      "name": "일반 상품1",
+      "price": 8500,
+      "originalPrice": 12000,
+      "quantity": 1,
+      "type": "subscription",
+      "image": "https://www.lrt.lt/img/2022/02/09/1191080-981331-1287x836.jpg"
+    },
+    {
+      "id": "2",
+      "name": "유기농 사과",
+      "price": 15000,
+      "originalPrice": 18000,
+      "quantity": 4,
+      "type": "regular",
+      "image": "https://www.lrt.lt/img/2022/02/09/1191080-981331-1287x836.jpg"
+    },
+    {
+      "id": "3",
+      "name": "무농약 바나나",
+      "price": 6000,
+      "originalPrice": 7500,
+      "quantity": 1,
+      "type": "subscription",
+      "image": "https://www.lrt.lt/img/2022/02/09/1191080-981331-1287x836.jpg"
+    },
+    {
+      "id": "4",
+      "name": "친환경 당근",
+      "price": 4000,
+      "originalPrice": 5000,
+      "quantity": 5,
+      "type": "regular",
+      "image": "https://www.lrt.lt/img/2022/02/09/1191080-981331-1287x836.jpg"
+    }
+  ],
+  "delivery": {
+    "address": "",
+    "isRegistered": false
+  },
+  "user": {
+    "id": 1,
+    "name": "홍길동",
+    "email": "hong@example.com"
+  }
+}

@@ -28,7 +28,7 @@ const BottomNav = () => {
   return (
     <>
       <CategoryMenu isOpen={isCategoryOpen} onClose={() => setIsCategoryOpen(false)} />
-      <nav className='fixed bottom-0 left-0 right-0 z-40 mx-auto w-full max-w-[500px] border-t border-gray-200 bg-white'>
+      <nav className='fixed bottom-0 left-0 right-0 z-40 mx-auto w-full border-t border-gray-200 bg-white sm:max-w-full md:max-w-full lg:max-w-[500px] xl:max-w-[500px]'>
         <div className='flex justify-around'>
           {navItems.map(({ icon: Icon, label }) => (
             <button

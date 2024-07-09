@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import ProductList from "../components/Layouts/ProductList";
+import ProductList from "../components/Product/ProductList";
 import CategorySkeleton from "../components/Skeletons/CategorySkeleton";
 import { Link } from "react-router-dom";
 

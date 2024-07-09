@@ -57,12 +57,12 @@
       "product_image": "https://www.lrt.lt/img/2022/02/09/1191080-981331-1287x836.jpg",
       "product_price": 2500,
       "product_origin": "멕시코",
-      "base_discount_rate": 0,
-      "regular_discount_rate": 5,
+      "base_discount_rate": 10,
+      "regular_discount_rate": 15,
       "personalize_discount_rate": 0,
       "is_page_visibility": true,
       "is_regular_sale": true,
-      "id": "6745"
+      "id": "1"
     },
     {
       "product_id": 2,
@@ -74,12 +74,12 @@
       "product_image": "https://www.lrt.lt/img/2022/02/09/1191080-981331-1287x836.jpg",
       "product_price": 1000,
       "product_origin": "대한민국",
-      "base_discount_rate": 0,
-      "regular_discount_rate": 0,
+      "base_discount_rate": 10,
+      "regular_discount_rate": 20,
       "personalize_discount_rate": 10,
       "is_page_visibility": true,
       "is_regular_sale": false,
-      "id": "e6d6"
+      "id": "2"
     },
     {
       "product_id": 3,
@@ -92,11 +92,11 @@
       "product_price": 5000,
       "product_origin": "대한민국",
       "base_discount_rate": 10,
-      "regular_discount_rate": 0,
+      "regular_discount_rate": 20,
       "personalize_discount_rate": 0,
       "is_page_visibility": false,
       "is_regular_sale": false,
-      "id": "485b"
+      "id": "3"
     },
     {
       "product_id": 4,
@@ -108,12 +108,12 @@
       "product_image": "https://www.lrt.lt/img/2022/02/09/1191080-981331-1287x836.jpg",
       "product_price": 35000,
       "product_origin": "대한민국",
-      "base_discount_rate": 0,
+      "base_discount_rate": 10,
       "regular_discount_rate": 15,
       "personalize_discount_rate": 0,
       "is_page_visibility": true,
       "is_regular_sale": true,
-      "id": "a9d0"
+      "id": "4"
     },
     {
       "product_id": 5,
@@ -125,12 +125,12 @@
       "product_image": "https://www.lrt.lt/img/2022/02/09/1191080-981331-1287x836.jpg",
       "product_price": 8000,
       "product_origin": "노르웨이",
-      "base_discount_rate": 0,
-      "regular_discount_rate": 0,
+      "base_discount_rate": 10,
+      "regular_discount_rate": 30,
       "personalize_discount_rate": 5,
       "is_page_visibility": true,
       "is_regular_sale": false,
-      "id": "f041"
+      "id": "5"
     },
     {
       "product_id": 6,
@@ -142,12 +142,12 @@
       "product_image": "https://www.lrt.lt/img/2022/02/09/1191080-981331-1287x836.jpg",
       "product_price": 12000,
       "product_origin": "대한민국",
-      "base_discount_rate": 5,
-      "regular_discount_rate": 0,
+      "base_discount_rate": 15,
+      "regular_discount_rate": 30,
       "personalize_discount_rate": 0,
       "is_page_visibility": false,
       "is_regular_sale": false,
-      "id": "8482"
+      "id": "6"
     },
     {
       "product_id": 7,
@@ -159,12 +159,12 @@
       "product_image": "https://www.lrt.lt/img/2022/02/09/1191080-981331-1287x836.jpg",
       "product_price": 3000,
       "product_origin": "대한민국",
-      "base_discount_rate": 0,
+      "base_discount_rate": 10,
       "regular_discount_rate": 10,
       "personalize_discount_rate": 0,
       "is_page_visibility": true,
       "is_regular_sale": true,
-      "id": "afdb"
+      "id": "7"
     },
     {
       "product_id": 8,
@@ -176,12 +176,12 @@
       "product_image": "https://www.lrt.lt/img/2022/02/09/1191080-981331-1287x836.jpg",
       "product_price": 800,
       "product_origin": "대한민국",
-      "base_discount_rate": 0,
-      "regular_discount_rate": 0,
+      "base_discount_rate": 10,
+      "regular_discount_rate": 20,
       "personalize_discount_rate": 8,
       "is_page_visibility": true,
       "is_regular_sale": false,
-      "id": "db9f"
+      "id": "8"
     },
     {
       "product_id": 9,
@@ -193,12 +193,12 @@
       "product_image": "https://www.lrt.lt/img/2022/02/09/1191080-981331-1287x836.jpg",
       "product_price": 1500,
       "product_origin": "대한민국",
-      "base_discount_rate": 7,
-      "regular_discount_rate": 0,
+      "base_discount_rate": 17,
+      "regular_discount_rate": 20,
       "personalize_discount_rate": 0,
       "is_page_visibility": false,
       "is_regular_sale": false,
-      "id": "d4bd"
+      "id": "9"
     },
     {
       "product_id": 10,
@@ -210,12 +210,194 @@
       "product_image": "https://www.lrt.lt/img/2022/02/09/1191080-981331-1287x836.jpg",
       "product_price": 1200,
       "product_origin": "대한민국",
-      "base_discount_rate": 0,
-      "regular_discount_rate": 5,
+      "base_discount_rate": 10,
+      "regular_discount_rate": 15,
       "personalize_discount_rate": 0,
       "is_page_visibility": true,
       "is_regular_sale": true,
-      "id": "15e9"
+      "id": "10"
+    }
+  ],
+  "review": [
+    {
+      "product_review_id": 1,
+      "product_id": "1",
+      "member_id": 1234,
+      "create_date": "2023-12-30T10:30:00Z",
+      "review_content": "이 제품 정말 좋아요! 강력 추천합니다.",
+      "review_image": null,
+      "review_score": 4.5
+    },
+    {
+      "product_review_id": 11,
+      "product_id": "1",
+      "member_id": 99,
+      "create_date": "2023-12-28T10:30:00Z",
+      "review_content": "너구리 최고",
+      "review_image": null,
+      "review_score": 1
+    },
+    {
+      "product_review_id": 12,
+      "product_id": "1",
+      "member_id": 98,
+      "create_date": "2023-12-26T10:30:00Z",
+      "review_content": "너구리 최고",
+      "review_image": null,
+      "review_score": 1.5
+    },
+    {
+      "product_review_id": 13,
+      "product_id": "1",
+      "member_id": 97,
+      "create_date": "2023-12-24T10:30:00Z",
+      "review_content": "너구리 최고",
+      "review_image": null,
+      "review_score": 2.5
+    },
+    {
+      "product_review_id": 14,
+      "product_id": "1",
+      "member_id": 96,
+      "create_date": "2023-12-22T10:30:00Z",
+      "review_content": "너구리 최고",
+      "review_image": null,
+      "review_score": 3
+    },
+    {
+      "product_review_id": 15,
+      "product_id": "1",
+      "member_id": 95,
+      "create_date": "2023-12-22T10:30:00Z",
+      "review_content": "너구리 최고",
+      "review_image": null,
+      "review_score": 3.5
+    },
+    {
+      "product_review_id": 16,
+      "product_id": "1",
+      "member_id": 94,
+      "create_date": "2023-12-22T10:30:00Z",
+      "review_content": "너구리 최고",
+      "review_image": null,
+      "review_score": 3
+    },
+    {
+      "product_review_id": 17,
+      "product_id": "1",
+      "member_id": 93,
+      "create_date": "2023-12-22T10:30:00Z",
+      "review_content": "너구리 최고",
+      "review_image": null,
+      "review_score": 4
+    },
+    {
+      "product_review_id": 18,
+      "product_id": "1",
+      "member_id": 92,
+      "create_date": "2023-12-22T10:30:00Z",
+      "review_content": "너구리 최고",
+      "review_image": null,
+      "review_score": 4.5
+    },
+    {
+      "product_review_id": 19,
+      "product_id": "1",
+      "member_id": 91,
+      "create_date": "2023-12-22T10:30:00Z",
+      "review_content": "너구리 최고",
+      "review_image": null,
+      "review_score": 4
+    },
+    {
+      "product_review_id": 20,
+      "product_id": "1",
+      "member_id": 90,
+      "create_date": "2023-12-22T10:30:00Z",
+      "review_content": "너구리 최고",
+      "review_image": null,
+      "review_score": 3
+    },
+    {
+      "product_review_id": 2,
+      "product_id": "2",
+      "member_id": 5678,
+      "create_date": "2023-11-28T15:45:00Z",
+      "review_content": "가격 대비 성능이 훌륭합니다. 만족스러워요.",
+      "review_image": null,
+      "review_score": 4.0
+    },
+    {
+      "product_review_id": 3,
+      "product_id": "3",
+      "member_id": 9012,
+      "create_date": "2023-11-25T18:20:00Z",
+      "review_content": "생각보다 별로였어요. 기대 이하입니다.",
+      "review_image": null,
+      "review_score": 2.5
+    },
+    {
+      "product_review_id": 4,
+      "product_id": "4",
+      "member_id": 3456,
+      "create_date": "2023-11-22T12:15:00Z",
+      "review_content": "배송이 빨라서 좋았습니다. 제품도 괜찮아요.",
+      "review_image": null,
+      "review_score": 3.5
+    },
+    {
+      "product_review_id": 5,
+      "product_id": "5",
+      "member_id": 7890,
+      "create_date": "2023-11-19T09:00:00Z",
+      "review_content": "디자인이 예쁘고 사용하기 편리합니다.",
+      "review_image": null,
+      "review_score": 5.0
+    },
+    {
+      "product_review_id": 6,
+      "product_id": "6",
+      "member_id": 2345,
+      "create_date": "2023-11-16T16:50:00Z",
+      "review_content": "선물용으로 구매했는데 만족스러워요.",
+      "review_image": null,
+      "review_score": 4.5
+    },
+    {
+      "product_review_id": 7,
+      "product_id": "7",
+      "member_id": 6789,
+      "create_date": "2023-11-13T20:35:00Z",
+      "review_content": "생각보다 크기가 작아서 아쉬웠어요.",
+      "review_image": null,
+      "review_score": 3.0
+    },
+    {
+      "product_review_id": 8,
+      "product_id": "8",
+      "member_id": 123,
+      "create_date": "2023-11-10T11:40:00Z",
+      "review_content": null,
+      "review_image": null,
+      "review_score": 4.0
+    },
+    {
+      "product_review_id": 9,
+      "product_id": "9",
+      "member_id": 456,
+      "create_date": "2023-11-07T17:25:00Z",
+      "review_content": "품질이 좋고 마감도 깔끔합니다.",
+      "review_image": null,
+      "review_score": 4.5
+    },
+    {
+      "product_review_id": 10,
+      "product_id": "10",
+      "member_id": 789,
+      "create_date": "2023-11-04T13:10:00Z",
+      "review_content": null,
+      "review_image": null,
+      "review_score": 5.0
     }
   ]
 }

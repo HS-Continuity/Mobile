@@ -1,5 +1,5 @@
 import React from "react";
-import DetailProductList from "../components/Layouts/DetailProductList";
+import DetailProductList from "../components/Product/DetailProductList";
 
 const DetailCategory = () => {
   return (

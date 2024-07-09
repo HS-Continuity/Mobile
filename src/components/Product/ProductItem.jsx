@@ -1,5 +1,6 @@
 import { FaHeart } from "react-icons/fa";
 import { CiShoppingCart } from "react-icons/ci";
+import { Link } from "react-router-dom";
 
 const ProductItem = ({ product }) => {
   const discountRate = Math.max(
@@ -12,7 +13,7 @@ const ProductItem = ({ product }) => {
   const discountedPrice = productPrice * (1 - discountRate / 100);
 
   return (
-    <div className='card bg-base-100 shadow-xl'>
+    <Link to={`/product/${product.id}`} className='card bg-base-100 shadow-xl'>
       <figure>
         <img
           src={product.product_image}
@@ -34,13 +35,12 @@ const ProductItem = ({ product }) => {
               {productPrice.toLocaleString()}원
             </span>
           </div>
-          <button className='btn btn-circle btn-sm'>
-            {/* <FaHeart className='text-red-500' /> */}
+          <button className='btn btn-circle btn-sm' onClick={e => e.preventDefault()}>
             <CiShoppingCart className='text-2xl text-black' />
           </button>
         </div>
       </div>
-    </div>
+    </Link>
   );
 };
 

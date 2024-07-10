@@ -1,19 +1,24 @@
-import { FaHeart } from "react-icons/fa";
+// import { FaHeart } from "react-icons/fa";
 import { CiShoppingCart } from "react-icons/ci";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const ProductItem = ({ product }) => {
-  // 표시할 할인율
+  const navigate = useNavigate();
   const discountRate = product.base_discount_rate || 0;
-
-  // const discountRate = Math.max(
-  //   product.base_discount_rate || 0,
-  //   product.regular_discount_rate || 0,
-  //   product.personalize_discount_rate || 0
-  // );
 
   const productPrice = product.product_price || 0;
   const discountedPrice = productPrice * (1 - discountRate / 100);
+
+  const handleShopNavigator = e => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigate(`/shop/${product.customer_id}`);
+  };
+
+  const handleCartClick = e => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
 
   return (
     <Link to={`/product/${product.id}`} className='card bg-base-100 shadow-xl'>
@@ -26,10 +31,12 @@ const ProductItem = ({ product }) => {
       </figure>
       <div className='card-body p-4'>
         <div className='flex'>
-          <Link to={`/shop/${product.customer_id}`}>
-            <h2 className='card-title mr-2 text-sm text-green-700'>{product.customer_id}</h2>
-          </Link>
-          <h2 className='card-title text-sm'>{product.product_name}</h2>
+          <h1
+            onClick={handleShopNavigator}
+            className='card-title mr-2 cursor-pointer text-sm text-green-700 hover:underline'>
+            {product.customer_id}
+          </h1>
+          <h2 className='card-title ml-2 text-sm'>{product.product_name}</h2>
         </div>
         <p className='text-xs text-gray-500'>{product.product_description}</p>
         <div className='flex items-center justify-between'>
@@ -40,7 +47,7 @@ const ProductItem = ({ product }) => {
               {productPrice.toLocaleString()}원
             </span>
           </div>
-          <button className='btn btn-circle btn-sm' onClick={e => e.preventDefault()}>
+          <button className='btn btn-circle btn-sm' onClick={handleCartClick}>
             <CiShoppingCart className='text-2xl text-black' />
           </button>
         </div>

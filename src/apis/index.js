@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { SORT_TYPES } from "../stores/useProductReviewStore";
+import { MdDescription } from "react-icons/md";
 
 const API_BASE_URL = "http://localhost:3001";
 
@@ -103,4 +104,20 @@ export const useReviewQuery = (productId, sortType) => {
       return isNaN(nextPage) ? undefined : nextPage;
     },
   });
+};
+
+// [GET] 판매자별 상품 조회
+export const fetchCustomerProducts = async customerId => {
+  const response = await axios.get(`${API_BASE_URL}/products?customer_id=${customerId}`);
+  return response.data;
+};
+
+// [GET] 판매자 정보 조회
+export const fetchCustomerInfo = async customerId => {
+  return {
+    name: `판매자 ${customerId}`,
+    description: `판매자 ${customerId}에 대한 설명입니다.`,
+    image:
+      "https://deo.shopeemobile.com/shopee/shopee-edu-live-sg/statickr/img/collection1.4433837.png",
+  };
 };

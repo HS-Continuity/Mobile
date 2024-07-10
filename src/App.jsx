@@ -14,6 +14,7 @@ import SignUp from "./pages/SignUp";
 import DetailCategory from "./pages/DetailCategory";
 import ProductDetail from "./pages/ProductDetail";
 import ProductReviewAll from "./pages/ProductReviewAll";
+import Shop from "./pages/Shop";
 
 function App() {
   const location = useLocation();
@@ -50,12 +51,18 @@ function App() {
             <Route path='/timesale' element={<Timesale key={location.pathname} />} />
             <Route path='/mypage' element={<Mypage key={location.pathname} />} />
             <Route path='/search' element={<Search key={location.pathname} />} />
+
+            {/* 식품 상세 카테고리 선택 시 */}
             <Route path='/detailcategory' element={<DetailCategory key={location.pathname} />} />
+            {/* 식품 상세 페이지 */}
             <Route path='/product/:productId' element={<ProductDetail key={location.pathname} />} />
+            {/* 식품별 리뷰 전체 조회 페이지 */}
             <Route
               path='/product/review/:productId'
               element={<ProductReviewAll key={location.pathname} />}
             />
+            {/* 판매자별 소개 페이지 */}
+            <Route path='/shop/:customerId' element={<Shop key={location.pathname} />} />
           </Route>
           <Route element={<MobileMain />}>
             <Route path='/cart' element={<Cart key={location.pathname} />} />

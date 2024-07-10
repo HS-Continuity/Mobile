@@ -1,7 +1,7 @@
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { FaHeart, FaShare, FaStar } from "react-icons/fa";
-import { CiShoppingCart } from "react-icons/ci";
+import { CiShop, CiShoppingCart } from "react-icons/ci";
 import { fetchProduct } from "../apis";
 import PriceBox from "../components/Product/PriceBox";
 import DetailImage from "../components/Product/DetailImage";
@@ -38,6 +38,13 @@ const ProductDetail = () => {
         />
         <div className='mb-4 flex items-center justify-between'>
           <h1 className='text-2xl font-bold'>{product.product_name}</h1>
+          <Link to={`/shop/${product.customer_id}`}>
+            <div className='group flex'>
+              <CiShop className='mt-1 text-xl' />
+              <h3 className='ml-1 group-hover:underline'>{product.customer_id}</h3>
+            </div>
+          </Link>
+
           <div className='flex items-center'>
             <div className='mr-4 flex items-center'>
               <FaStar className='mr-1 text-yellow-400' />

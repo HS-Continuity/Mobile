@@ -78,7 +78,7 @@
       "regular_discount_rate": 20,
       "personalize_discount_rate": 10,
       "is_page_visibility": true,
-      "is_regular_sale": false,
+      "is_regular_sale": true,
       "id": "2"
     },
     {
@@ -95,7 +95,7 @@
       "regular_discount_rate": 20,
       "personalize_discount_rate": 0,
       "is_page_visibility": false,
-      "is_regular_sale": false,
+      "is_regular_sale": true,
       "id": "3"
     },
     {

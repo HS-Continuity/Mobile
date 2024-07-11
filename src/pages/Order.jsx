@@ -20,7 +20,7 @@ import DeliveryMemberInfo from "../components/Order/DeliveryMemberInfo";
 import DeliveryAddress from "../components/Order/DeliveryAddress";
 import MemberCouponList from "../components/Order/MemberCouponList";
 import OrderPrice from "../components/Order/OrderPrice";
-import Payment from "../components/Order/./Payment";
+import Payment from "../components/Order/Payment";
 import ConsentPayment from "../components/Order/ConsentPayment";
 
 const Order = () => {
@@ -298,6 +298,8 @@ const Order = () => {
           getCardColor={getCardColor}
           maskDigits={maskDigits}
         />
+
+        {/* 결제 동의 */}
         <div className=''>
           <label className='flex items-center'>
             <input
@@ -311,7 +313,7 @@ const Order = () => {
         </div>
       </div>
 
-      {/* 결제 동의 */}
+      {/* 결제하기 버튼 */}
       <ConsentPayment
         consentPayment={consentPayment}
         handleConsentPayment={handleConsentPayment}

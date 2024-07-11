@@ -15,6 +15,9 @@ import DetailCategory from "./pages/DetailCategory";
 import ProductDetail from "./pages/ProductDetail";
 import ProductReviewAll from "./pages/ProductReviewAll";
 import Shop from "./pages/Shop";
+import Order from "./pages/Order";
+import SubscriptionOrder from "./pages/SubscriptionOrder";
+import SubscriptionSetup from "./pages/SubscriptionSetup";
 
 function App() {
   const location = useLocation();
@@ -66,6 +69,9 @@ function App() {
           </Route>
           <Route element={<MobileMain />}>
             <Route path='/cart' element={<Cart key={location.pathname} />} />
+            <Route path='/order' element={<Order key={location.pathname} />} />
+            <Route path='/subscription-setup' element={<SubscriptionSetup />} />
+            <Route path='/subscription-order' element={<SubscriptionOrder />} />
           </Route>
         </Routes>
       </div>

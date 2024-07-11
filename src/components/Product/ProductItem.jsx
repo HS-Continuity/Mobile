@@ -37,6 +37,11 @@ const ProductItem = ({ product }) => {
             {product.customer_id}
           </h1>
           <h2 className='card-title ml-2 text-sm'>{product.product_name}</h2>
+          {!product.is_regular_sale && (
+            <span className='ml-2 rounded-full bg-[#00835F] px-2 py-1 text-xs text-white'>
+              정기배송
+            </span>
+          )}
         </div>
         <p className='text-xs text-gray-500'>{product.product_description}</p>
         <div className='flex items-center justify-between'>
@@ -47,9 +52,9 @@ const ProductItem = ({ product }) => {
               {productPrice.toLocaleString()}원
             </span>
           </div>
-          <button className='btn btn-circle btn-sm' onClick={handleCartClick}>
+          {/* <button className='btn btn-circle btn-sm' onClick={handleCartClick}>
             <CiShoppingCart className='text-2xl text-black' />
-          </button>
+          </button> */}
         </div>
       </div>
     </Link>

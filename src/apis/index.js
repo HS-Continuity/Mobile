@@ -6,9 +6,17 @@ import { MdDescription } from "react-icons/md";
 const API_BASE_URL = "http://localhost:3001";
 
 // [GET] 장바구니 아이템 조회
-export const fetchCartItems = async () => {
-  const response = await axios.get(`${API_BASE_URL}/cart`);
+export const fetchCartItems = async memberId => {
+  const response = await axios.get(`${API_BASE_URL}/cart`, {
+    params: { member_id: memberId },
+  });
   return response.data;
+};
+
+// [GET] 장바구니의 마지막 아이템 ID 가져오기
+export const getLastCartItemId = async () => {
+  const response = await axios.get(`${API_BASE_URL}/cart?_sort=-id&_per_page=1`);
+  return response.data[0]?.id || "0";
 };
 
 // [UPDATE] 장바구니 아이템 수정
@@ -16,6 +24,29 @@ export const updateCartItem = async ({ id, quantity }) => {
   const { data: currentItem } = await axios.get(`${API_BASE_URL}/cart/${id}`);
   const updatedItem = { ...currentItem, quantity };
   const response = await axios.put(`${API_BASE_URL}/cart/${id}`, updatedItem);
+  return response.data;
+};
+
+// [POST] 장바구니 아이템 추가
+export const postToCart = async cartItem => {
+  const responseOldData = await fetchCartItems(1);
+  const existingCartItem = responseOldData.find(
+    item => item.product_id == cartItem.product_id && item.cart_type_id == cartItem.cart_type_id
+  );
+
+  if (existingCartItem) {
+    const addQuantity = existingCartItem.quantity + cartItem.quantity;
+    const response = await updateCartItem({ id: existingCartItem.id, quantity: addQuantity });
+    return response.data;
+  } else {
+    const response = await axios.post(`${API_BASE_URL}/cart`, cartItem);
+    return response.data;
+  }
+};
+
+// [DELETE] 장바구니 아이템 삭제
+export const deleteCartItem = async id => {
+  const response = await axios.delete(`${API_BASE_URL}/cart/${id}`);
   return response.data;
 };
 
@@ -28,6 +59,7 @@ const fetchProducts = async ({ pageParam = 1 }) => {
     params: {
       _page: pageParam,
       _per_page: ITEMS_PER_PAGE,
+      is_page_visibility: true,
     },
   });
 
@@ -120,4 +152,131 @@ export const fetchCustomerInfo = async customerId => {
     image:
       "https://deo.shopeemobile.com/shopee/shopee-edu-live-sg/statickr/img/collection1.4433837.png",
   };
+};
+
+export const createSubscriptionOrder = async orderData => {
+  const response = await axios.post(`${API_BASE_URL}/subscriptionOrders`, orderData);
+  return response.data;
+};
+
+export const getSubscriptionOrderDetails = async orderId => {
+  const response = await axios.get(`${API_BASE_URL}/subscriptionOrders/${orderId}`);
+  return response.data;
+};
+
+// [GET] 회원 쿠폰 조회
+export const fetchMemberCoupon = async memberId => {
+  const response = await axios.get(`${API_BASE_URL}/coupon`, {
+    params: {
+      member_id: memberId,
+    },
+  });
+  return response.data;
+};
+
+// [GET] 회원 정보 조회
+export const fetchMemberInfo = async memberId => {
+  const response = await axios.get(`${API_BASE_URL}/member`, {
+    params: { member_id: memberId },
+  });
+  return response.data;
+};
+
+// [GET] 회원 주소 정보 조회
+export const fetchMemberAddresses = async memberId => {
+  const response = await axios.get(`${API_BASE_URL}/address`, {
+    params: { member_id: memberId },
+  });
+  return response.data;
+};
+
+// [POST] 회원 주소지 추가
+export const addAddress = async ({ memberId, address, phoneNumber }) => {
+  const response = await axios.get(`${API_BASE_URL}/address`);
+  const existingAddresses = response.data;
+
+  const maxId = Math.max(...existingAddresses.map(a => a.member_address_id), 0);
+  // const newMemberAddressId = maxId + 1;
+
+  const newAddress = {
+    // member_address_id: newMemberAddressId,
+    member_id: 1,
+    member_address: address,
+    member_phone_number: phoneNumber,
+    is_default_address: false,
+  };
+
+  const postResponse = await axios.post(`${API_BASE_URL}/address`, newAddress);
+  return postResponse.data;
+};
+
+// [PUT] 회원 주소지 수정
+export const updateAddress = async ({ id, address, isDefault }) => {
+  const response = await axios.put(`${API_BASE_URL}/address/${id}`, {
+    member_address: address,
+    member_id: 1,
+    is_default_address: isDefault,
+  });
+  return response.data;
+};
+
+// [DELETE] 회원 주소지 삭제
+export const deleteAddress = async id => {
+  const response = await axios.delete(`${API_BASE_URL}/address/${id}`);
+  return response.data;
+};
+
+// [PATCH] 회원 대표 주소지 설정
+export const setDefaultAddress = async ({ memberId, addressId }) => {
+  const allAddresses = await fetchMemberAddresses(memberId);
+  for (let address of allAddresses) {
+    if (address.is_default_address) {
+      await axios.patch(`${API_BASE_URL}/address/${address.id}`, {
+        is_default_address: false,
+      });
+    }
+  }
+
+  const response = await axios.patch(`${API_BASE_URL}/address/${addressId}`, {
+    is_default_address: true,
+  });
+  return response.data;
+};
+
+// [GET] 회원별 카드 정보 조회
+export const fetchMemberCard = async memberId => {
+  const response = await axios.get(`${API_BASE_URL}/card`, {
+    params: {
+      member_id: memberId,
+    },
+  });
+
+  return response.data;
+};
+
+// [POST] 회원 카드 추가
+export const addMemberCard = async ({ memberId, ...cardData }) => {
+  const response = await axios.post(`${API_BASE_URL}/card`, {
+    member_id: memberId,
+    ...cardData,
+  });
+  return response.data;
+};
+
+// [PUT] 회원 카드 수정
+export const updateMemberCard = async ({ memberId, id, ...cardData }) => {
+  if (!id) {
+    throw new Error("Card ID is required for updating");
+  }
+  const response = await axios.put(`${API_BASE_URL}/card/${id}`, {
+    member_id: memberId,
+    ...cardData,
+  });
+  return response.data;
+};
+
+// [DELETE] 회원 카드 삭제
+export const deleteMemberCard = async ({ memberId, cardId }) => {
+  const response = await axios.delete(`${API_BASE_URL}/card/${cardId}`);
+  return response.data;
 };

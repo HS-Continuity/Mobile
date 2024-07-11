@@ -1,15 +1,24 @@
-import { Link, useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { FaHeart, FaShare, FaStar } from "react-icons/fa";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { FaChevronDown, FaHeart, FaMinus, FaPlus, FaShare, FaStar } from "react-icons/fa";
 import { CiShop, CiShoppingCart } from "react-icons/ci";
-import { fetchProduct } from "../apis";
+import { fetchProduct, getLastCartItemId, postToCart } from "../apis";
 import PriceBox from "../components/Product/PriceBox";
 import DetailImage from "../components/Product/DetailImage";
 import { useProductReviewStore } from "../stores/useProductReviewStore";
 import ReviewList from "../components/Product/ReviewList";
+import { useState } from "react";
+import { BsLightningChargeFill } from "react-icons/bs";
+
 const ProductDetail = () => {
   const { productId } = useParams();
   const { averageRating } = useProductReviewStore();
+  const [isAddCartOpen, setIsAddCartOpen] = useState(false);
+  const [quantity, setQuantity] = useState(1);
+  const [purchaseType, setPurchaseType] = useState("regular");
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
   const {
     data: product,
     isLoading,
@@ -17,6 +26,14 @@ const ProductDetail = () => {
   } = useQuery({
     queryKey: ["product", productId],
     queryFn: () => fetchProduct(productId),
+  });
+
+  const addToCartMutation = useMutation({
+    mutationFn: postToCart,
+    onSuccess: () => {
+      queryClient.invalidateQueries("cart");
+      navigate("/cart");
+    },
   });
 
   if (isLoading) return <div>Loading...</div>;
@@ -27,6 +44,28 @@ const ProductDetail = () => {
   const originalPrice = product.product_price;
   const baseDiscountedPrice = originalPrice * (1 - baseDiscountRate / 100);
   const regularDiscountedPrice = originalPrice * (1 - regularDiscountRate / 100);
+
+  const handleIncrease = () => setQuantity(quantity + 1);
+  const handleDecrease = () => quantity > 1 && setQuantity(quantity - 1);
+
+  const handleAddToCart = async () => {
+    const lastId = await getLastCartItemId();
+    const newId = String(Number(lastId) + 1);
+
+    const cartItem = {
+      id: newId,
+      product_id: Number(productId),
+      member_id: 1,
+      cart_type_id: purchaseType,
+      quantity,
+      name: product.product_name,
+      price: purchaseType === "regular" ? baseDiscountedPrice : regularDiscountedPrice,
+      originalPrice: originalPrice,
+      image: "https://www.lrt.lt/img/2022/02/09/1191080-981331-1287x836.jpg",
+    };
+
+    addToCartMutation.mutate(cartItem);
+  };
 
   return (
     <>
@@ -68,7 +107,7 @@ const ProductDetail = () => {
             finalPrice={baseDiscountedPrice}
             isRegular={false}
           />
-          {product.is_regular_sale && (
+          {!product.is_regular_sale && (
             <PriceBox
               originalPrice={originalPrice}
               discountRate={regularDiscountRate}
@@ -81,14 +120,98 @@ const ProductDetail = () => {
           <h2 className='mb-2 font-bold'>상품 정보</h2>
           <p>원산지: {product.product_origin}</p>
           <p>판매자: {product.customer_id}</p>
-          {product.is_regular_sale && <p className='text-green-600'>정기 배송 가능</p>}
+          {!product.is_regular_sale && <p className='text-green-600'>정기 배송 가능</p>}
         </div>
         <DetailImage imageUrl={product.product_image} />
         <ReviewList productId={productId} product_name={product.product_name} />
       </div>
-      <div className='fixed bottom-14 left-0 right-0 z-50 mx-auto w-full bg-white p-4 shadow-sm sm:max-w-full md:max-w-full lg:max-w-[500px] xl:max-w-[500px]'>
-        <button className='btn btn-primary w-full'>
-          <CiShoppingCart className='mr-2 text-3xl' /> 구매하기
+
+      {isAddCartOpen ? (
+        <div className='main-container fixed bottom-[120px] -ml-4 w-full rounded-t-lg bg-white p-4 pb-0 shadow'>
+          <div className='mb-2 flex items-center justify-between'>
+            <span className='font-bold'>{product.product_name}</span>
+            <div className='flex items-center space-x-2'>
+              <span>수량</span>
+              <div className='flex items-center rounded-md border'>
+                <button
+                  className='btn btn-circle btn-ghost btn-sm'
+                  onClick={handleDecrease}
+                  disabled={quantity === 1}>
+                  <FaMinus />
+                </button>
+                <span className='px-2'>{quantity}</span>
+                <button className='btn btn-circle btn-ghost btn-sm' onClick={handleIncrease}>
+                  <FaPlus />
+                </button>
+              </div>
+            </div>
+            <FaChevronDown
+              onClick={() => setIsAddCartOpen(!isAddCartOpen)}
+              className='cursor-pointer text-xl text-gray-500'
+            />
+          </div>
+          <div className='flex flex-col items-center justify-center space-y-2'>
+            {[
+              { price: baseDiscountedPrice, label: "단건구매", type: "regular" },
+              ...(product.is_regular_sale
+                ? []
+                : [
+                    {
+                      price: regularDiscountedPrice,
+                      label: "정기배송",
+                      type: "subscription",
+                      color: "text-red-500",
+                    },
+                  ]),
+            ].map(({ price, label, type, color = "" }, index) => {
+              const maxLengthLabel = Math.max(
+                ...[baseDiscountedPrice, regularDiscountedPrice].map(
+                  p => p.toLocaleString().length + label.length
+                )
+              );
+              const currentLabelLength = price.toLocaleString().length + label.length;
+              const paddingLength = maxLengthLabel - currentLabelLength;
+              const padding = "\u00A0".repeat(paddingLength);
+
+              return (
+                <label key={index} className={`flex items-center ${color}`}>
+                  <input
+                    type='radio'
+                    name='purchase-option'
+                    className='radio-primary radio'
+                    checked={purchaseType === type}
+                    onChange={() => setPurchaseType(type)}
+                  />
+                  <span className='ml-2'>
+                    {price.toLocaleString()}원 | {label}
+                    {padding}
+                  </span>
+                </label>
+              );
+            })}
+
+            {!product.is_regular_sale && (
+              <div className='flex items-center rounded bg-blue-100 p-2 text-sm text-blue-600'>
+                <BsLightningChargeFill className='mr-1' />
+                <span>
+                  정기 배송 시 매달{"\u00A0"}
+                  {((baseDiscountedPrice - regularDiscountedPrice) * quantity).toLocaleString()}원
+                  할인!
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        ""
+      )}
+
+      <div className='main-container fixed bottom-14 left-0 right-0 z-50 mx-auto w-full bg-white p-2 shadow-sm'>
+        <button
+          className='btn btn-primary w-full'
+          onClick={isAddCartOpen ? handleAddToCart : () => setIsAddCartOpen(true)}>
+          <CiShoppingCart className='mr-2 text-3xl' />
+          {isAddCartOpen ? "장바구니 담기" : "구매 하기"}
         </button>
       </div>
     </>

@@ -3,11 +3,21 @@ import { Link, useNavigate } from "react-router-dom";
 import { FaHome, FaShoppingCart, FaUser } from "react-icons/fa";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { MdTimer } from "react-icons/md";
+import { useQuery } from "@tanstack/react-query";
 import CategoryMenu from "./CategoryMenu";
+import { fetchCartItems } from "../../apis/index";
 
 const BottomNav = () => {
+  const member_id = 1;
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const navigate = useNavigate();
+
+  const { data: cartItems, isLoading } = useQuery({
+    queryKey: ["cart", member_id],
+    queryFn: () => fetchCartItems(member_id),
+  });
+
+  const cartItemCount = cartItems?.length || 0;
 
   const navItems = [
     { icon: GiHamburgerMenu, label: "카테고리", action: () => setIsCategoryOpen(true) },
@@ -33,11 +43,16 @@ const BottomNav = () => {
           {navItems.map(({ icon: Icon, label }) => (
             <button
               key={label}
-              className='flex flex-1 flex-col items-center py-2'
+              className='relative flex flex-1 flex-col items-center py-2'
               onClick={() => handleNavigation(navItems.find(item => item.label === label))}>
               <div
                 className={`flex items-center justify-center ${label === "" ? "rounded-full bg-[#00835F] p-2" : ""}`}>
                 <Icon className={`h-6 w-6 ${label === "" ? "text-white" : ""}`} />
+                {label === "카트" && cartItemCount > 0 && (
+                  <span className='absolute right-5 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white'>
+                    {cartItemCount}
+                  </span>
+                )}
               </div>
               <span className='text-xs'>{label}</span>
             </button>

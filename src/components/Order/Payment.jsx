@@ -1,4 +1,3 @@
-import React from "react";
 import { FaChevronLeft, FaChevronRight, FaEdit, FaPlus, FaTrash } from "react-icons/fa";
 import CardEditModal from "./CardEditModal";
 import CardRegisterModal from "./CardRegisterModal";
@@ -20,6 +19,19 @@ const Payment = ({
   getCardColor,
   maskDigits,
 }) => {
+  const isCardExpired = card => {
+    const [expirationYear, expirationMonth] = card.card_expiration.split("/").map(Number);
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth() + 1;
+
+    return (
+      expirationYear < currentYear ||
+      (expirationYear === currentYear && expirationMonth < currentMonth)
+    );
+  };
+
+  const selectedCard = cards && cards[selectedCardIndex - 1];
+
   return (
     <div className='rounded-lg bg-white p-4 shadow'>
       <h2 className='mb-4 font-bold'>결제 수단</h2>
@@ -33,6 +45,7 @@ const Payment = ({
                 width: `${((cards ? cards.length : 0) + 1) * (300 / (cards.length + 1))}%`,
               }}>
               {/* 카드 등록하기 카드 */}
+              {/* 카드 5개 까지 */}
               {cards.length < 6 && (
                 <div
                   className={`ml-[52px] w-[208px] flex-shrink-0 transition-all duration-300 ease-in-out ${
@@ -49,27 +62,44 @@ const Payment = ({
 
               {/* 기존 카드들 */}
               {cards &&
-                cards.map((card, index) => (
-                  <div
-                    key={index}
-                    className={`ml-[52px] w-[208px] flex-shrink-0 transition-all duration-300 ease-in-out ${
-                      index + 1 === selectedCardIndex ? "z-10 scale-110" : "scale-100 opacity-50"
-                    }`}>
+                cards.map((card, index) => {
+                  const expired = isCardExpired(card);
+                  return (
                     <div
-                      className={`h-36 rounded-lg p-4 text-white shadow-lg`}
-                      style={{ backgroundColor: getCardColor(card.card_company) }}>
-                      <p className='mb-4 text-xl font-bold'>{card.card_company}</p>
-                      <p className='text-lg'>{maskDigits(card.card_number)}</p>
-                      <p className='text-md'>{card.card_expiration}</p>
-                      <button onClick={() => handleEditCard(card)} className='text-blue-500'>
-                        <FaEdit />
-                      </button>
-                      <button onClick={() => handleDeleteCard(card.id)} className='text-red-500'>
-                        <FaTrash />
-                      </button>
+                      key={index}
+                      className={`ml-[52px] w-[208px] flex-shrink-0 transition-all duration-300 ease-in-out ${
+                        index + 1 === selectedCardIndex
+                          ? "z-10 scale-110"
+                          : expired
+                            ? "scale-100 cursor-not-allowed opacity-50"
+                            : "scale-100 opacity-50"
+                      }`}>
+                      <div
+                        className={`h-36 rounded-lg p-4 text-white shadow-lg ${
+                          expired ? "bg-gray-400" : ""
+                        }`}
+                        style={{
+                          backgroundColor: expired ? "#808080" : getCardColor(card.card_company),
+                        }}>
+                        <p className='mb-4 text-xl font-bold'>{card.card_company}</p>
+                        <p className='text-lg'>{maskDigits(card.card_number)}</p>
+                        <div className='flex'>
+                          <p className='text-md'>{card.card_expiration}</p>
+                          {expired && <p className='text-sm font-bold text-red-700'>만료됨</p>}
+                        </div>
+
+                        {/* 카드 수정 버튼 */}
+                        <button onClick={() => handleEditCard(card)} className='text-blue-500'>
+                          <FaEdit />
+                        </button>
+                        {/* 카드 삭제 버튼 */}
+                        <button onClick={() => handleDeleteCard(card.id)} className='text-red-500'>
+                          <FaTrash />
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
             </div>
           </div>
           <CardEditModal
@@ -79,11 +109,13 @@ const Payment = ({
             cardData={editingCard}
           />
         </div>
+        {/* 이전 카드 */}
         <button
           onClick={handlePrevCard}
           className='absolute left-8 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white p-6 text-xl shadow'>
           <FaChevronLeft />
         </button>
+        {/* 다음 카드 */}
         <button
           onClick={handleNextCard}
           className='absolute right-8 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white p-6 text-xl shadow'>
@@ -91,6 +123,14 @@ const Payment = ({
         </button>
       </div>
       <p className='mt-4 text-center text-sm text-gray-600'>법인/체크카드는 일시불로 결제됩니다</p>
+      {selectedCard && selectedCard.is_simple_payment_agreed === 0 && (
+        <div className='mt-4 flex items-center justify-center'>
+          <input type='checkbox' id='regularPaymentAgreement' className='mr-2' />
+          <label htmlFor='regularPaymentAgreement' className='text-sm text-gray-700'>
+            정기결제 동의하시겠습니까?
+          </label>
+        </div>
+      )}
       <CardRegisterModal
         isOpen={isCardRegistrationModalOpen}
         onClose={() => setIsCardRegistrationModalOpen(false)}

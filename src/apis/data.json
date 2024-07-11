@@ -38,7 +38,7 @@
       "product_id": 2,
       "member_id": 1,
       "cart_type_id": "regular",
-      "quantity": 3,
+      "quantity": 5,
       "name": "국내산 무농약 콩나물",
       "price": 900,
       "originalPrice": 1000,
@@ -449,27 +449,6 @@
   ],
   "card": [
     {
-      "member_id": 1,
-      "master_birthday": "970304",
-      "card_password": "10",
-      "card_number": "1236-1234-1234-1234",
-      "card_company": "국민카드",
-      "card_expiration": "2027/03",
-      "card_cvc": "123",
-      "id": "9851"
-    },
-    {
-      "member_payment_card_id": 3,
-      "member_id": 1,
-      "card_number": "1234-1234-1234-1234",
-      "card_password": "10",
-      "card_expiration": "2027/03",
-      "master_birthday": "970304",
-      "card_company": "신한카드",
-      "card_cvc": "123",
-      "id": "9354"
-    },
-    {
       "id": "10d0",
       "member_id": 1,
       "card_number": "1234-1234-1234-1234",
@@ -479,7 +458,30 @@
       "card_password": "10",
       "master_birthday": "970304",
       "card_cvc": "373",
-      "card_expiration": "2023/06"
+      "card_expiration": "2023/06",
+      "is_simple_payment_agreed": 0
+    },
+    {
+      "member_id": 1,
+      "card_number": "1235-1234-1234-1234",
+      "card_company": "국민카드",
+      "card_expiration": "2024/07",
+      "card_password": "10",
+      "master_birthday": "970304",
+      "card_cvc": "978",
+      "id": "ffd1",
+      "is_simple_payment_agreed": 0
+    },
+    {
+      "id": "d287",
+      "member_id": 1,
+      "card_number": "1111-1111-1111-1111",
+      "card_company": "우리카드",
+      "card_expiration": "2028/04",
+      "card_password": "10",
+      "master_birthday": "970304",
+      "card_cvc": "101",
+      "is_simple_payment_agreed": 0
     }
   ],
   "coupon": [

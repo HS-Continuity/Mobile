@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { FaHome, FaChevronLeft, FaMinus, FaPlus, FaTrash } from "react-icons/fa";
 import { deleteCartItem, fetchCartItems, updateCartItem } from "../apis";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Skeleton from "../components/Skeletons/Skeleton";
 import CartSkeleton from "../components/Skeletons/CartSkeleton";
 
@@ -151,11 +151,13 @@ const Cart = () => {
         ) : (
           filteredItems.map(item => (
             <div key={item.id} className='mb-4 flex rounded-lg bg-white p-4 shadow'>
-              <img
-                src={item.image}
-                alt={item.name}
-                className='mr-4 h-20 w-20 rounded object-cover'
-              />
+              <Link to={`/product/${item.product_id}`}>
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className='mr-4 h-20 w-20 rounded object-cover'
+                />
+              </Link>
               <div className='flex-grow'>
                 <div className='mb-2 flex items-center'>
                   <input
@@ -164,7 +166,9 @@ const Cart = () => {
                     checked={checkedItems[item.id] || false}
                     onChange={() => handleCheckboxChange(item.id)}
                   />
-                  <h3 className='font-bold'>{item.name}</h3>
+                  <Link to={`/product/${item.product_id}`}>
+                    <h3 className='font-bold'>{item.name}</h3>
+                  </Link>
                 </div>
                 <div className='flex items-center justify-between'>
                   <div>

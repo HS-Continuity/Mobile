@@ -1,4 +1,10 @@
-const OrderPrice = ({ totalPrice, shippingFee, selectedCoupon, finalPrice }) => {
+const OrderPrice = ({
+  regularShippingDiscount,
+  totalPrice,
+  shippingFee,
+  selectedCoupon,
+  finalPrice,
+}) => {
   const couponDiscount = selectedCoupon ? selectedCoupon.discount_amount : 0;
 
   return (
@@ -12,6 +18,12 @@ const OrderPrice = ({ totalPrice, shippingFee, selectedCoupon, finalPrice }) => 
         <span>배송비</span>
         <span>{shippingFee.toLocaleString()}원</span>
       </div>
+      {regularShippingDiscount && (
+        <div className='flex justify-between text-red-500'>
+          <span>정기 배송비 할인</span>
+          <span>{regularShippingDiscount.toLocaleString()}원</span>
+        </div>
+      )}
       {selectedCoupon && (
         <div className='flex justify-between text-red-500'>
           <span>쿠폰 할인</span>

@@ -1,12 +1,15 @@
-import { useState } from "react";
-import { FaHome, FaChevronLeft, FaMapMarkerAlt, FaMinus, FaPlus } from "react-icons/fa";
-import { fetchCartItems, updateCartItem } from "../apis";
+import { useEffect, useState } from "react";
+import { FaHome, FaChevronLeft, FaMinus, FaPlus, FaTrash } from "react-icons/fa";
+import { deleteCartItem, fetchCartItems, updateCartItem } from "../apis";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import Skeleton from "../components/Skeletons/Skeleton";
 import CartSkeleton from "../components/Skeletons/CartSkeleton";
 
 const Cart = () => {
+  // Member id = 1
+  const member_id = 1;
+
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("regular");
@@ -14,9 +17,21 @@ const Cart = () => {
 
   const { data: cartItems, isLoading } = useQuery({
     queryKey: ["cart"],
-    queryFn: fetchCartItems,
+    queryFn: () => fetchCartItems(member_id),
   });
 
+  // 초기 모든 장바구니 아이템 체크
+  useEffect(() => {
+    if (cartItems) {
+      const initialCheckedState = cartItems.reduce((acc, item) => {
+        acc[item.id] = true;
+        return acc;
+      }, {});
+      setCheckedItems(initialCheckedState);
+    }
+  }, [cartItems]);
+
+  // [UPDATE] 장바구니 상품 수량 수정 쿼리
   const updateItemMutation = useMutation({
     mutationFn: updateCartItem,
     onMutate: async ({ id, quantity }) => {
@@ -36,27 +51,62 @@ const Cart = () => {
     },
   });
 
+  // [DELETE] 장바구니 상품 삭제 쿼리
+  const deleteItemMutation = useMutation({
+    mutationFn: deleteCartItem,
+    onSuccess: () => {
+      queryClient.invalidateQueries("cart");
+    },
+  });
+
+  // 장바구니 상품 수량 변경 Handler
   const handleQuantityChange = (id, newQuantity) => {
     if (newQuantity > 0) {
       updateItemMutation.mutate({ id, quantity: newQuantity });
     }
   };
 
-  const filteredItems = cartItems?.filter(item => item.type === activeTab) || [];
+  // 장바구니 상품 삭제 Handler
+  const handleDeleteItem = id => {
+    if (window.confirm("정말 삭제하시겠습니까?")) {
+      deleteItemMutation.mutate(id);
+    }
+  };
 
-  const regularCount = cartItems?.filter(item => item.type === "regular").length || 0;
-  const subscriptionCount = cartItems?.filter(item => item.type === "subscription").length || 0;
+  const filteredItems = cartItems?.filter(item => item.cart_type_id === activeTab) || [];
+
+  const regularCount = cartItems?.filter(item => item.cart_type_id === "regular").length || 0;
+  const subscriptionCount =
+    cartItems?.filter(item => item.cart_type_id === "subscription").length || 0;
 
   const handleCheckboxChange = id => {
     setCheckedItems(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const handleAllCheck = checked => {
+    const newCheckedItems = filteredItems.reduce((acc, item) => {
+      acc[item.id] = checked;
+      return acc;
+    }, {});
+    setCheckedItems(prev => ({ ...prev, ...newCheckedItems }));
   };
 
   const totalPrice = filteredItems
     .filter(item => checkedItems[item.id])
     .reduce((sum, item) => sum + item.price * item.quantity, 0);
 
+  const handleOrder = () => {
+    const selectedItems = filteredItems.filter(item => checkedItems[item.id]);
+    if (activeTab === "regular" && selectedItems.length > 0) {
+      navigate("/order", { state: { orderItems: selectedItems } });
+    } else if (activeTab === "subscription" && selectedItems.length > 0) {
+      navigate("/subscription-setup", { state: { orderItems: selectedItems } });
+    } else {
+      alert("주문할 상품을 선택해주세요.");
+    }
+  };
   return (
-    <div className='flex h-screen flex-col bg-gray-100'>
+    <div className='noScrollbar flex h-screen flex-col bg-gray-100'>
       {/* 장바구니 헤더 */}
       <div className='flex items-center bg-[#00835F] p-4 text-white'>
         <FaChevronLeft className='mr-4 cursor-pointer' onClick={() => navigate(-1)} />
@@ -78,17 +128,21 @@ const Cart = () => {
         </button>
       </div>
 
-      {/* 배송 주소 */}
-      <div className='flex items-center justify-between bg-white p-4'>
-        <div className='flex items-center'>
-          <FaMapMarkerAlt className='mr-2 text-gray-500' />
-          <span>현재 등록된 배송지가 없습니다</span>
-        </div>
-        <button className='rounded border border-gray-300 px-2 py-1 text-sm'>등록</button>
+      {/* 체크박스 전체 선택 */}
+      <div className='bg-white p-4'>
+        <label className='flex items-center'>
+          <input
+            type='checkbox'
+            className='checkbox-primary checkbox mr-2'
+            checked={filteredItems.every(item => checkedItems[item.id])}
+            onChange={e => handleAllCheck(e.target.checked)}
+          />
+          <span>전체 선택</span>
+        </label>
       </div>
 
       {/* 장바구니 아이템 */}
-      <div className='flex-1 overflow-auto p-4'>
+      <div className='noScrollbar flex-1 overflow-auto p-4'>
         {isLoading ? (
           <>
             <CartSkeleton />
@@ -118,6 +172,11 @@ const Cart = () => {
                     <p className='text-sm text-gray-500 line-through'>
                       {item.originalPrice.toLocaleString()}원
                     </p>
+                    <button
+                      className='btn btn-circle btn-outline btn-sm'
+                      onClick={() => handleDeleteItem(item.id)}>
+                      <FaTrash />
+                    </button>
                   </div>
                   <div className='flex items-center'>
                     <button
@@ -161,7 +220,10 @@ const Cart = () => {
       </div>
 
       {/* 주문 버튼 */}
-      <button className='bg-[#00835F] p-4 text-lg font-bold text-white' disabled={isLoading}>
+      <button
+        className={`bg-[#00835F] p-4 text-lg font-bold text-white ${filteredItems.filter(item => checkedItems[item.id]).length === 0 ? "bg-gray-400" : ""}`}
+        disabled={isLoading || filteredItems.filter(item => checkedItems[item.id]).length === 0}
+        onClick={handleOrder}>
         {activeTab === "subscription" ? "정기 배송 신청하기" : "주문하기"}
       </button>
     </div>

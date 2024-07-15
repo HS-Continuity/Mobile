@@ -43,6 +43,9 @@ const Order = () => {
   const [isCardEditModalOpen, setIsCardEditModalOpen] = useState(false);
   const [editingCard, setEditingCard] = useState(null);
 
+  // 결제 버튼 활성화 상태
+  const [isPaymentEnabled, setIsPaymentEnabled] = useState(false);
+
   // 카드 색깔 전역 변수
   const getCardColor = useCardColorStore(state => state.getCardColor);
 
@@ -226,6 +229,25 @@ const Order = () => {
       setRecipientPhone(memberInfo[0].member_phone_number);
     }
   }, [memberInfo]);
+
+  // 결제 버튼 활성화 여부 확인
+  useEffect(() => {
+    const isValidCard =
+      cards &&
+      cards.length > 0 &&
+      selectedCardIndex !== null &&
+      cards[selectedCardIndex] &&
+      new Date(cards[selectedCardIndex].expiry_date) > new Date();
+    const isValidAddress = addresses && addresses.some(address => address.is_default_address);
+
+    setIsPaymentEnabled(
+      recipientName !== "" &&
+        recipientPhone !== "" &&
+        isValidAddress &&
+        isValidCard &&
+        consentPayment
+    );
+  }, [recipientName, recipientPhone, addresses, cards, selectedCardIndex, consentPayment]);
 
   if (couponsLoading || memberInfoLoading || addressesLoading || cardsLoading)
     return <div>불러오는중...</div>;

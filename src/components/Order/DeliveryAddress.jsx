@@ -14,7 +14,7 @@ const DeliveryAddress = ({
       <div className='flex items-center'>
         <FaMapMarkerAlt className='mr-2 text-gray-500' />
         {defaultAddress ? (
-          defaultAddress.member_address
+          defaultAddress.general_address
         ) : (
           <span>현재 등록된 배송지가 없습니다</span>
         )}

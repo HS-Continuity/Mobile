@@ -13,7 +13,7 @@ import {
 const AddressModal = ({ isOpen, onClose, memberId }) => {
   const [editingAddress, setEditingAddress] = useState(null);
   const [newAddress, setNewAddress] = useState({
-    member_address: "",
+    general_address: "",
     detail_address: "",
   });
   const [isAddressSearchOpen, setIsAddressSearchOpen] = useState(false);
@@ -32,7 +32,7 @@ const AddressModal = ({ isOpen, onClose, memberId }) => {
     mutationFn: addAddress,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["addresses", memberId] });
-      setNewAddress({ member_address: "", detail_address: "" });
+      setNewAddress({ general_address: "", detail_address: "" });
     },
   });
 
@@ -63,21 +63,23 @@ const AddressModal = ({ isOpen, onClose, memberId }) => {
       alert("주소는 최대 5개까지만 저장할 수 있습니다.");
       return;
     }
-    if (!newAddress.member_address) {
+    if (!newAddress.general_address) {
       alert("주소를 검색해주세요.");
       return;
     }
     addAddressMutation.mutate({
       memberId,
-      address: `${newAddress.member_address} ${newAddress.detail_address}`.trim(),
+      general_address: newAddress.general_address.trim(),
+      detail_address: newAddress.detail_address.trim(),
     });
   };
 
   const handleUpdateAddress = id => {
     updateAddressMutation.mutate({
       id,
-      address: `${editingAddress.member_address} ${editingAddress.detail_address}`.trim(),
-      isDefault: editingAddress.is_default_address,
+      general_address: editingAddress.general_address.trim(),
+      detail_address: editingAddress.detail_address.trim(),
+      is_default_address: editingAddress.is_default_address,
     });
   };
 
@@ -106,12 +108,12 @@ const AddressModal = ({ isOpen, onClose, memberId }) => {
     if (editingAddress) {
       setEditingAddress(prev => ({
         ...prev,
-        member_address: fullAddress,
+        general_address: fullAddress,
       }));
     } else {
       setNewAddress(prev => ({
         ...prev,
-        member_address: fullAddress,
+        general_address: fullAddress,
       }));
     }
     setIsAddressSearchOpen(false);
@@ -135,7 +137,7 @@ const AddressModal = ({ isOpen, onClose, memberId }) => {
                     <div className='flex'>
                       <input
                         type='text'
-                        value={editingAddress.member_address}
+                        value={editingAddress.general_address}
                         readOnly
                         className='w-full rounded border p-2'
                         placeholder='주소'
@@ -148,7 +150,7 @@ const AddressModal = ({ isOpen, onClose, memberId }) => {
                     </div>
                     <input
                       type='text'
-                      value={editingAddress.detail_address || ""}
+                      value={editingAddress.detail_address}
                       onChange={e =>
                         setEditingAddress({ ...editingAddress, detail_address: e.target.value })
                       }
@@ -170,7 +172,8 @@ const AddressModal = ({ isOpen, onClose, memberId }) => {
                   </div>
                 ) : (
                   <>
-                    <div className='text-gray-600'>{address.member_address}</div>
+                    <div className='text-gray-600'>{address.general_address}</div>
+                    <div className='text-gray-600'>{address.detail_address}</div>
                     {address.is_default_address && (
                       <span className='absolute right-2 top-2 rounded bg-blue-500 px-2 py-1 text-xs text-white'>
                         기본
@@ -202,9 +205,8 @@ const AddressModal = ({ isOpen, onClose, memberId }) => {
           <div className='flex'>
             <input
               type='text'
-              value={newAddress.member_address}
-              readOnly
-              disabled='true'
+              value={newAddress.general_address}
+              disabled
               className='w-full rounded border p-2'
               placeholder='새 주소 입력 (검색 버튼을 눌러주세요)'
             />

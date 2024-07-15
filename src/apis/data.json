@@ -38,7 +38,7 @@
       "product_id": 2,
       "member_id": 1,
       "cart_type_id": "regular",
-      "quantity": 5,
+      "quantity": 6,
       "name": "국내산 무농약 콩나물",
       "price": 900,
       "originalPrice": 1000,
@@ -424,7 +424,7 @@
       "member_id": 1,
       "member_name": "정승수",
       "member_email": "ssjung1997@naver.com",
-      "member_password": "zxc0123",
+      "member_password": "zxc",
       "member_birthday": "1997-03-04",
       "member_phone_number": "010-2648-2367",
       "member_gender": "male",
@@ -435,15 +435,10 @@
   ],
   "address": [
     {
-      "id": "6f51",
+      "id": "ebd9",
       "member_id": 1,
-      "member_address": "경기 부천시 원미구 신흥로 190 (중동, 위브더스테이트) 102동 170호",
-      "is_default_address": false
-    },
-    {
-      "id": "2ae5",
-      "member_id": 1,
-      "member_address": "제주특별자치도 제주시 첨단로 242 (영평동) 101",
+      "general_address": "경기 부천시 원미구 신흥로 190",
+      "detail_address": "10101",
       "is_default_address": true
     }
   ],
@@ -495,6 +490,16 @@
       "id": "1",
       "coupon_name": "첫 구매 만원 할인",
       "discount_amount": 10000
+    }
+  ],
+  "payment_information": [
+    {
+      "order_detail_id": 1,
+      "payment_amount": 10000,
+      "delivery_fee": 2500,
+      "card_number": "1234-1234-1234-1234",
+      "discount_amount": 10,
+      "origin_product_price": 11000
     }
   ]
 }

@@ -1,7 +1,6 @@
 import axios from "axios";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { SORT_TYPES } from "../stores/useProductReviewStore";
-import { MdDescription } from "react-icons/md";
 
 const API_BASE_URL = "http://localhost:3001";
 
@@ -191,31 +190,29 @@ export const fetchMemberAddresses = async memberId => {
 };
 
 // [POST] 회원 주소지 추가
-export const addAddress = async ({ memberId, address, phoneNumber }) => {
-  const response = await axios.get(`${API_BASE_URL}/address`);
-  const existingAddresses = response.data;
-
-  const maxId = Math.max(...existingAddresses.map(a => a.member_address_id), 0);
-  // const newMemberAddressId = maxId + 1;
-
+export const addAddress = async ({ memberId, general_address, detail_address }) => {
   const newAddress = {
-    // member_address_id: newMemberAddressId,
-    member_id: 1,
-    member_address: address,
-    member_phone_number: phoneNumber,
+    member_id: memberId,
+    general_address,
+    detail_address,
     is_default_address: false,
   };
 
-  const postResponse = await axios.post(`${API_BASE_URL}/address`, newAddress);
-  return postResponse.data;
+  const response = await axios.post(`${API_BASE_URL}/address`, newAddress);
+  return response.data;
 };
 
 // [PUT] 회원 주소지 수정
-export const updateAddress = async ({ id, address, isDefault }) => {
+export const updateAddress = async ({
+  id,
+  general_address,
+  detail_address,
+  is_default_address,
+}) => {
   const response = await axios.put(`${API_BASE_URL}/address/${id}`, {
-    member_address: address,
-    member_id: 1,
-    is_default_address: isDefault,
+    general_address,
+    detail_address,
+    is_default_address,
   });
   return response.data;
 };
@@ -278,5 +275,27 @@ export const updateMemberCard = async ({ memberId, id, ...cardData }) => {
 // [DELETE] 회원 카드 삭제
 export const deleteMemberCard = async ({ memberId, cardId }) => {
   const response = await axios.delete(`${API_BASE_URL}/card/${cardId}`);
+  return response.data;
+};
+
+// [UPDATE] 회원 정보 수정
+export const updateUser = async ({ id, userData }) => {
+  const response = await axios.put(`${API_BASE_URL}/member/${id}`, userData);
+  return response.data;
+};
+
+// [GET] 회원 쿠폰 조회
+export const fetchCoupons = async memberId => {
+  const response = await axios.get(`${API_BASE_URL}/coupon?member_id=${memberId}`);
+  return response.data;
+};
+
+// [GET] 회원 주문 조회
+export const fetchOrders = async memberId => {
+  const response = await axios.get("http://localhost:3001/order", {
+    params: {
+      member_id: memberId,
+    },
+  });
   return response.data;
 };

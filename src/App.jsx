@@ -1,14 +1,20 @@
 import { Route, Routes, useLocation } from "react-router-dom";
 import "./App.css";
 import Main from "./components/Layouts/Main";
-import MobileMain from "./components/Layouts/MobileMain";
+import OrderLayout from "./components/Layouts/OrderLayout";
 import Home from "./pages/Home";
 import Timesale from "./pages/Timesale";
 import Mypage from "./pages/Mypage";
+import Coupon from "./pages/Coupon";
+import Address from "./pages/Address";
+import OrderHistory from "./pages/OrderHistory";
+import Payment from "./pages/Payment";
+import Subscriptions from "./pages/Subscriptions";
+import Profile from "./pages/Profile";
 import Cart from "./pages/Cart";
 import Search from "./pages/Search";
 import { useEffect } from "react";
-import MainLogin from "./components/Login/MainLogin";
+import LoginLayout from "./components/Login/LoginLayout";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import DetailCategory from "./pages/DetailCategory";
@@ -18,6 +24,9 @@ import Shop from "./pages/Shop";
 import Order from "./pages/Order";
 import SubscriptionOrder from "./pages/SubscriptionOrder";
 import SubscriptionSetup from "./pages/SubscriptionSetup";
+import MypageLayout from "./components/Mypage/MypageLayout";
+import OrderSuccess from "./pages/OrderSuccess";
+import OrderFail from "./pages/OrderFail";
 
 function App() {
   const location = useLocation();
@@ -45,14 +54,14 @@ function App() {
     <>
       <div className='min-h-[calc(var(--vh,1vh)*100)] min-h-screen'>
         <Routes>
-          <Route element={<MainLogin />}>
+          <Route element={<LoginLayout />}>
             <Route path='/login' element={<Login key={location.pathname} />} />
             <Route path='/signup' element={<SignUp key={location.pathname} />} />
           </Route>
+
           <Route element={<Main />}>
             <Route path='/' element={<Home key={location.pathname} />} />
             <Route path='/timesale' element={<Timesale key={location.pathname} />} />
-            <Route path='/mypage' element={<Mypage key={location.pathname} />} />
             <Route path='/search' element={<Search key={location.pathname} />} />
 
             {/* 식품 상세 카테고리 선택 시 */}
@@ -67,11 +76,30 @@ function App() {
             {/* 판매자별 소개 페이지 */}
             <Route path='/shop/:customerId' element={<Shop key={location.pathname} />} />
           </Route>
-          <Route element={<MobileMain />}>
+
+          <Route element={<OrderLayout />}>
             <Route path='/cart' element={<Cart key={location.pathname} />} />
             <Route path='/order' element={<Order key={location.pathname} />} />
-            <Route path='/subscription-setup' element={<SubscriptionSetup />} />
-            <Route path='/subscription-order' element={<SubscriptionOrder />} />
+            <Route
+              path='/subscription-setup'
+              element={<SubscriptionSetup key={location.pathname} />}
+            />
+            <Route
+              path='/subscription-order'
+              element={<SubscriptionOrder key={location.pathname} />}
+            />
+            <Route path='/order-success' element={<OrderSuccess />} />
+            <Route path='/order-fail' element={<OrderFail />} />
+          </Route>
+
+          <Route element={<MypageLayout />}>
+            <Route path='/mypage' element={<Mypage key={location.pathname} />} />
+            <Route path='/profile' element={<Profile key={location.pathname} />} />
+            <Route path='/coupon' element={<Coupon key={location.pathname} />} />
+            <Route path='/address' element={<Address key={location.pathname} />} />
+            <Route path='/order-history' element={<OrderHistory key={location.pathname} />} />
+            <Route path='/payment' element={<Payment key={location.pathname} />} />
+            <Route path='/subscriptions' element={<Subscriptions key={location.pathname} />} />
           </Route>
         </Routes>
       </div>

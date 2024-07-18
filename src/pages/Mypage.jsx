@@ -15,7 +15,7 @@ const MyPage = () => {
             <MypageMenu icon={<FaCreditCard />} text='결제수단 관리' to='/payment' />
             <MypageMenu icon={<FaTruck />} text='배송지 관리' to='/address' />
             <MypageMenu icon={<FaMapMarkerAlt />} text='주문내역 관리' to='/order-history' />
-            <MypageMenu icon={<FaBox />} text='정기배송 관리' to='/subscriptions' />
+            <MypageMenu icon={<FaBox />} text='정기배송 관리' to='/subscription-history' />
           </div>
         </div>
       </div>

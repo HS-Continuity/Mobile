@@ -29,7 +29,7 @@ const Order = () => {
   const navigate = useNavigate();
 
   // 주문 아이템
-  const { orderItems } = location.state || { orderItems: [] };
+  const { orderItems, totalProductPrice, totalDeliveryFee } = location.state || { orderItems: [] };
   // 쿠폰
   const [selectedCoupon, setSelectedCoupon] = useState(null);
   // 받는 사람
@@ -53,11 +53,10 @@ const Order = () => {
   useOrderItemsValidation(orderItems);
 
   // 설정 값
+  // const member_id = import.meta.env.VITE_MEMBER_ID;
   const member_id = 1;
-  const totalPrice = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const shippingFee = 2500;
   const couponDiscount = selectedCoupon ? selectedCoupon.discount_amount : 0;
-  const finalPrice = totalPrice + shippingFee - couponDiscount;
+  const finalPrice = totalProductPrice + totalDeliveryFee - couponDiscount;
 
   // QUERIES
   // [GET] 회원 쿠폰 조회 쿼리
@@ -296,8 +295,8 @@ const Order = () => {
 
         {/* 결제 금액 */}
         <OrderPrice
-          totalPrice={totalPrice}
-          shippingFee={shippingFee}
+          totalProductPrice={totalProductPrice}
+          totalDeliveryFee={totalDeliveryFee}
           selectedCoupon={selectedCoupon}
           finalPrice={finalPrice}
         />

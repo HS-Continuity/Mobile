@@ -32,7 +32,7 @@ const SubscriptionOrder = () => {
   const navigate = useNavigate();
 
   // 주문 아이템
-  const { orderItems } = location.state || { orderItems: [] };
+  const { orderItems, totalProductPrice, totalDeliveryFee } = location.state || { orderItems: [] };
   // 쿠폰
   const [selectedCoupon, setSelectedCoupon] = useState(null);
   // 받는 사람
@@ -56,11 +56,12 @@ const SubscriptionOrder = () => {
 
   // 설정 값
   const member_id = 1;
-  const totalPrice = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const shippingFee = 2500;
-  const regularShippingDiscount = -2500;
+  // const totalPrice = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  // const shippingFee = 2500;
+  // const regularShippingDiscount = -2500;
+  // const totalPrice = totalProductPrice;
   const couponDiscount = selectedCoupon ? selectedCoupon.discount_amount : 0;
-  const finalPrice = totalPrice + shippingFee + regularShippingDiscount - couponDiscount;
+  const finalPrice = totalProductPrice - couponDiscount;
 
   const createOrderMutation = useMutation({
     mutationFn: createSubscriptionOrder,
@@ -305,11 +306,11 @@ const SubscriptionOrder = () => {
 
         {/* 결제 금액 */}
         <OrderPrice
-          regularShippingDiscount={regularShippingDiscount}
-          totalPrice={totalPrice}
-          shippingFee={shippingFee}
+          totalProductPrice={totalProductPrice}
+          totalDeliveryFee={totalDeliveryFee}
           selectedCoupon={selectedCoupon}
           finalPrice={finalPrice}
+          regularShippingDiscount={true}
         />
 
         {/*  결제 수단 */}

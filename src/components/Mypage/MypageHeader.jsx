@@ -19,8 +19,14 @@ const MypageHeader = () => {
       return "결제수단 관리";
     } else if (location.pathname === "/order-history") {
       return "주문내역 관리";
-    } else if (location.pathname === "/subscriptions") {
+    } else if (location.pathname === "/subscription-history") {
       return "정기배송 관리";
+    } else if (location.pathname === "/reviewapply") {
+      return "리뷰 작성";
+    } else if (location.pathname === "/refundapply") {
+      return "환불 신청";
+    } else if (location.pathname === "/subscription-manage") {
+      return "정기배송 상세관리";
     }
     return "";
   };

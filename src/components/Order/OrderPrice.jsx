@@ -1,7 +1,7 @@
 const OrderPrice = ({
   regularShippingDiscount,
-  totalPrice,
-  shippingFee,
+  totalProductPrice,
+  totalDeliveryFee,
   selectedCoupon,
   finalPrice,
 }) => {
@@ -12,18 +12,29 @@ const OrderPrice = ({
       <h2 className='mb-2 font-bold'>결제 금액</h2>
       <div className='flex justify-between'>
         <span>총 상품 금액</span>
-        <span>{totalPrice.toLocaleString()}원</span>
+        <span>{totalProductPrice.toLocaleString()}원</span>
       </div>
-      <div className='flex justify-between'>
-        <span>배송비</span>
-        <span>{shippingFee.toLocaleString()}원</span>
-      </div>
-      {regularShippingDiscount && (
+      {regularShippingDiscount ? (
         <div className='flex justify-between text-red-500'>
-          <span>정기 배송비 할인</span>
-          <span>{regularShippingDiscount.toLocaleString()}원</span>
+          <span>정기 배송비</span>
+          <span>{totalDeliveryFee.toLocaleString()}원</span>
+        </div>
+      ) : (
+        <div className='flex justify-between'>
+          <span>배송비</span>
+          <span>{totalDeliveryFee.toLocaleString()}원</span>
         </div>
       )}
+      {/* <div className='flex justify-between'>
+        <span>배송비</span>
+        <span>{totalDeliveryFee.toLocaleString()}원</span>
+      </div> */}
+      {/* {regularShippingDiscount && (
+        <div className='flex justify-between text-red-500'>
+          <span>정기 배송비 할인</span>
+          <span>-{totalDeliveryFee.toLocaleString()}원</span>
+        </div>
+      )} */}
       {selectedCoupon && (
         <div className='flex justify-between text-red-500'>
           <span>쿠폰 할인</span>

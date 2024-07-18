@@ -9,7 +9,6 @@ import Coupon from "./pages/Coupon";
 import Address from "./pages/Address";
 import OrderHistory from "./pages/OrderHistory";
 import Payment from "./pages/Payment";
-import Subscriptions from "./pages/Subscriptions";
 import Profile from "./pages/Profile";
 import Cart from "./pages/Cart";
 import Search from "./pages/Search";
@@ -27,6 +26,10 @@ import SubscriptionSetup from "./pages/SubscriptionSetup";
 import MypageLayout from "./components/Mypage/MypageLayout";
 import OrderSuccess from "./pages/OrderSuccess";
 import OrderFail from "./pages/OrderFail";
+import ReviewApply from "./pages/ReviewApply";
+import RefundApply from "./pages/RefundApply";
+import SubscriptionOrderHistory from "./pages/SubscriptionOrderHistory";
+import SubscriptionOrderManage from "./pages/SubscriptionOrderManage";
 
 function App() {
   const location = useLocation();
@@ -99,7 +102,16 @@ function App() {
             <Route path='/address' element={<Address key={location.pathname} />} />
             <Route path='/order-history' element={<OrderHistory key={location.pathname} />} />
             <Route path='/payment' element={<Payment key={location.pathname} />} />
-            <Route path='/subscriptions' element={<Subscriptions key={location.pathname} />} />
+            <Route path='/reviewapply' element={<ReviewApply key={location.pathname} />} />
+            <Route path='/refundapply' element={<RefundApply key={location.pathname} />} />
+            <Route
+              path='/subscription-history'
+              element={<SubscriptionOrderHistory key={location.pathname} />}
+            />
+            <Route
+              path='/subscription-manage'
+              element={<SubscriptionOrderManage key={location.pathname} />}
+            />
           </Route>
         </Routes>
       </div>

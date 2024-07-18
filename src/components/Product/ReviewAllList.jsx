@@ -1,98 +1,130 @@
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useInView } from "react-intersection-observer";
-import { FaChevronLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { IoIosRefresh } from "react-icons/io";
+import { FaChevronLeft } from "react-icons/fa";
 import ReviewBox from "./ReviewBox";
 import ReviewListSkeleton from "../Skeletons/ReviewListSkeleton";
-import { SORT_TYPES, useReviewStore } from "../../stores/useProductReviewStore";
-import { useReviewQuery } from "../../apis/index";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { fetchProductReviews } from "../../apis/Product";
+import { IoIosRefresh } from "react-icons/io";
 
 const ReviewAllList = ({ productId, productName }) => {
   const navigate = useNavigate();
-  const sortType = useReviewStore(state => state.sortType);
-  const setSortType = useReviewStore(state => state.setSortType);
-  const { ref, inView } = useInView();
+  // const { ref, inView } = useInView();
+  const observerTarget = useRef(null);
+  const [sortOption, setSortOption] = useState("latest");
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError, refetch } =
-    useReviewQuery(productId, sortType);
+    useInfiniteQuery({
+      queryKey: ["reviews", productId, sortOption],
+      queryFn: ({ pageParam = 0 }) => fetchProductReviews(productId, pageParam, sortOption),
+      getNextPageParam: lastPage => {
+        if (lastPage.last) return undefined;
+        return lastPage.number + 1;
+      },
+    });
+
+  // useEffect(() => {
+  //   if (inView && hasNextPage) {
+  //     fetchNextPage();
+  //   }
+  // }, [inView, fetchNextPage, hasNextPage]);
+
+  const handleObserver = useCallback(
+    entries => {
+      const [target] = entries;
+      if (target.isIntersecting && hasNextPage) {
+        fetchNextPage();
+      }
+    },
+    [fetchNextPage, hasNextPage]
+  );
 
   useEffect(() => {
-    if (inView && hasNextPage) {
-      fetchNextPage();
-    }
-  }, [inView, fetchNextPage, hasNextPage]);
+    const observer = new IntersectionObserver(handleObserver, {
+      root: null,
+      rootMargin: "20px",
+      threshold: 0.1,
+    });
 
-  const handleSort = newSortType => {
-    if (newSortType !== sortType) {
-      setSortType(newSortType);
-      refetch();
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
     }
+
+    return () => {
+      if (observerTarget.current) {
+        observer.unobserve(observerTarget.current);
+      }
+    };
+  }, [handleObserver]);
+
+  const handleSortChange = e => {
+    setSortOption(e.target.value);
+    refetch();
   };
 
   if (isLoading)
     return (
       <div className='mt-28'>
-        {[...Array(5)].map((_, i) => (
+        {[...Array(3)].map((_, i) => (
           <ReviewListSkeleton key={i} />
         ))}
       </div>
     );
-  if (isError) return <div>Error fetching reviews</div>;
-  if (!data || data.pages.length === 0) return <div>No reviews available</div>;
+
+  if (isError) return <div className='text-red-500'>리뷰를 불러오지 못했습니다.</div>;
+  if (!data || data.pages[0].content.length === 0)
+    return <div className='text-gray-500'>리뷰가 없습니다.</div>;
 
   return (
     <div className='container mx-auto p-4'>
-      <div className='mb-4 flex items-center'>
-        <FaChevronLeft className='cursor-pointer text-xl' onClick={() => navigate(-1)} />
-        <h2 className='ml-4 text-xl font-bold'>고객 리뷰</h2>
-      </div>
-
-      <div className='mb-4'>
-        <button
-          className={`btn btn-ghost ${sortType === SORT_TYPES.LATEST ? "btn-active" : ""}`}
-          onClick={() => handleSort(SORT_TYPES.LATEST)}>
-          최신순
-        </button>
-        <button
-          className={`btn btn-ghost ${sortType === SORT_TYPES.HIGHEST ? "btn-active" : ""}`}
-          onClick={() => handleSort(SORT_TYPES.HIGHEST)}>
-          별점 높은 순
-        </button>
-        <button
-          className={`btn btn-ghost ${sortType === SORT_TYPES.LOWEST ? "btn-active" : ""}`}
-          onClick={() => handleSort(SORT_TYPES.LOWEST)}>
-          별점 낮은 순
-        </button>
+      <div className='mb-4 flex items-center justify-between'>
+        <div className='flex items-center'>
+          <FaChevronLeft className='cursor-pointer text-xl' onClick={() => navigate(-1)} />
+          <h2 className='ml-4 text-xl font-bold'>고객 리뷰</h2>
+        </div>
+        <select
+          className='rounded border border-gray-300 bg-white px-4 py-2 pr-8 leading-tight text-gray-700 focus:border-gray-500 focus:bg-white focus:outline-none'
+          value={sortOption}
+          onChange={handleSortChange}>
+          <option value='latest'>최신순</option>
+          <option value='lowRating'>별점 낮은순</option>
+          <option value='highRating'>별점 높은순</option>
+        </select>
       </div>
 
       {data.pages.map((page, i) => (
         <React.Fragment key={i}>
-          {page.data.map(review => (
+          {page.content.map(review => (
             <ReviewBox
-              key={review.product_review_id}
-              product_review_id={review.product_review_id}
-              review_score={review.review_score}
-              member_id={review.member_id}
-              create_date={review.create_date}
-              review_content={review.review_content}
+              key={review.productReviewId}
+              product_review_id={review.productReviewId}
+              review_score={review.reviewScore}
+              member_id={review.memberId}
+              create_date={review.createDate}
+              review_content={review.reviewContent}
+              review_image={review.reviewImage}
               product_name={productName}
+              reviewImage={review.reviewImage}
             />
           ))}
+          {isFetchingNextPage && <div className='mt-4 text-center'>더 많은 상품 가져오는중..</div>}
+          {!hasNextPage && !isFetchingNextPage && (
+            <div className='mt-7 cursor-pointer text-center'>
+              <IoIosRefresh className='mx-auto text-xl' onClick={() => window.location.reload()} />
+            </div>
+          )}
+          {hasNextPage && <div ref={observerTarget} className='h-10' />}
         </React.Fragment>
       ))}
 
-      <div ref={ref} className='flex h-10 items-center justify-center'>
-        {isFetchingNextPage ? (
-          "리뷰 로딩중..."
-        ) : hasNextPage ? (
-          "Load More"
-        ) : (
-          <div className='mt-4 cursor-pointer text-center'>
-            <IoIosRefresh className='mx-auto text-xl' onClick={() => location.reload()} />
-          </div>
-        )}
-      </div>
+      {/* <div ref={ref} className='flex h-10 items-center justify-center text-gray-600'>
+        {isFetchingNextPage
+          ? "리뷰 로딩중..."
+          : hasNextPage
+            ? "더 불러오는 중..."
+            : "모든 리뷰를 불러왔습니다."}
+      </div> */}
     </div>
   );
 };

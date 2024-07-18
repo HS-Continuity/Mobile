@@ -6,4 +6,38 @@
   .main-container {
     @apply sm:max-w-full md:max-w-full lg:max-w-[500px] xl:max-w-[500px];
   }
+  .bg-custom-gradient {
+    @apply bg-[#00835e]; /* 폴백 색상 */
+    background-image: linear-gradient(
+      155deg,
+      #7da36c 0,
+      #74a36f 10%,
+      #67a06e 20%,
+      #54996b 30%,
+      #3a9066 40%,
+      #00835e 50%,
+      #007657 60%,
+      #006c55 70%,
+      #006556 80%,
+      #00615a 90%,
+      #006061 100%
+    );
+  }
+  .button-custom-gradient {
+    @apply bg-[#00835e];
+    background-image: radial-gradient(
+      circle at 34.94% 17.7%,
+      #7da36c 0,
+      #74a36f 10%,
+      #67a06e 20%,
+      #54996b 30%,
+      #3a9066 40%,
+      #00835e 50%,
+      #007657 60%,
+      #006c55 70%,
+      #006556 80%,
+      #00615a 90%,
+      #006061 100%
+    );
+  }
 }

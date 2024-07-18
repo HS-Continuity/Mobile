@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { FaPlus, FaEdit, FaTrash } from "react-icons/fa";
 import { fetchMemberAddresses, deleteAddress, setDefaultAddress } from "../apis";
-import AddAddressModal from "../components/Mypage/AddAddressModa";
+import AddAddressModal from "../components/Mypage/AddAddressModal";
 
 const Address = () => {
   const memberId = 1; // 고정된 member_id

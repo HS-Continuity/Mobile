@@ -5,11 +5,7 @@ const useOrderItemsValidation = orderItems => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const isOrderItemsValid = () => {
-      return orderItems.length > 0;
-    };
-
-    if (!isOrderItemsValid()) {
+    if (!orderItems.length > 0) {
       navigate("/cart");
     }
   }, [orderItems, navigate]);

@@ -1,58 +1,58 @@
 import { useCallback, useEffect, useRef } from "react";
 import ProductItem from "./ProductItem";
-import { useProductsQuery } from "../../apis";
+// import { useProductsQuery } from "../../apis";
 import { IoIosRefresh } from "react-icons/io";
 import ProductSkeleton from "../Skeletons/ProductSkeleton";
 
 const DetailProductList = () => {
-  const observerTarget = useRef(null);
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useProductsQuery();
+  // const observerTarget = useRef(null);
+  // const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useProductsQuery();
 
-  const handleObserver = useCallback(
-    entries => {
-      const [target] = entries;
-      if (target.isIntersecting && hasNextPage) {
-        fetchNextPage();
-      }
-    },
-    [fetchNextPage, hasNextPage]
-  );
+  // const handleObserver = useCallback(
+  //   entries => {
+  //     const [target] = entries;
+  //     if (target.isIntersecting && hasNextPage) {
+  //       fetchNextPage();
+  //     }
+  //   },
+  //   [fetchNextPage, hasNextPage]
+  // );
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(handleObserver, {
-      root: null,
-      rootMargin: "20px",
-      threshold: 0.1,
-    });
+  // useEffect(() => {
+  //   const observer = new IntersectionObserver(handleObserver, {
+  //     root: null,
+  //     rootMargin: "20px",
+  //     threshold: 0.1,
+  //   });
 
-    if (observerTarget.current) {
-      observer.observe(observerTarget.current);
-    }
+  //   if (observerTarget.current) {
+  //     observer.observe(observerTarget.current);
+  //   }
 
-    return () => {
-      if (observerTarget.current) {
-        observer.unobserve(observerTarget.current);
-      }
-    };
-  }, [handleObserver]);
+  //   return () => {
+  //     if (observerTarget.current) {
+  //       observer.unobserve(observerTarget.current);
+  //     }
+  //   };
+  // }, [handleObserver]);
 
-  if (isLoading) {
-    return (
-      <div className='container mx-auto p-4'>
-        <div className='grid grid-cols-2 gap-4'>
-          {[...Array(2)].map((_, index) => (
-            <ProductSkeleton key={index} />
-          ))}
-        </div>
-      </div>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <div className='container mx-auto p-4'>
+  //       <div className='grid grid-cols-2 gap-4'>
+  //         {[...Array(2)].map((_, index) => (
+  //           <ProductSkeleton key={index} />
+  //         ))}
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
-  const products = data?.pages.flat() || [];
+  // const products = data?.pages.flat() || [];
 
   return (
     <div className='container mx-auto p-4'>
-      <div className='grid grid-cols-2 gap-4'>
+      {/* <div className='grid grid-cols-2 gap-4'>
         {products.map(product => (
           <ProductItem key={product.id} product={product} />
         ))}
@@ -63,7 +63,7 @@ const DetailProductList = () => {
           <IoIosRefresh className='mx-auto text-xl' onClick={() => location.reload()} />
         </div>
       )}
-      {hasNextPage && <div ref={observerTarget} className='h-10' />}
+      {hasNextPage && <div ref={observerTarget} className='h-10' />} */}
     </div>
   );
 };

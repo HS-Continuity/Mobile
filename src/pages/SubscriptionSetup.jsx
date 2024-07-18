@@ -7,7 +7,7 @@ import useOrderItemsValidation from "../hooks/useOrderItemsValidation";
 const SubscriptionSetup = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { orderItems } = location.state || { orderItems: [] };
+  const { orderItems, totalProductPrice, totalDeliveryFee } = location.state || { orderItems: [] };
 
   const { subscriptionDetails, setSubscriptionDetails } = useSubscriptionSetupStore();
   const [deliveryDates, setDeliveryDates] = useState({ start: null, end: null });
@@ -89,7 +89,9 @@ const SubscriptionSetup = () => {
 
   const handleSubmit = () => {
     if (isAllSelected) {
-      navigate("/subscription-order", { state: { orderItems } });
+      navigate("/subscription-order", {
+        state: { orderItems, totalProductPrice, totalDeliveryFee },
+      });
     }
   };
 

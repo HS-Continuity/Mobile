@@ -2,47 +2,68 @@
   "cart": [
     {
       "id": "1",
-      "product_id": 1,
+      "product_id": 2,
+      "customer_id": 1,
       "member_id": 1,
-      "cart_type_id": "subscription",
+      "cart_type_id": "regular",
+      "quantity": 3,
+      "name": "국내산 무농약 콩나물",
+      "price": 900,
+      "originalPrice": 1000,
+      "image": "https://www.lrt.lt/img/2022/02/09/1191080-981331-1287x836.jpg",
+      "delivery_fee": 2500
+    },
+    {
+      "id": "2",
+      "product_id": 5,
+      "customer_id": 3,
+      "member_id": 1,
+      "cart_type_id": "regular",
       "quantity": 2,
-      "name": "유기농 아보카도",
-      "price": 8500,
-      "originalPrice": 12000,
-      "image": "https://www.lrt.lt/img/2022/02/09/1191080-981331-1287x836.jpg"
+      "name": "손질된 노르웨이 고등어",
+      "price": 7200,
+      "originalPrice": 8000,
+      "image": "https://www.lrt.lt/img/2022/02/09/1191080-981331-1287x836.jpg",
+      "delivery_fee": 2500
     },
     {
       "id": "3",
       "product_id": 3,
+      "customer_id": 1,
+      "member_id": 1,
+      "cart_type_id": "regular",
+      "quantity": 8,
+      "name": "찰진 현미 1kg",
+      "price": 4500,
+      "originalPrice": 5000,
+      "image": "https://www.lrt.lt/img/2022/02/09/1191080-981331-1287x836.jpg",
+      "delivery_fee": 2500
+    },
+    {
+      "id": "4",
+      "product_id": 2,
+      "customer_id": 1,
       "member_id": 1,
       "cart_type_id": "subscription",
-      "quantity": 6,
-      "name": "찰진 현미 1kg",
-      "price": 6000,
-      "originalPrice": 7500,
-      "image": "https://www.lrt.lt/img/2022/02/09/1191080-981331-1287x836.jpg"
+      "quantity": 1,
+      "name": "국내산 무농약 콩나물",
+      "price": 800,
+      "originalPrice": 1000,
+      "image": "https://www.lrt.lt/img/2022/02/09/1191080-981331-1287x836.jpg",
+      "delivery_fee": 2500
     },
     {
       "id": "5",
-      "product_id": 4,
+      "product_id": 9,
+      "customer_id": 6,
       "member_id": 1,
-      "cart_type_id": "regular",
-      "quantity": 2,
-      "name": "1등급 한우 등심",
-      "price": 31500,
-      "originalPrice": 35000,
-      "image": "https://www.lrt.lt/img/2022/02/09/1191080-981331-1287x836.jpg"
-    },
-    {
-      "id": "6",
-      "product_id": 2,
-      "member_id": 1,
-      "cart_type_id": "regular",
-      "quantity": 6,
-      "name": "국내산 무농약 콩나물",
-      "price": 900,
-      "originalPrice": 1000,
-      "image": "https://www.lrt.lt/img/2022/02/09/1191080-981331-1287x836.jpg"
+      "cart_type_id": "subscription",
+      "quantity": 1,
+      "name": "하이트 진로 참이슬",
+      "price": 1200,
+      "originalPrice": 1500,
+      "image": "https://www.lrt.lt/img/2022/02/09/1191080-981331-1287x836.jpg",
+      "delivery_fee": 2500
     }
   ],
   "products": [
@@ -435,10 +456,10 @@
   ],
   "address": [
     {
-      "id": "ebd9",
+      "id": "3462",
       "member_id": 1,
       "general_address": "경기 부천시 원미구 신흥로 190",
-      "detail_address": "10101",
+      "detail_address": "111",
       "is_default_address": true
     }
   ],
@@ -499,7 +520,8 @@
       "delivery_fee": 2500,
       "card_number": "1234-1234-1234-1234",
       "discount_amount": 10,
-      "origin_product_price": 11000
+      "origin_product_price": 11000,
+      "id": "a263"
     }
   ]
 }

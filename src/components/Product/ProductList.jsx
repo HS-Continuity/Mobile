@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 import ProductItem from "./ProductItem";
-import { useProductsQuery } from "../../apis";
+import { useProductsQuery } from "../../apis/Product";
 import { IoIosRefresh } from "react-icons/io";
 import ProductSkeleton from "../Skeletons/ProductSkeleton";
 
@@ -40,7 +40,7 @@ const ProductList = () => {
     return (
       <div className='container mx-auto p-4'>
         <div className='grid grid-cols-1 gap-4'>
-          {[...Array(2)].map((_, index) => (
+          {[...Array(10)].map((_, index) => (
             <ProductSkeleton key={index} />
           ))}
         </div>
@@ -48,19 +48,19 @@ const ProductList = () => {
     );
   }
 
-  const products = data?.pages.flat() || [];
+  const products = data?.pages.flatMap(page => page.content) || [];
 
   return (
-    <div className='container mx-auto p-4'>
+    <div className='container mx-auto'>
       <div className='grid grid-cols-1 gap-4'>
         {products.map(product => (
-          <ProductItem key={product.id} product={product} />
+          <ProductItem key={product.productId} product={product} />
         ))}
       </div>
       {isFetchingNextPage && <div className='mt-4 text-center'>더 많은 상품 가져오는중..</div>}
       {!hasNextPage && products.length > 0 && (
         <div className='mt-7 cursor-pointer text-center'>
-          <IoIosRefresh className='mx-auto text-xl' onClick={() => location.reload()} />
+          <IoIosRefresh className='mx-auto text-xl' onClick={() => window.location.reload()} />
         </div>
       )}
       {hasNextPage && <div ref={observerTarget} className='h-10' />}

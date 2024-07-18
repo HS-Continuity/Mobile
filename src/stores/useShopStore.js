@@ -1,6 +1,6 @@
-import { create } from "zustand";
+// import { create } from "zustand";
 
-export const useShopStore = create(set => ({
-  selectedCategory: [],
-  setSelectedCategory: category => set({ selectedCategory: category }),
-}));
+// export const useShopStore = create(set => ({
+//   selectedCategory: [],
+//   setSelectedCategory: category => set({ selectedCategory: category }),
+// }));

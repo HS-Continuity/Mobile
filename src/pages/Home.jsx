@@ -111,7 +111,7 @@ const Home = () => {
 
   return (
     <div>
-      <div className='noScrollbar flex-grow overflow-y-auto p-4'>
+      <div className='noScrollbar flex-grow overflow-y-auto p-2'>
         {isLoading ? (
           <div className='grid grid-cols-3 gap-4'>
             {Array.from({ length: 9 }).map((_, index) => (

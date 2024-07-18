@@ -1,42 +1,50 @@
-import { useEffect } from "react";
-import { useProductReviewStore } from "../../stores/useProductReviewStore";
+import React from "react";
+import { useQuery } from "@tanstack/react-query";
+import { fetchLatestProductReviews } from "../../apis/Product";
 import ReviewBox from "./ReviewBox";
 import { useNavigate } from "react-router-dom";
 
-const ReviewList = ({ productId, product_name }) => {
-  const { reviews, fetchReviews } = useProductReviewStore();
+const ReviewList = ({ productId, productName }) => {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchReviews(productId);
-  }, [productId, fetchReviews]);
+  const { data: reviews, isLoading } = useQuery({
+    queryKey: ["latestReviews", productId],
+    queryFn: () => fetchLatestProductReviews(productId),
+  });
 
   const handleViewAllReviews = () => {
-    navigate(`/product/review/${productId}`);
+    navigate(`/product/review/${productId}`, { state: { productName } });
     window.scrollTo(0, 0);
   };
 
-  const displayReviews = [...reviews].sort(
-    (a, b) => new Date(b.create_date) - new Date(a.create_date)
-  );
+  if (isLoading) {
+    return <div>리뷰를 불러오는 중...</div>;
+  }
 
   return (
     <div className='mt-8'>
-      {displayReviews.slice(0, 3).map(review => (
-        <ReviewBox
-          key={review.product_review_id}
-          product_review_id={review.product_review_id}
-          review_score={review.review_score}
-          member_id={review.member_id}
-          create_date={review.create_date}
-          review_content={review.review_content}
-          product_name={product_name}
-        />
-      ))}
-
-      <button className='btn btn-outline w-full' onClick={handleViewAllReviews}>
-        이 상품의 상품평 모두 보기
-      </button>
+      {reviews && reviews.length > 0 ? (
+        <>
+          {reviews.map(review => (
+            <ReviewBox
+              key={review.productReviewId}
+              product_review_id={review.productReviewId}
+              review_score={review.reviewScore}
+              member_id={review.memberId}
+              create_date={review.createDate}
+              review_content={review.reviewContent}
+              review_image={review.reviewImage}
+              product_name={productName}
+              reviewImage={review.reviewImage}
+            />
+          ))}
+          <button className='btn btn-outline mt-4 w-full' onClick={handleViewAllReviews}>
+            이 상품의 상품평 모두 보기
+          </button>
+        </>
+      ) : (
+        <p>아직 리뷰가 없습니다.</p>
+      )}
     </div>
   );
 };

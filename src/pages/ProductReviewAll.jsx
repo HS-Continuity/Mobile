@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { fetchProduct } from "../apis";
+import { fetchProductDetail } from "../apis/Product";
 import ReviewAllList from "../components/Product/ReviewAllList";
 
 const ProductReviewAll = () => {
@@ -13,7 +13,7 @@ const ProductReviewAll = () => {
     error,
   } = useQuery({
     queryKey: ["product", productId],
-    queryFn: () => fetchProduct(productId),
+    queryFn: () => fetchProductDetail(productId),
   });
 
   if (isLoading) {
@@ -29,7 +29,10 @@ const ProductReviewAll = () => {
   }
 
   return (
-    <ReviewAllList productId={productId} productName={product.product_name || "Unknown Product"} />
+    <ReviewAllList
+      productId={productId}
+      productName={product.productName || "올바른 상품이 아닙니다."}
+    />
   );
 };
 

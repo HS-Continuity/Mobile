@@ -1,5 +1,4 @@
 import { Outlet } from "react-router-dom";
-import style from "./Main.module.css";
 
 const Main = () => {
   return (

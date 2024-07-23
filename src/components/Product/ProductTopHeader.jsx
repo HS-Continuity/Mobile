@@ -9,7 +9,6 @@ const ProductTopHeader = () => {
   const memberId = import.meta.env.VITE_MEMBER_ID;
   const cartTypeId = null;
   const navigate = useNavigate();
-  const location = useLocation();
   const { productId } = useParams();
 
   const { data: cartItemsCount } = useQuery({
@@ -57,7 +56,7 @@ const ProductTopHeader = () => {
           <div className='relative cursor-pointer' onClick={() => navigate("/cart")}>
             <IoCartOutline className='h-7 w-7' />
             {cartItemsCount > 0 && (
-              <span className='absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white'>
+              <span className='absolute -right-2 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white'>
                 {cartItemsCount}
               </span>
             )}

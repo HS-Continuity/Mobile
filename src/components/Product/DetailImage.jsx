@@ -10,11 +10,11 @@ const DetailImage = ({ productImage, ecoImages, isEcoCertified }) => {
   const hasCertificationImage = ecoImages && "certificationImage" in ecoImages;
 
   return (
-    <div className='my-4 mt-10'>
+    <div className='p-4'>
       <div
         className={`relative transition-all duration-500 ease-in-out ${isExpanded ? "" : "max-h-[300px] overflow-hidden"}`}>
         {isEcoCertified && (
-          <div className='mb-4 rounded-md bg-green-100 p-2'>
+          <div className='mb-4 rounded-md bg-green-100'>
             <p className='font-semibold text-green-700'>이 제품은 친환경 인증을 받았습니다.</p>
           </div>
         )}

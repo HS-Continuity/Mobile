@@ -1,23 +1,4 @@
-import React from "react";
-import { FaRegStar, FaStar, FaStarHalf } from "react-icons/fa";
-
-const StarRating = ({ rating }) => {
-  const stars = [];
-  const fullStars = Math.floor(rating);
-  const hasHalfStar = rating % 1 >= 0.5;
-
-  for (let i = 1; i <= 5; i++) {
-    if (i <= fullStars) {
-      stars.push(<FaStar key={i} className='text-yellow-400' />);
-    } else if (i === fullStars + 1 && hasHalfStar) {
-      stars.push(<FaStarHalf key={i} className='text-yellow-400' />);
-    } else {
-      stars.push(<FaRegStar key={i} className='text-gray-300' />);
-    }
-  }
-
-  return <div className='flex'>{stars}</div>;
-};
+import StarRating from "./StarRating";
 
 const ReviewBox = ({
   product_review_id,

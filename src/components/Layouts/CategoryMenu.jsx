@@ -34,7 +34,7 @@ const CategoryMenu = ({ isOpen, onClose }) => {
       <div className='flex items-center justify-between border-b p-4'>
         <h2 className='text-xl font-semibold'>카테고리</h2>
       </div>
-      <div className={`${style.nonescroll} flex-grow overflow-y-auto p-4`}>
+      <div className='noScrollbar flex-grow overflow-y-auto p-4'>
         <div className='grid grid-cols-3 gap-4'>
           {categories.map(category => (
             <div
@@ -48,7 +48,7 @@ const CategoryMenu = ({ isOpen, onClose }) => {
         </div>
       </div>
       <div className='absolute bottom-2 left-0 right-0 flex justify-center'>
-        <button onClick={onClose} className='rounded-full bg-[#00835F] p-2 text-white'>
+        <button onClick={onClose} className='rounded-full bg-[#00835F] p-[13px] text-white'>
           <IoClose size={24} />
         </button>
       </div>

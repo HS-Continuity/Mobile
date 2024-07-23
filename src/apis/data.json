@@ -460,6 +460,13 @@
       "member_id": 1,
       "general_address": "경기 부천시 원미구 신흥로 190",
       "detail_address": "111",
+      "is_default_address": false
+    },
+    {
+      "id": "68ab",
+      "member_id": 1,
+      "general_address": "경기 부천시 원미구 신흥로 190 (중동, 위브더스테이트)",
+      "detail_address": "123123123",
       "is_default_address": true
     }
   ],

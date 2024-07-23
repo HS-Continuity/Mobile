@@ -1,5 +1,3 @@
-import React from "react";
-
 const PriceBox = ({ originalPrice, discountRate, finalPrice, isRegular }) => {
   return (
     <>

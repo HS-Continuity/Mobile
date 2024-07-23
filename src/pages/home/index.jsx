@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
-import ProductList from "../components/Product/ProductList";
-import CategorySkeleton from "../components/Skeletons/CategorySkeleton";
+import ProductList from "../../components/Product/ProductList";
+import CategorySkeleton from "../../components/Skeletons/CategorySkeleton";
 import { Link } from "react-router-dom";
+import ProductSlider from "./ProductSlider";
+import { useProductsQuery } from "../../apis";
 
 const Home = () => {
   const [categories, setCategories] = useState([]);
@@ -111,6 +113,7 @@ const Home = () => {
 
   return (
     <div>
+      <ProductSlider />
       <div className='noScrollbar flex-grow overflow-y-auto p-2'>
         {isLoading ? (
           <div className='grid grid-cols-3 gap-4'>
@@ -122,7 +125,7 @@ const Home = () => {
           renderCategories()
         )}
       </div>
-      <ProductList />
+      <ProductList useQueryHook={useProductsQuery} gridCols={1} />
     </div>
   );
 };

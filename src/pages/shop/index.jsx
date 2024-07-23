@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { fetchCustomerInfo, useCustomerProductsQuery } from "../apis/Customer";
-import ProductItem from "../components/Product/ProductItem";
+import { fetchCustomerInfo, useCustomerProductsQuery } from "../../apis";
+import ProductItem from "../../components/Product/ProductItem";
 import { IoIosRefresh } from "react-icons/io";
 
 const Shop = () => {
@@ -58,7 +58,7 @@ const Shop = () => {
 
   return (
     <div className='mx-auto flex min-h-screen max-w-md flex-col bg-white'>
-      <main className='flex-grow p-4'>
+      <main className='flex-grow'>
         {/* 판매자 정보 */}
         <div className='mb-6'>
           <h2 className='mb-2 text-center text-2xl font-bold'>{sellerInfo.storeName}</h2>
@@ -78,7 +78,7 @@ const Shop = () => {
         </div>
 
         {/* 상품 목록 */}
-        <div className='container mx-auto p-4'>
+        <div className='container mx-auto'>
           <div className='grid grid-cols-2 gap-4'>
             {products.map(product => (
               <ProductItem key={product.productId} product={product} />

@@ -1,7 +1,7 @@
 import { FaLock, FaCreditCard, FaTruck, FaMapMarkerAlt, FaBox } from "react-icons/fa";
-import BottomNav from "../components/Layouts/BottomNav";
+import BottomNav from "../../components/Layouts/BottomNav";
 import { BiSolidCoupon } from "react-icons/bi";
-import MypageMenu from "../components/Mypage/MypageMenu";
+import MypageMenu from "./MypageMenu";
 
 const MyPage = () => {
   return (

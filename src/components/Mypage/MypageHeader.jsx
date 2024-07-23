@@ -35,7 +35,7 @@ const MypageHeader = () => {
     <div className='flex items-center border-b-2 border-gray-100 p-4'>
       <MdArrowBackIosNew className='mr-auto cursor-pointer text-2xl' onClick={() => navigate(-1)} />
       <FaHome className='ml-4 cursor-pointer text-xl' onClick={() => navigate("/")} />
-      <h1 className='mr-[24px] flex-grow text-center text-xl font-semibold'>{getHeaderText()}</h1>
+      <h1 className='mr-[60px] flex-grow text-center text-xl font-semibold'>{getHeaderText()}</h1>
     </div>
   );
 };

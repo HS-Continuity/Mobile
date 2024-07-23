@@ -1,17 +1,8 @@
 import { useState, useEffect } from "react";
-import {
-  FaChevronLeft,
-  FaUser,
-  FaEnvelope,
-  FaLock,
-  FaBirthdayCake,
-  FaPhone,
-  FaVenusMars,
-} from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
-import useMemberStore from "../stores/useMemberStore";
+import { FaUser, FaEnvelope, FaLock, FaBirthdayCake, FaPhone } from "react-icons/fa";
+import useMemberStore from "../../stores/useMemberStore";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { fetchMemberInfo, updateUser } from "../apis";
+import { fetchMemberInfo, updateUser } from "../../apis";
 
 const Profile = () => {
   const queryClient = useQueryClient();

@@ -1,7 +1,7 @@
 import { FaTicketAlt } from "react-icons/fa";
 import { useQuery } from "@tanstack/react-query";
-import useCouponStore from "../stores/useCouponStore";
-import { fetchCoupons } from "../apis";
+import useCouponStore from "../../stores/useCouponStore";
+import { fetchCoupons } from "../../apis";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 

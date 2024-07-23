@@ -1,35 +1,37 @@
 import { Route, Routes, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import "./App.css";
 import Main from "./components/Layouts/Main";
 import OrderLayout from "./components/Layouts/OrderLayout";
-import Home from "./pages/Home";
-import Timesale from "./pages/Timesale";
-import Mypage from "./pages/Mypage";
-import Coupon from "./pages/Coupon";
-import Address from "./pages/Address";
-import OrderHistory from "./pages/OrderHistory";
-import Payment from "./pages/Payment";
-import Profile from "./pages/Profile";
-import Cart from "./pages/Cart";
-import Search from "./pages/Search";
-import { useEffect } from "react";
+import Home from "./pages/home/";
+import Timesale from "./pages/timeSale/";
+import Mypage from "./pages/memberInfo/";
+import Coupon from "./pages/coupon/";
+import Address from "./pages/address/";
+import OrderHistory from "./pages/orderManage/";
+import Payment from "./pages/payment/";
+import Profile from "./pages/memberInfo/Profile";
+import Cart from "./pages/cart/";
+import Search from "./pages/search/";
+import SearchResult from "./pages/search/SearchResult";
 import LoginLayout from "./components/Login/LoginLayout";
-import Login from "./pages/Login";
-import SignUp from "./pages/SignUp";
+import Login from "./pages/login/";
+import SignUp from "./pages/signup/";
 import DetailCategory from "./pages/DetailCategory";
-import ProductDetail from "./pages/ProductDetail";
-import ProductReviewAll from "./pages/ProductReviewAll";
-import Shop from "./pages/Shop";
-import Order from "./pages/Order";
-import SubscriptionOrder from "./pages/SubscriptionOrder";
-import SubscriptionSetup from "./pages/SubscriptionSetup";
+import ProductDetail from "./pages/product/";
+import ProductReviewAll from "./pages/review/";
+import Shop from "./pages/shop/";
+import Order from "./pages/order/";
+import SubscriptionOrder from "./pages/subscriptionOrder/SubscriptionOrder";
+import SubscriptionSetup from "./pages/subscriptionOrder/SubscriptionSetup";
 import MypageLayout from "./components/Mypage/MypageLayout";
-import OrderSuccess from "./pages/OrderSuccess";
-import OrderFail from "./pages/OrderFail";
-import ReviewApply from "./pages/ReviewApply";
-import RefundApply from "./pages/RefundApply";
-import SubscriptionOrderHistory from "./pages/SubscriptionOrderHistory";
-import SubscriptionOrderManage from "./pages/SubscriptionOrderManage";
+import OrderSuccess from "./pages/order/OrderSuccess";
+import OrderFail from "./pages/order/OrderFail";
+import ReviewApply from "./pages/review/ReviewApply";
+import RefundApply from "./pages/orderManage/RefundApply";
+import SubscriptionOrderHistory from "./pages/subscriptionOrderManage/";
+import SubscriptionOrderManage from "./pages/subscriptionOrderManage/SubscriptionOrderManage";
+import ProductLayout from "./components/Product/ProductLayout";
 
 function App() {
   const location = useLocation();
@@ -64,11 +66,18 @@ function App() {
 
           <Route element={<Main />}>
             <Route path='/' element={<Home key={location.pathname} />} />
-            <Route path='/timesale' element={<Timesale key={location.pathname} />} />
             <Route path='/search' element={<Search key={location.pathname} />} />
+            <Route path='/search-result' element={<SearchResult key={location.pathname} />} />
+            <Route path='/timesale' element={<Timesale key={location.pathname} />} />
 
             {/* 식품 상세 카테고리 선택 시 */}
             <Route path='/detailcategory' element={<DetailCategory key={location.pathname} />} />
+
+            {/* 판매자별 소개 페이지 */}
+            <Route path='/shop/:customerId' element={<Shop key={location.pathname} />} />
+          </Route>
+
+          <Route element={<ProductLayout />}>
             {/* 식품 상세 페이지 */}
             <Route path='/product/:productId' element={<ProductDetail key={location.pathname} />} />
             {/* 식품별 리뷰 전체 조회 페이지 */}
@@ -76,8 +85,6 @@ function App() {
               path='/product/review/:productId'
               element={<ProductReviewAll key={location.pathname} />}
             />
-            {/* 판매자별 소개 페이지 */}
-            <Route path='/shop/:customerId' element={<Shop key={location.pathname} />} />
           </Route>
 
           <Route element={<OrderLayout />}>
@@ -91,8 +98,8 @@ function App() {
               path='/subscription-order'
               element={<SubscriptionOrder key={location.pathname} />}
             />
-            <Route path='/order-success' element={<OrderSuccess />} />
-            <Route path='/order-fail' element={<OrderFail />} />
+            <Route path='/order-success' element={<OrderSuccess key={location.pathname} />} />
+            <Route path='/order-fail' element={<OrderFail key={location.pathname} />} />
           </Route>
 
           <Route element={<MypageLayout />}>

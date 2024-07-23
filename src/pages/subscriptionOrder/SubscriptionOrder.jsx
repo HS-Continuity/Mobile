@@ -11,20 +11,20 @@ import {
   fetchMemberCoupon,
   fetchMemberInfo,
   updateMemberCard,
-} from "../apis/index";
-import { useSubscriptionSetupStore } from "../stores/useSubscriptionSetupStore";
-import useCheckSubscriptionDetails from "../hooks/useCheckSubscriptionDetails";
-import useOrderItemsValidation from "../hooks/useOrderItemsValidation";
+} from "../../apis/index";
+import { useSubscriptionSetupStore } from "../../stores/useSubscriptionSetupStore";
+import useCheckSubscriptionDetails from "../../hooks/useCheckSubscriptionDetails";
+import useOrderItemsValidation from "../../hooks/useOrderItemsValidation";
 
-import OrderItems from "../components/Order/OrderItems";
-import OrderMemberInfo from "../components/Order/OrderMemberInfo";
-import DeliveryMemberInfo from "../components/Order/DeliveryMemberInfo";
-import DeliveryAddress from "../components/Order/DeliveryAddress";
-import MemberCouponList from "../components/Order/MemberCouponList";
-import OrderPrice from "../components/Order/OrderPrice";
-import Payment from "../components/Order/Payment";
-import ConsentPayment from "../components/Order/ConsentPayment";
-import useCardColorStore from "../stores/useCardColorStore";
+import OrderItems from "../../components/Order/OrderItems";
+import OrderMemberInfo from "../../components/Order/OrderMemberInfo";
+import DeliveryMemberInfo from "../../components/Order/DeliveryMemberInfo";
+import DeliveryAddress from "../../components/Order/DeliveryAddress";
+import MemberCouponList from "../../components/Order/MemberCouponList";
+import OrderPrice from "../../components/Order/OrderPrice";
+import Payment from "../../components/Order/Payment";
+import ConsentPayment from "../../components/Order/ConsentPayment";
+import useCardColorStore from "../../stores/useCardColorStore";
 
 const SubscriptionOrder = () => {
   const queryClient = useQueryClient();
@@ -259,11 +259,11 @@ const SubscriptionOrder = () => {
   // };
 
   return (
-    <div className='noScrollbar flex h-screen flex-col bg-gray-100'>
-      <div className='noScrollbar flex items-center bg-[#00835F] p-4 text-white'>
+    <div className='noScrollbar flex h-screen flex-col bg-gray-100 pb-14'>
+      {/* <div className='noScrollbar flex items-center bg-[#00835F] p-4 text-white'>
         <FaChevronLeft className='mr-4 cursor-pointer' onClick={() => navigate(-1)} />
         <h1 className='text-xl font-bold'>정기 배송 결제</h1>
-      </div>
+      </div> */}
 
       <div className='noScrollbar flex-1 space-y-4 overflow-auto p-4'>
         {/* 주문 아이템 */}

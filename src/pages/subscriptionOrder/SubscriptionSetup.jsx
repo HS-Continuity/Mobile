@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { FaChevronLeft } from "react-icons/fa";
-import { useSubscriptionSetupStore } from "../stores/useSubscriptionSetupStore";
-import useOrderItemsValidation from "../hooks/useOrderItemsValidation";
+import { useSubscriptionSetupStore } from "../../stores/useSubscriptionSetupStore";
+import useOrderItemsValidation from "../../hooks/useOrderItemsValidation";
 
 const SubscriptionSetup = () => {
   const navigate = useNavigate();
@@ -96,76 +96,81 @@ const SubscriptionSetup = () => {
   };
 
   return (
-    <div className='flex h-screen flex-col bg-gray-100'>
-      <div className='flex items-center bg-[#00835F] p-4 text-white'>
-        <FaChevronLeft className='mr-4 cursor-pointer' onClick={() => navigate(-1)} />
-        <h1 className='text-xl font-bold'>정기 배송 신청</h1>
+    <div className='flex flex-col bg-white pb-12'>
+      <div className='flex-grow overflow-auto'>
+        <div className='container mx-auto p-4'>
+          <div className='mb-4'>
+            <h2 className='mb-2 font-bold'>
+              배송 주기 {!isFrequencySelected && <span className='text-red-500'>*</span>}
+            </h2>
+            <div className='flex flex-wrap gap-2'>
+              {["1주", "2주", "3주", "4주", "매일"].map(option => (
+                <button
+                  key={option}
+                  className={`btn ${subscriptionDetails.frequency === option ? "btn-primary" : "btn-outline"}`}
+                  onClick={() => handleFrequencyChange(option)}>
+                  {option}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className='mb-4'>
+            <h2 className='mb-2 font-bold'>
+              배송 기간 {!isDurationSelected && <span className='text-red-500'>*</span>}
+            </h2>
+            <div className='flex flex-wrap gap-2'>
+              {["1개월", "2개월", "3개월", "4개월", "5개월", "6개월"].map(option => (
+                <button
+                  key={option}
+                  className={`btn ${subscriptionDetails.duration === option ? "btn-primary" : "btn-outline"}`}
+                  onClick={() => handleDurationChange(option)}>
+                  {option}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className='mb-4'>
+            <h2 className='mb-2 font-bold'>
+              배송요일 {!isDaysSelected && <span className='text-red-500'>*</span>}
+            </h2>
+            <div className='flex flex-wrap gap-2'>
+              {["월", "화", "수", "목", "금"].map(day => (
+                <button
+                  key={day}
+                  className={`btn ${subscriptionDetails.selectedDays.includes(day) ? "btn-primary" : "btn-outline"}`}
+                  onClick={() => handleDayToggle(day)}>
+                  {day}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className='mb-4 rounded bg-white p-4 shadow'>
+            <h2 className='mb-2 font-bold'>배송 기간</h2>
+            <p>
+              {formatDate(deliveryDates.start)} ~
+              {formatDate(deliveryDates.end) === "Invalid Date"
+                ? ""
+                : formatDate(deliveryDates.end)}
+            </p>
+          </div>
+        </div>
       </div>
 
-      <div className='flex-1 overflow-auto p-4'>
-        <div className={`mb-4`}>
-          <h2 className='mb-2 font-bold'>
-            배송 주기 {!isFrequencySelected && <span className='text-red-500'>*</span>}
-          </h2>
-          <div className='flex space-x-2'>
-            {["1주", "2주", "3주", "4주", "매일"].map(option => (
-              <button
-                key={option}
-                className={`btn ${subscriptionDetails.frequency === option ? "btn-primary" : "btn-outline"}`}
-                onClick={() => handleFrequencyChange(option)}>
-                {option}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className={`mb-4`}>
-          <h2 className='mb-2 font-bold'>
-            배송 기간 {!isDurationSelected && <span className='text-red-500'>*</span>}
-          </h2>
-          <div className='flex flex-wrap gap-2'>
-            {["1개월", "2개월", "3개월", "4개월", "5개월", "6개월"].map(option => (
-              <button
-                key={option}
-                className={`btn ${subscriptionDetails.duration === option ? "btn-primary" : "btn-outline"}`}
-                onClick={() => handleDurationChange(option)}>
-                {option}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className={`mb-4`}>
-          <h2 className='mb-2 font-bold'>
-            배송요일 {!isDaysSelected && <span className='text-red-500'>*</span>}
-          </h2>
-          <div className='flex space-x-2'>
-            {["월", "화", "수", "목", "금"].map(day => (
-              <button
-                key={day}
-                className={`btn ${subscriptionDetails.selectedDays.includes(day) ? "btn-primary" : "btn-outline"}`}
-                onClick={() => handleDayToggle(day)}>
-                {day}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className='mb-4 rounded bg-white p-4 shadow'>
-          <h2 className='mb-2 font-bold'>배송 기간</h2>
-          <p>
-            {formatDate(deliveryDates.start)} ~
-            {formatDate(deliveryDates.end) == "Invalid Date" ? "" : formatDate(deliveryDates.end)}
-          </p>
+      <div className='fixed bottom-0 left-0 right-0 flex justify-center bg-gray-100'>
+        <div className='main-container w-full'>
+          <button
+            className={`w-full p-4 text-lg font-bold text-white ${
+              isAllSelected ? "bg-[#00835F]" : "bg-gray-400"
+            }`}
+            onClick={handleSubmit}
+            disabled={!isAllSelected}>
+            정기 배송 신청하기
+          </button>
         </div>
       </div>
-
-      <button
-        className={`p-4 text-lg font-bold text-white ${isAllSelected ? "bg-[#00835F]" : "bg-gray-400"}`}
-        onClick={handleSubmit}
-        disabled={!isAllSelected}>
-        정기 배송 신청하기
-      </button>
     </div>
   );
 };

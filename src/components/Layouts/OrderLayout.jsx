@@ -16,7 +16,7 @@ const OrderLayout = () => {
     <div className='main-container relative mx-auto min-h-screen w-full bg-white'>
       <div className='flex h-screen flex-col'>
         <OrderHeader />
-        <main ref={mainRef} className='noScrollbar flex-grow overflow-y-auto bg-gray-100'>
+        <main ref={mainRef} className='noScrollbar flex-grow overflow-y-auto bg-gray-50'>
           <Outlet />
         </main>
       </div>

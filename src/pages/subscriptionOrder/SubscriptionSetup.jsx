@@ -159,7 +159,7 @@ const SubscriptionSetup = () => {
         </div>
       </div>
 
-      <div className='fixed bottom-0 left-0 right-0 flex justify-center bg-gray-100'>
+      <div className='fixed bottom-0 left-0 right-0 flex justify-center bg-gray-50'>
         <div className='main-container w-full'>
           <button
             className={`w-full p-4 text-lg font-bold text-white ${

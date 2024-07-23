@@ -213,7 +213,7 @@ const Cart = () => {
     });
   };
   return (
-    <div className='noScrollbar flex flex-col bg-gray-100 pb-12'>
+    <div className='noScrollbar flex flex-col bg-gray-50 pb-12'>
       {/* 배송 탭 */}
       <div className='flex border-b bg-white'>
         <button
@@ -244,7 +244,7 @@ const Cart = () => {
       </div>
 
       {/* 장바구니 아이템 */}
-      <div className='noScrollbar flex-1 overflow-auto bg-gray-100 p-2'>
+      <div className='noScrollbar flex-1 overflow-auto bg-gray-50 p-2'>
         {isLoading || isDeliveryFeeLoading ? (
           <>
             <CartSkeleton />
@@ -293,7 +293,7 @@ const Cart = () => {
                       <div className='flex items-center rounded-md border'>
                         <button
                           onClick={() => handleQuantityChange(item.cartProductId, false)}
-                          className={`${item.quantity == 1 || item.soldOut ? "bg-gray-200 hover:bg-gray-200" : ""} px-2 py-2 text-gray-500 hover:bg-gray-100`}
+                          className={`${item.quantity == 1 || item.soldOut ? "bg-gray-100 hover:bg-gray-100" : ""} px-2 py-2 text-gray-500 hover:bg-gray-100`}
                           disabled={
                             item.quantity == 1 || item.soldOut || decrementMutation.isLoading
                           }>
@@ -307,7 +307,7 @@ const Cart = () => {
                         />
                         <button
                           onClick={() => handleQuantityChange(item.cartProductId, true)}
-                          className={`${item.soldOut && "bg-gray-200 hover:bg-gray-200"} px-3 py-2 text-gray-500 hover:bg-gray-100`}
+                          className={`${item.soldOut && "bg-gray-100 hover:bg-gray-100"} px-3 py-2 text-gray-500 hover:bg-gray-100`}
                           disabled={item.soldOut || incrementMutation.isLoading}>
                           <AiOutlinePlus />
                         </button>
@@ -358,7 +358,7 @@ const Cart = () => {
       </div>
 
       {/* 주문 버튼 */}
-      <div className='fixed bottom-0 left-0 right-0 flex justify-center bg-gray-100'>
+      <div className='fixed bottom-0 left-0 right-0 flex justify-center bg-gray-50'>
         <div className='main-container w-full'>
           <button
             className={`w-full p-4 text-lg font-bold text-white ${

@@ -17,7 +17,7 @@ const LoginLayout = () => {
     <div className='main-container relative mx-auto min-h-screen w-full bg-white'>
       <div className='flex h-screen flex-col'>
         <LoginHeader />
-        <main className='noScrollbar flex-grow overflow-y-auto p-4'>
+        <main ref={mainRef} className='noScrollbar flex-grow overflow-y-auto p-4'>
           <Outlet />
         </main>
       </div>

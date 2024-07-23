@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import kakaoLogo from "../assets/images/kakao_icon.png";
+import kakaoLogo from "../../assets/images/kakao_icon.png";
 
 const Login = () => {
   const [showPassword, setShowPassword] = React.useState(false);
@@ -15,22 +15,22 @@ const Login = () => {
   return (
     <div className='flex h-full flex-col bg-white p-4'>
       <div className='flex flex-grow flex-col justify-center'>
-        <div className='space-y-4'>
+        <div className='space-y-4 p-4'>
           <div className='relative'>
             <input
               type='text'
               placeholder='아이디'
-              className='input input-bordered w-full rounded-b-none focus:outline-none focus:ring-0'
+              className='input input-bordered h-14 w-full rounded-b-none focus:border-black focus:outline-none focus:ring-0'
             />
             <input
               type={showPassword ? "text" : "password"}
               placeholder='비밀번호'
-              className='input input-bordered w-full rounded-t-none border-t-0 focus:outline-none focus:ring-0'
+              className='input input-bordered h-14 w-full rounded-t-none focus:border-black focus:outline-none focus:ring-0'
             />
             <button
               onClick={() => setShowPassword(!showPassword)}
-              className='absolute bottom-3 right-3 text-gray-400'>
-              {showPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
+              className='absolute bottom-4 right-4 text-gray-400'>
+              {showPassword ? <FaEyeSlash size={23} /> : <FaEye size={23} />}
             </button>
           </div>
 

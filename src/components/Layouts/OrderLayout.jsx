@@ -1,13 +1,12 @@
 import { Outlet, useLocation } from "react-router-dom";
-// import style from "./Main.module.css";
 import { useEffect, useRef } from "react";
+import OrderHeader from "../Order/OrderHeader";
 
 const OrderLayout = () => {
   const location = useLocation();
   const mainRef = useRef(null);
 
   useEffect(() => {
-    // 라우트 변경 시 스크롤을 최상단으로 이동
     if (mainRef.current) {
       mainRef.current.scrollTop = 0;
     }
@@ -16,7 +15,8 @@ const OrderLayout = () => {
   return (
     <div className='main-container relative mx-auto min-h-screen w-full bg-white'>
       <div className='flex h-screen flex-col'>
-        <main className='noScrollbar flex-grow overflow-y-auto'>
+        <OrderHeader />
+        <main ref={mainRef} className='noScrollbar flex-grow overflow-y-auto bg-gray-100'>
           <Outlet />
         </main>
       </div>

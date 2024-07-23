@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { FaChevronLeft } from "react-icons/fa";
-import useOrderItemsValidation from "../hooks/useOrderItemsValidation";
-import useCardColorStore from "../stores/useCardColorStore";
+import useOrderItemsValidation from "../../hooks/useOrderItemsValidation";
+import useCardColorStore from "../../stores/useCardColorStore";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   addMemberCard,
@@ -12,16 +11,16 @@ import {
   fetchMemberCoupon,
   fetchMemberInfo,
   updateMemberCard,
-} from "../apis";
+} from "../../apis";
 
-import OrderItems from "../components/Order/OrderItems";
-import OrderMemberInfo from "../components/Order/OrderMemberInfo";
-import DeliveryMemberInfo from "../components/Order/DeliveryMemberInfo";
-import DeliveryAddress from "../components/Order/DeliveryAddress";
-import MemberCouponList from "../components/Order/MemberCouponList";
-import OrderPrice from "../components/Order/OrderPrice";
-import Payment from "../components/Order/Payment";
-import ConsentPayment from "../components/Order/ConsentPayment";
+import OrderItems from "../../components/Order/OrderItems";
+import OrderMemberInfo from "../../components/Order/OrderMemberInfo";
+import DeliveryMemberInfo from "../../components/Order/DeliveryMemberInfo";
+import DeliveryAddress from "../../components/Order/DeliveryAddress";
+import MemberCouponList from "../../components/Order/MemberCouponList";
+import OrderPrice from "../../components/Order/OrderPrice";
+import Payment from "../../components/Order/Payment";
+import ConsentPayment from "../../components/Order/ConsentPayment";
 
 const Order = () => {
   const queryClient = useQueryClient();
@@ -223,6 +222,10 @@ const Order = () => {
   };
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
+  useEffect(() => {
     if (memberInfo && memberInfo.length > 0) {
       setRecipientName(memberInfo[0].member_name);
       setRecipientPhone(memberInfo[0].member_phone_number);
@@ -256,11 +259,11 @@ const Order = () => {
   const defaultAddress = addresses.find(address => address.is_default_address);
 
   return (
-    <div className='noScrollbar flex h-screen flex-col bg-gray-100'>
-      <div className='noScrollbar flex items-center bg-[#00835F] p-4 text-white'>
+    <div className='flex flex-col bg-gray-100 pb-14'>
+      {/* <div className='noScrollbar flex items-center bg-[#00835F] p-4 text-white'>
         <FaChevronLeft className='mr-4 cursor-pointer' onClick={() => navigate(-1)} />
         <h1 className='text-xl font-bold'>단건 주문 결제</h1>
-      </div>
+      </div> */}
 
       <div className='noScrollbar flex-1 space-y-4 overflow-auto p-4'>
         {/* 주문 아이템 */}

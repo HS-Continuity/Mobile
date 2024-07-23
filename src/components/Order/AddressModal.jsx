@@ -8,7 +8,7 @@ import {
   updateAddress,
   deleteAddress,
   setDefaultAddress,
-} from "../../apis/index";
+} from "../../apis";
 
 const AddressModal = ({ isOpen, onClose, memberId }) => {
   const [editingAddress, setEditingAddress] = useState(null);

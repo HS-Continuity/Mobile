@@ -1,7 +1,7 @@
 import { FaChevronLeft } from "react-icons/fa";
 import { FiChevronUp } from "react-icons/fi";
 import { Link, useNavigate } from "react-router-dom";
-import BottomNav from "../components/Layouts/BottomNav";
+import BottomNav from "../../components/Layouts/BottomNav";
 
 const OrderSuccess = () => {
   const navigate = useNavigate();
@@ -9,10 +9,10 @@ const OrderSuccess = () => {
   return (
     <>
       <div className='noScrollbar flex h-screen flex-col bg-gray-100'>
-        <div className='noScrollbar flex items-center bg-[#00835F] p-4 text-white'>
+        {/* <div className='noScrollbar flex items-center bg-[#00835F] p-4 text-white'>
           <FaChevronLeft className='mr-4 cursor-pointer' onClick={() => navigate(-1)} />
           <h1 className='text-xl font-bold'>결제 완료</h1>
-        </div>
+        </div> */}
         <div className='flex items-center justify-center bg-gray-100 p-4'>
           <div className='w-full max-w-md rounded-lg bg-white p-6 shadow-md'>
             <h1 className='mb-4 text-center text-2xl font-bold'>결제가 완료되었습니다.</h1>

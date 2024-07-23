@@ -1,10 +1,10 @@
 import { useState } from "react";
-import CardRegisterModal from "../components/Order/CardRegisterModal";
-import CardEditModal from "../components/Order/CardEditModal";
+import CardRegisterModal from "../../components/Order/CardRegisterModal";
+import CardEditModal from "../../components/Order/CardEditModal";
 import { FaEdit, FaPlus, FaTrash } from "react-icons/fa";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { addMemberCard, deleteMemberCard, fetchMemberCard, updateMemberCard } from "../apis";
-import useCardColorStore from "../stores/useCardColorStore";
+import { addMemberCard, deleteMemberCard, fetchMemberCard, updateMemberCard } from "../../apis";
+import useCardColorStore from "../../stores/useCardColorStore";
 
 const Payment = () => {
   const queryClient = useQueryClient();

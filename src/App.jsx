@@ -57,7 +57,7 @@ function App() {
 
   return (
     <>
-      <div className='min-h-[calc(var(--vh,1vh)*100)] min-h-screen'>
+      <div className='min-h-[calc(var(--vh,1vh)*100)] min-h-screen bg-gray-50'>
         <Routes>
           <Route element={<LoginLayout />}>
             <Route path='/login' element={<Login key={location.pathname} />} />

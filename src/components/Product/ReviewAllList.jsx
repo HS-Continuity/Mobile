@@ -5,12 +5,11 @@ import { FaChevronLeft } from "react-icons/fa";
 import ReviewBox from "./ReviewBox";
 import ReviewListSkeleton from "../Skeletons/ReviewListSkeleton";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { fetchProductReviews } from "../../apis/Product";
+import { fetchProductReviews } from "../../apis";
 import { IoIosRefresh } from "react-icons/io";
 
 const ReviewAllList = ({ productId, productName }) => {
   const navigate = useNavigate();
-  // const { ref, inView } = useInView();
   const observerTarget = useRef(null);
   const [sortOption, setSortOption] = useState("latest");
 

@@ -1,6 +1,6 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { fetchLatestProductReviews } from "../../apis/Product";
+import { fetchLatestProductReviews } from "../../apis";
 import ReviewBox from "./ReviewBox";
 import { useNavigate } from "react-router-dom";
 
@@ -23,9 +23,9 @@ const ReviewList = ({ productId, productName }) => {
 
   return (
     <div className='mt-8'>
-      {reviews && reviews.length > 0 ? (
+      {reviews.content && reviews.content.length > 0 ? (
         <>
-          {reviews.map(review => (
+          {reviews.content.map(review => (
             <ReviewBox
               key={review.productReviewId}
               product_review_id={review.productReviewId}

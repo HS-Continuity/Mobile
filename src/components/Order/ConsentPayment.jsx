@@ -10,7 +10,7 @@ const ConsentPayment = ({ consentPayment, finalPrice }) => {
 
   return (
     <>
-      <div className='fixed bottom-0 left-0 right-0 z-30 flex justify-center bg-gray-100'>
+      <div className='fixed bottom-0 left-0 right-0 z-30 flex justify-center bg-gray-50'>
         <div className='main-container w-full'>
           <button
             className={`w-full bg-[#00835F] p-4 text-lg font-bold text-white ${

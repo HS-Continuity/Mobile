@@ -259,7 +259,7 @@ const SubscriptionOrder = () => {
   // };
 
   return (
-    <div className='noScrollbar flex h-screen flex-col bg-gray-100 pb-14'>
+    <div className='noScrollbar flex h-screen flex-col bg-gray-50 pb-14'>
       {/* <div className='noScrollbar flex items-center bg-[#00835F] p-4 text-white'>
         <FaChevronLeft className='mr-4 cursor-pointer' onClick={() => navigate(-1)} />
         <h1 className='text-xl font-bold'>정기 배송 결제</h1>

@@ -1,16 +1,16 @@
 const MemberCouponList = ({ coupons, selectedCoupon, handleCouponChange }) => {
   return (
-    <div className='rounded-lg bg-white p-4 shadow'>
-      <h2 className='mb-2 font-bold'>쿠폰</h2>
+    <div className='bg-white p-4'>
+      <h2 className='mb-2 text-xl font-bold'>쿠폰</h2>
       <select
         className='select select-bordered w-full'
         onChange={handleCouponChange}
-        value={selectedCoupon ? selectedCoupon.id : ""}>
+        value={selectedCoupon ? selectedCoupon.memberCouponId : ""}>
         <option value=''>쿠폰을 선택하세요</option>
         {coupons && coupons.length > 0 ? (
           coupons.map(coupon => (
-            <option key={coupon.id} value={coupon.id}>
-              {coupon.coupon_name} ({coupon.discount_amount.toLocaleString()}원 할인)
+            <option key={coupon.memberCouponId} value={coupon.memberCouponId}>
+              {coupon.couponName} ({coupon.discountAmount.toLocaleString()}원 할인)
             </option>
           ))
         ) : (

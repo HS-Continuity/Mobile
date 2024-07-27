@@ -5,11 +5,11 @@ const OrderPrice = ({
   selectedCoupon,
   finalPrice,
 }) => {
-  const couponDiscount = selectedCoupon ? selectedCoupon.discount_amount : 0;
+  const couponDiscount = selectedCoupon ? selectedCoupon.discountAmount : 0;
 
   return (
-    <div className='rounded-lg bg-white p-4 shadow'>
-      <h2 className='mb-2 font-bold'>결제 금액</h2>
+    <div className='bg-white p-4'>
+      <h2 className='mb-2 text-xl font-bold'>결제 금액</h2>
       <div className='flex justify-between'>
         <span>총 상품 금액</span>
         <span>{totalProductPrice.toLocaleString()}원</span>

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { FaChevronDown, FaShare } from "react-icons/fa";
+import { FaChevronDown, FaLeaf, FaMinusCircle, FaShare } from "react-icons/fa";
 import { CiShoppingCart } from "react-icons/ci";
 import { BsHouse, BsLightningChargeFill } from "react-icons/bs";
 import { MdChevronRight } from "react-icons/md";
@@ -20,9 +20,12 @@ import {
   fetchProductDetailImage,
   postCartItem,
 } from "../../apis";
+import useAuthStore from "../../stores/useAuthStore";
 
 const ProductDetail = () => {
-  const memberId = import.meta.env.VITE_MEMBER_ID;
+  const { username, isAuthenticated } = useAuthStore();
+  const memberId = username;
+  // const memberId = import.meta.env.VITE_MEMBER_ID;
   const { productId } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -31,6 +34,7 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [purchaseType, setPurchaseType] = useState("regular");
   const [activeModal, setActiveModal] = useState(null);
+  const [imgError, setImgError] = useState(false);
 
   // 상품 정보 가져오기
   const {
@@ -61,6 +65,10 @@ const ProductDetail = () => {
     queryKey: ["ecoimages", productId],
     queryFn: () => fetchEcoProductImage(productId),
     enabled: product?.isCertification === "ACTIVE",
+    retry: false, // 실패 시 재시도하지 않음
+    onError: error => {
+      console.warn("친환경 이미지를 불러오는데 실패했습니다:", error.message);
+    },
   });
 
   // 장바구니 추가 mutation
@@ -73,7 +81,7 @@ const ProductDetail = () => {
         <div>
           장바구니에 담겼습니다.
           <button
-            className='btn btn-sm ml-3 bg-[#00835F] text-white'
+            className='btn btn-sm ml-3 bg-green-shine text-white hover:bg-[#00835F]'
             onClick={() => {
               navigate("/cart");
             }}>
@@ -97,12 +105,26 @@ const ProductDetail = () => {
     },
   });
 
+  // 이미지 에러 핸들러
+  const handleImageError = () => {
+    setImgError(true);
+  };
+
   // 수량 증감 핸들러
   const handleIncrease = () => setQuantity(quantity + 1);
   const handleDecrease = () => quantity > 1 && setQuantity(quantity - 1);
 
   // 장바구니 추가 함수
   const handleAddToCart = async () => {
+    if (!isAuthenticated) {
+      toast.error("로그인이 필요합니다.", {
+        duration: 1000,
+        position: "bottom-center",
+      });
+      navigate("/login");
+      return;
+    }
+
     const cartItem = {
       productId: Number(productId),
       memberId: memberId,
@@ -163,12 +185,37 @@ const ProductDetail = () => {
     <>
       <div className='mx-auto bg-gray-50'>
         {/* 상품 이미지 및 정보 표시 */}
+        {!imgError ? (
+          <div>
+            <img
+              src={product.productImage}
+              alt={product.productName}
+              className='h-96 w-full object-cover'
+              onError={handleImageError}
+            />
+            {product.soldOut && (
+              <div className='absolute inset-0 flex items-center justify-center bg-black bg-opacity-50'>
+                <span className='text-2xl font-bold text-red-500'>품절</span>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className='flex h-96 w-full items-center justify-center bg-gradient-to-br from-green-100 to-green-200 p-4'>
+            <div className='text-center'>
+              <FaLeaf className='mx-auto mb-2 text-4xl text-green-500' />
+              <h3 className='break-words text-2xl font-semibold text-green-700'>
+                {product.productName}
+              </h3>
+            </div>
+            {product.soldOut && (
+              <div className='absolute inset-0 flex items-center justify-center bg-black bg-opacity-50'>
+                <span className='text-2xl font-bold text-red-500'>품절</span>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className='mb-3 bg-white p-4'>
-          <img
-            src={product.productImage}
-            alt={product.productName}
-            className='mb-4 h-64 w-full rounded-lg object-cover'
-          />
           {/* 상품 상세 이미지, 리뷰 */}
           <div className='mb-4 flex items-center justify-between'>
             <div className='flex'>
@@ -196,12 +243,6 @@ const ProductDetail = () => {
 
           {/* 상품 가격 */}
           <div className='mb-4 space-y-2'>
-            <PriceBox
-              originalPrice={product.productPrice}
-              discountRate={product.baseDiscountRate}
-              finalPrice={product.calculatedBasePrice}
-              isRegular={false}
-            />
             {product.isRegularSale == "ACTIVE" && (
               <PriceBox
                 originalPrice={product.productPrice}
@@ -210,6 +251,12 @@ const ProductDetail = () => {
                 isRegular={true}
               />
             )}
+            <PriceBox
+              originalPrice={product.productPrice}
+              discountRate={product.baseDiscountRate}
+              finalPrice={product.calculatedBasePrice}
+              isRegular={false}
+            />
           </div>
         </div>
 
@@ -257,9 +304,16 @@ const ProductDetail = () => {
       {/* 구매 옵션 (장바구니 열림 시) */}
       {isAddCartOpen && (
         <div className='main-container fixed bottom-[64px] w-full rounded-t-lg bg-white p-4 pb-0 shadow'>
+          <div className='relative -mt-8 mb-2 flex justify-center'>
+            <button
+              onClick={() => setIsAddCartOpen(false)}
+              className='flex h-8 w-16 items-center justify-center rounded-full bg-white focus:outline-none'>
+              <FaChevronDown className='text-xl text-gray-600 transition-colors duration-200 hover:text-gray-900' />
+            </button>
+          </div>
           <div className='mb-4 flex items-center justify-between'>
-            <span className='text-lg font-bold'>{product.productName}</span>
-            <div className='flex items-center space-x-2'>
+            <span className='ml-3 flex-1 truncate text-xl font-bold'>{product.productName}</span>
+            <div className='mr-3 flex items-center space-x-2'>
               <div className='flex items-center rounded-md border'>
                 <button
                   onClick={handleDecrease}
@@ -280,46 +334,11 @@ const ProductDetail = () => {
                 </button>
               </div>
             </div>
-            <FaChevronDown
-              onClick={() => setIsAddCartOpen(!isAddCartOpen)}
-              className='cursor-pointer text-xl text-gray-500'
-            />
           </div>
 
-          <div className='space-y-3'>
-            {[
-              { price: product.calculatedBasePrice, label: "단건구매", type: "regular" },
-              ...(product.isRegularSale == "INACTIVE"
-                ? []
-                : [
-                    {
-                      price: product.calculatedRegularPrice,
-                      label: "정기배송",
-                      type: "subscription",
-                      color: "text-red-500",
-                    },
-                  ]),
-            ].map(({ price, label, type, color = "" }, index) => (
-              <label
-                key={index}
-                className={`flex items-center justify-between ${color} rounded-lg border p-2`}>
-                <div className='flex items-center'>
-                  <input
-                    type='radio'
-                    name='purchase-option'
-                    className='radio-primary radio mr-2'
-                    checked={purchaseType === type}
-                    onChange={() => setPurchaseType(type)}
-                  />
-                  <span>{label}</span>
-                </div>
-                <span className='font-bold'>{(price * quantity).toLocaleString()}원</span>
-              </label>
-            ))}
-
-            {product.isRegularSale == "ACTIVE" && (
-              // (product.baseDiscountedPrice - product.calculatedRegularPrice > 0 &&
-              <div className='mt-3 flex items-center rounded-lg bg-blue-100 p-3 text-sm text-blue-600'>
+          {product.isRegularSale == "ACTIVE" && (
+            <div className='mr-7 mt-3 flex items-end justify-end rounded-lg text-sm text-blue-600'>
+              <div className='flex animate-bounce items-center'>
                 <BsLightningChargeFill className='mr-2 text-lg' />
                 <span>
                   정기 배송 시 매달
@@ -333,7 +352,37 @@ const ProductDetail = () => {
                   할인!
                 </span>
               </div>
-            )}
+            </div>
+          )}
+
+          <div className='grid grid-cols-2 gap-3 p-2'>
+            {[
+              { price: product.calculatedBasePrice, label: "단건구매", type: "regular" },
+              ...(product.isRegularSale === "INACTIVE"
+                ? []
+                : [
+                    {
+                      price: product.calculatedRegularPrice,
+                      label: "정기배송",
+                      type: "subscription",
+                    },
+                  ]),
+            ].map(({ price, label, type }, index) => (
+              <button
+                key={index}
+                onClick={() => setPurchaseType(type)}
+                className={`flex flex-col items-center justify-center rounded-lg p-3 transition-all duration-200 ${
+                  purchaseType === type
+                    ? "border-2 border-[#00835F] text-black"
+                    : "border-2 border-gray-300 bg-white text-gray-700"
+                } focus:outline-none`}>
+                <span
+                  className={`mb-1 text-sm ${purchaseType === type ? "text-black" : "text-gray-500"}`}>
+                  {label}
+                </span>
+                <span className='text-lg font-bold'>{(price * quantity).toLocaleString()}원</span>
+              </button>
+            ))}
           </div>
         </div>
       )}
@@ -342,6 +391,10 @@ const ProductDetail = () => {
       <div className='main-container fixed bottom-0 left-0 right-0 z-30 mx-auto w-full bg-white p-2 shadow-sm'>
         <button
           className='btn w-full bg-[#00835F] text-base text-white hover:bg-[#00835F]'
+          style={{
+            backgroundImage:
+              "linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%)",
+          }}
           onClick={isAddCartOpen ? handleAddToCart : () => setIsAddCartOpen(true)}>
           <CiShoppingCart className='mr-1 text-3xl text-white' />
           {isAddCartOpen ? "장바구니 담기" : "구매 하기"}

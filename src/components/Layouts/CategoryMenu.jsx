@@ -48,7 +48,7 @@ const CategoryMenu = ({ isOpen, onClose }) => {
         </div>
       </div>
       <div className='absolute bottom-2 left-0 right-0 flex justify-center'>
-        <button onClick={onClose} className='rounded-full bg-[#00835F] p-[13px] text-white'>
+        <button onClick={onClose} className='bg-green-shine rounded-full p-[15px] text-white'>
           <IoClose size={24} />
         </button>
       </div>

@@ -18,7 +18,7 @@ const MypageLayout = () => {
       <div className='main-container relative mx-auto min-h-screen w-full bg-white'>
         <div className='flex h-screen flex-col'>
           <MypageHeader />
-          <main ref={mainRef} className='noScrollbar flex-grow overflow-y-auto p-2'>
+          <main ref={mainRef} className='noScrollbar flex-grow overflow-y-auto'>
             <Outlet />
           </main>
           <BottomNav />

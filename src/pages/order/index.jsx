@@ -10,7 +10,6 @@ import {
   fetchMemberCard,
   fetchMemberCoupon,
   fetchMemberInfo,
-  updateMemberCard,
 } from "../../apis";
 
 import OrderItems from "../../components/Order/OrderItems";
@@ -21,11 +20,11 @@ import MemberCouponList from "../../components/Order/MemberCouponList";
 import OrderPrice from "../../components/Order/OrderPrice";
 import Payment from "../../components/Order/Payment";
 import ConsentPayment from "../../components/Order/ConsentPayment";
+import useAuthStore from "../../stores/useAuthStore";
 
 const Order = () => {
   const queryClient = useQueryClient();
   const location = useLocation();
-  const navigate = useNavigate();
 
   // 주문 아이템
   const { orderItems, totalProductPrice, totalDeliveryFee } = location.state || { orderItems: [] };
@@ -39,8 +38,9 @@ const Order = () => {
   const [consentPayment, setConsentPayment] = useState(false);
   const [selectedCardIndex, setSelectedCardIndex] = useState(0);
   const [isCardRegistrationModalOpen, setIsCardRegistrationModalOpen] = useState(false);
-  const [isCardEditModalOpen, setIsCardEditModalOpen] = useState(false);
-  const [editingCard, setEditingCard] = useState(null);
+
+  const [selectedAddress, setSelectedAddress] = useState(null);
+  const [hasUserSelectedAddress, setHasUserSelectedAddress] = useState(false);
 
   // 결제 버튼 활성화 상태
   const [isPaymentEnabled, setIsPaymentEnabled] = useState(false);
@@ -52,9 +52,10 @@ const Order = () => {
   useOrderItemsValidation(orderItems);
 
   // 설정 값
-  // const member_id = import.meta.env.VITE_MEMBER_ID;
-  const member_id = 1;
-  const couponDiscount = selectedCoupon ? selectedCoupon.discount_amount : 0;
+  const { username } = useAuthStore();
+  const memberId = username;
+  // const memberId = import.meta.env.VITE_memberId;
+  const couponDiscount = selectedCoupon ? selectedCoupon.discountAmount : 0;
   const finalPrice = totalProductPrice + totalDeliveryFee - couponDiscount;
 
   // QUERIES
@@ -64,8 +65,8 @@ const Order = () => {
     isLoading: couponsLoading,
     isError: couponsError,
   } = useQuery({
-    queryKey: ["coupon", member_id],
-    queryFn: () => fetchMemberCoupon(member_id),
+    queryKey: ["coupon", memberId],
+    queryFn: () => fetchMemberCoupon(memberId),
   });
 
   // [GET] 회원 정보 조회 쿼리
@@ -74,8 +75,8 @@ const Order = () => {
     isLoading: memberInfoLoading,
     isError: memberInfoError,
   } = useQuery({
-    queryKey: ["member", member_id],
-    queryFn: () => fetchMemberInfo(member_id),
+    queryKey: ["member", memberId],
+    queryFn: () => fetchMemberInfo(memberId),
   });
 
   // [GET] 회원 등록한 주소지 조회 쿼리
@@ -84,8 +85,8 @@ const Order = () => {
     isLoading: addressesLoading,
     isError: addressesError,
   } = useQuery({
-    queryKey: ["address", member_id],
-    queryFn: () => fetchMemberAddresses(member_id),
+    queryKey: ["address", memberId],
+    queryFn: () => fetchMemberAddresses(memberId),
   });
 
   // [GET] 회원 카드 조회 쿼리
@@ -94,8 +95,8 @@ const Order = () => {
     isLoading: cardsLoading,
     isError: cardsError,
   } = useQuery({
-    queryKey: ["card", member_id],
-    queryFn: () => fetchMemberCard(member_id),
+    queryKey: ["card", memberId],
+    queryFn: () => fetchMemberCard(memberId),
   });
 
   // MUTATIONS
@@ -103,17 +104,8 @@ const Order = () => {
   const addCardMutation = useMutation({
     mutationFn: addMemberCard,
     onSuccess: () => {
-      queryClient.invalidateQueries(["card", member_id]);
+      queryClient.invalidateQueries(["card", memberId]);
       setIsCardRegistrationModalOpen(false);
-    },
-  });
-
-  // [UPDATE] 카드 수정
-  const updateCardMutation = useMutation({
-    mutationFn: updateMemberCard,
-    onSuccess: () => {
-      queryClient.invalidateQueries(["card", member_id]);
-      setIsCardEditModalOpen(false);
     },
   });
 
@@ -121,7 +113,7 @@ const Order = () => {
   const deleteCardMutation = useMutation({
     mutationFn: deleteMemberCard,
     onSuccess: () => {
-      queryClient.invalidateQueries(["card", member_id]);
+      queryClient.invalidateQueries(["card", memberId]);
     },
   });
 
@@ -145,28 +137,13 @@ const Order = () => {
   // EVENT HANDLERS
   // 카드 추가 핸들러
   const handleAddCard = cardData => {
-    addCardMutation.mutate({ memberId: member_id, ...cardData });
-  };
-
-  // 카드 수정 Modal 핸들러
-  const handleEditCard = card => {
-    setEditingCard(card);
-    setIsCardEditModalOpen(true);
-  };
-
-  // 카드 수정 핸들러
-  const handleUpdateCard = updatedCard => {
-    updateCardMutation.mutate({
-      memberId: member_id,
-      id: updatedCard.id,
-      ...updatedCard,
-    });
+    addCardMutation.mutate({ memberId: memberId, ...cardData });
   };
 
   // 카드 삭제 핸들러
-  const handleDeleteCard = cardId => {
+  const handleDeleteCard = memberPaymentCardId => {
     if (window.confirm("정말 이 카드를 삭제하시겠습니까?")) {
-      deleteCardMutation.mutate({ memberId: member_id, cardId });
+      deleteCardMutation.mutate(memberPaymentCardId);
     }
   };
 
@@ -191,23 +168,14 @@ const Order = () => {
 
   // 쿠폰 핸들러
   const handleCouponChange = e => {
-    const couponId = e.target.value;
-    if (couponId === "") {
+    const memberCouponId = e.target.value;
+    console.log(memberCouponId);
+    if (memberCouponId == "") {
       setSelectedCoupon(null);
     } else {
-      const selected = coupons.find(coupon => coupon.id === couponId);
+      const selected = coupons.find(coupon => coupon.memberCouponId == memberCouponId);
       setSelectedCoupon(selected || null);
     }
-  };
-
-  // 받는 사람 이름 수정 핸들러
-  const handleNameChange = e => {
-    setRecipientName(e.target.value);
-  };
-
-  // 받는 사람 전화번호 핸들러
-  const handlePhoneChange = e => {
-    setRecipientPhone(e.target.value);
   };
 
   // 주소지 관리 Modal 열기 핸들러
@@ -218,7 +186,12 @@ const Order = () => {
   // 주소지 관리 Modal 닫기 핸들러
   const handleCloseAddressModal = () => {
     setIsAddressModalOpen(false);
-    queryClient.invalidateQueries(["address", member_id]);
+    queryClient.invalidateQueries(["address", memberId]);
+  };
+
+  const handleSelectAddress = address => {
+    setSelectedAddress(address);
+    setHasUserSelectedAddress(true);
   };
 
   useEffect(() => {
@@ -227,8 +200,8 @@ const Order = () => {
 
   useEffect(() => {
     if (memberInfo && memberInfo.length > 0) {
-      setRecipientName(memberInfo[0].member_name);
-      setRecipientPhone(memberInfo[0].member_phone_number);
+      setRecipientName(memberInfo[0].memberName);
+      setRecipientPhone(memberInfo[0].memberPhoneNumber);
     }
   }, [memberInfo]);
 
@@ -251,42 +224,39 @@ const Order = () => {
     );
   }, [recipientName, recipientPhone, addresses, cards, selectedCardIndex, consentPayment]);
 
+  useEffect(() => {
+    if (addresses && addresses.length > 0 && !hasUserSelectedAddress) {
+      const defaultAddress = addresses.find(address => address.isDefaultAddress === "ACTIVE");
+      if (defaultAddress) {
+        setSelectedAddress(defaultAddress);
+      }
+    }
+  }, [addresses, hasUserSelectedAddress]);
+
   if (couponsLoading || memberInfoLoading || addressesLoading || cardsLoading)
     return <div>불러오는중...</div>;
   if (couponsError || memberInfoError || addressesError || cardsError)
     return <div>Error loading data</div>;
 
-  const defaultAddress = addresses.find(address => address.is_default_address);
+  // const defaultAddress = addresses.find(address => address.isDefaultAddress);
 
   return (
-    <div className='flex flex-col bg-gray-50 pb-14'>
-      {/* <div className='noScrollbar flex items-center bg-[#00835F] p-4 text-white'>
-        <FaChevronLeft className='mr-4 cursor-pointer' onClick={() => navigate(-1)} />
-        <h1 className='text-xl font-bold'>단건 주문 결제</h1>
-      </div> */}
-
-      <div className='noScrollbar flex-1 space-y-4 overflow-auto p-4'>
+    <div className='flex flex-col bg-gray-50 pb-20'>
+      <div className='noScrollbar flex-1 space-y-4 overflow-auto'>
         {/* 주문 아이템 */}
         <OrderItems orderItems={orderItems} />
 
         {/* 구매자 정보 */}
-        <OrderMemberInfo memberInfo={memberInfo[0]} />
-
-        {/* 받는 사람 정보 */}
-        <DeliveryMemberInfo
-          recipientName={recipientName}
-          recipientPhone={recipientPhone}
-          handleNameChange={handleNameChange}
-          handlePhoneChange={handlePhoneChange}
-        />
+        <OrderMemberInfo memberInfo={memberInfo} />
 
         {/* 받는 사람 주소 */}
         <DeliveryAddress
-          defaultAddress={defaultAddress}
+          selectedAddress={selectedAddress}
           isAddressModalOpen={isAddressModalOpen}
           handleOpenAddressModal={handleOpenAddressModal}
           handleCloseAddressModal={handleCloseAddressModal}
-          memberId={member_id}
+          memberId={memberId}
+          onSelectAddress={handleSelectAddress}
         />
 
         {/* 회원 쿠폰 리스트 */}
@@ -310,12 +280,7 @@ const Order = () => {
           selectedCardIndex={selectedCardIndex}
           handlePrevCard={handlePrevCard}
           handleNextCard={handleNextCard}
-          handleEditCard={handleEditCard}
           handleDeleteCard={handleDeleteCard}
-          isCardEditModalOpen={isCardEditModalOpen}
-          setIsCardEditModalOpen={setIsCardEditModalOpen}
-          handleUpdateCard={handleUpdateCard}
-          editingCard={editingCard}
           isCardRegistrationModalOpen={isCardRegistrationModalOpen}
           setIsCardRegistrationModalOpen={setIsCardRegistrationModalOpen}
           handleAddCard={handleAddCard}

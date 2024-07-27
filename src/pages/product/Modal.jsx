@@ -14,7 +14,7 @@ const Modal = ({ isOpen, onClose, title, children }) => {
     setIsAnimatingIn(false);
     setTimeout(() => {
       onClose();
-    }, 300); // This should match the duration of the transition
+    }, 300);
   };
 
   if (!isOpen && !isAnimatingIn) return null;

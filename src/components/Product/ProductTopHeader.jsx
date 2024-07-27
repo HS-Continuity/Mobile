@@ -4,9 +4,12 @@ import { IoCartOutline } from "react-icons/io5";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCartItemsCount, fetchProductDetail } from "../../apis";
 import { FiSearch } from "react-icons/fi";
+import useAuthStore from "../../stores/useAuthStore";
 
 const ProductTopHeader = () => {
-  const memberId = import.meta.env.VITE_MEMBER_ID;
+  const { username, isAuthenticated } = useAuthStore();
+  const memberId = username;
+  // const memberId = import.meta.env.VITE_MEMBER_ID;
   const cartTypeId = null;
   const navigate = useNavigate();
   const { productId } = useParams();
@@ -14,6 +17,7 @@ const ProductTopHeader = () => {
   const { data: cartItemsCount } = useQuery({
     queryKey: ["cart", memberId, cartTypeId],
     queryFn: () => fetchCartItemsCount(memberId, cartTypeId),
+    enabled: !!isAuthenticated && !!memberId,
   });
 
   const {
@@ -55,7 +59,7 @@ const ProductTopHeader = () => {
           <FiSearch className='cursor-pointer text-2xl' onClick={() => navigate("/search")} />
           <div className='relative cursor-pointer' onClick={() => navigate("/cart")}>
             <IoCartOutline className='h-7 w-7' />
-            {cartItemsCount > 0 && (
+            {isAuthenticated && cartItemsCount > 0 && (
               <span className='absolute -right-2 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white'>
                 {cartItemsCount}
               </span>

@@ -32,9 +32,12 @@ import RefundApply from "./pages/orderManage/RefundApply";
 import SubscriptionOrderHistory from "./pages/subscriptionOrderManage/";
 import SubscriptionOrderManage from "./pages/subscriptionOrderManage/SubscriptionOrderManage";
 import ProductLayout from "./components/Product/ProductLayout";
+import ProtectedRoute from "./components/Login/ProtectedRoute";
+// import useAuthStore from "./stores/useAuthStore";
 
 function App() {
   const location = useLocation();
+  // const { refreshToken, setupInterceptors } = useAuthStore();
 
   // 실제 모바일 화면 vh 맞추기
   function setScreenSize() {
@@ -55,6 +58,14 @@ function App() {
     };
   }, []);
 
+  // useEffect(() => {
+  //   const initializeAuth = async () => {
+  //     await refreshToken();
+  //     setupInterceptors();
+  //   };
+  //   initializeAuth();
+  // }, [refreshToken, setupInterceptors]);
+
   return (
     <>
       <div className='min-h-[calc(var(--vh,1vh)*100)] min-h-screen bg-gray-50'>
@@ -69,18 +80,12 @@ function App() {
             <Route path='/search' element={<Search key={location.pathname} />} />
             <Route path='/search-result' element={<SearchResult key={location.pathname} />} />
             <Route path='/timesale' element={<Timesale key={location.pathname} />} />
-
-            {/* 식품 상세 카테고리 선택 시 */}
             <Route path='/detailcategory' element={<DetailCategory key={location.pathname} />} />
-
-            {/* 판매자별 소개 페이지 */}
             <Route path='/shop/:customerId' element={<Shop key={location.pathname} />} />
           </Route>
 
           <Route element={<ProductLayout />}>
-            {/* 식품 상세 페이지 */}
             <Route path='/product/:productId' element={<ProductDetail key={location.pathname} />} />
-            {/* 식품별 리뷰 전체 조회 페이지 */}
             <Route
               path='/product/review/:productId'
               element={<ProductReviewAll key={location.pathname} />}
@@ -88,36 +93,122 @@ function App() {
           </Route>
 
           <Route element={<OrderLayout />}>
-            <Route path='/cart' element={<Cart key={location.pathname} />} />
-            <Route path='/order' element={<Order key={location.pathname} />} />
+            <Route
+              path='/cart'
+              element={
+                <ProtectedRoute>
+                  <Cart key={location.pathname} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/order'
+              element={
+                <ProtectedRoute>
+                  <Order key={location.pathname} />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path='/subscription-setup'
-              element={<SubscriptionSetup key={location.pathname} />}
+              element={
+                <ProtectedRoute>
+                  <SubscriptionSetup key={location.pathname} />
+                </ProtectedRoute>
+              }
             />
             <Route
               path='/subscription-order'
-              element={<SubscriptionOrder key={location.pathname} />}
+              element={
+                <ProtectedRoute>
+                  <SubscriptionOrder key={location.pathname} />
+                </ProtectedRoute>
+              }
             />
             <Route path='/order-success' element={<OrderSuccess key={location.pathname} />} />
             <Route path='/order-fail' element={<OrderFail key={location.pathname} />} />
           </Route>
 
           <Route element={<MypageLayout />}>
-            <Route path='/mypage' element={<Mypage key={location.pathname} />} />
-            <Route path='/profile' element={<Profile key={location.pathname} />} />
-            <Route path='/coupon' element={<Coupon key={location.pathname} />} />
-            <Route path='/address' element={<Address key={location.pathname} />} />
-            <Route path='/order-history' element={<OrderHistory key={location.pathname} />} />
-            <Route path='/payment' element={<Payment key={location.pathname} />} />
-            <Route path='/reviewapply' element={<ReviewApply key={location.pathname} />} />
-            <Route path='/refundapply' element={<RefundApply key={location.pathname} />} />
+            <Route
+              path='/mypage'
+              element={
+                <ProtectedRoute>
+                  <Mypage key={location.pathname} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/profile'
+              element={
+                <ProtectedRoute>
+                  <Profile key={location.pathname} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/coupon'
+              element={
+                <ProtectedRoute>
+                  <Coupon key={location.pathname} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/address'
+              element={
+                <ProtectedRoute>
+                  <Address key={location.pathname} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/order-history'
+              element={
+                <ProtectedRoute>
+                  <OrderHistory key={location.pathname} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/payment'
+              element={
+                <ProtectedRoute>
+                  <Payment key={location.pathname} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/reviewapply'
+              element={
+                <ProtectedRoute>
+                  <ReviewApply key={location.pathname} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/refundapply'
+              element={
+                <ProtectedRoute>
+                  <RefundApply key={location.pathname} />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path='/subscription-history'
-              element={<SubscriptionOrderHistory key={location.pathname} />}
+              element={
+                <ProtectedRoute>
+                  <SubscriptionOrderHistory key={location.pathname} />
+                </ProtectedRoute>
+              }
             />
             <Route
               path='/subscription-manage'
-              element={<SubscriptionOrderManage key={location.pathname} />}
+              element={
+                <ProtectedRoute>
+                  <SubscriptionOrderManage key={location.pathname} />
+                </ProtectedRoute>
+              }
             />
           </Route>
         </Routes>

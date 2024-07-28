@@ -1,5 +1,14 @@
 import axios from "axios";
-import { apiGet, apiPut, apiDelete, apiPost } from "./apiUtils";
+import {
+  apiGet,
+  apiPut,
+  apiDelete,
+  apiPost,
+  memberApiGet,
+  memberApiPost,
+  memberApiPut,
+  memberApiDelete,
+} from "./apiUtils";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
 // -------------------------[CART]-------------------------
@@ -131,14 +140,16 @@ const config = {
   },
 };
 
-export const createSubscriptionOrder = async orderData => {
-  const response = await axios.post(`${API_BASE_URL}/subscriptionOrders`, orderData);
-  return response.data;
-};
+// -------------------------[MEMBER]-------------------------
+// [GET] 회원 정보 조회
+export const fetchMemberInfo = memberId => memberApiGet(`/member`, { memberId });
 
-export const getSubscriptionOrderDetails = async orderId => {
-  const response = await axios.get(`${API_BASE_URL}/subscriptionOrders/${orderId}`);
-  return response.data;
+// [GET] 회원 로그인
+export const postLogin = memberData => {
+  return axios.post("http://localhost:8010/api/auth/login", {
+    username: memberData.username,
+    password: memberData.password,
+  });
 };
 
 // [GET] 회원 쿠폰 조회
@@ -149,6 +160,9 @@ export const fetchMemberCoupon = async memberId => {
     },
   });
   return response.data;
+// Social Login
+export const handleSocialLogin = provider => {
+  window.location.href = `http://localhost:8010/oauth2/authorization/${provider}`;
 };
 
 // [GET] 회원 정보 조회

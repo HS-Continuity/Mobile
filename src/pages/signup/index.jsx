@@ -1,130 +1,401 @@
-import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import axios from "axios";
+import { useState, useEffect } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+import toast, { Toaster } from "react-hot-toast";
+import { LuCake, LuLock, LuUser2 } from "react-icons/lu";
+import { SlEnvolope } from "react-icons/sl";
+import { PiGenderNeuterLight } from "react-icons/pi";
+import { MdSmartphone } from "react-icons/md";
+import { fetchMessageVerify, postMember, postMessage } from "../../apis";
 
 const SignUp = () => {
+  const navigate = useNavigate();
+
+  const [isChecked, setIsChecked] = useState(false);
   const [formData, setFormData] = useState({
+    memberId: "",
     memberName: "",
     memberEmail: "",
     memberPassword: "",
-    passwordConfirm: "",
     memberBirthday: "",
     memberPhoneNumber: "",
-    gender: "M",
+    gender: "",
+    verificationCode: "",
   });
 
-  const [emailSent, setEmailSent] = useState(false);
+  const [errors, setErrors] = useState({
+    memberId: "",
+    memberName: "",
+    memberEmail: "",
+    memberPassword: "",
+    memberBirthday: "",
+    memberPhoneNumber: "",
+    gender: "",
+  });
+
+  const [isCodeSent, setIsCodeSent] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(150);
+  const [isPhoneValid, setIsPhoneValid] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
+  const [verificationFailed, setVerificationFailed] = useState(false);
+  const [reAuthCooldown, setReAuthCooldown] = useState(0);
 
   const handleChange = e => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value, type } = e.target;
+    if (name === "memberPhoneNumber") {
+      const formattedNumber = formatPhoneNumber(value);
+      setFormData(prev => ({
+        ...prev,
+        [name]: formattedNumber,
+      }));
+      const validationResult = validateField(name, formattedNumber);
+      setErrors(prev => ({ ...prev, [name]: validationResult.error }));
+      setIsPhoneValid(validationResult.isValid);
+    } else if (name === "memberId") {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value,
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: type === "radio" ? value : value,
+      }));
+      const validationResult = validateField(name, value);
+      setErrors(prev => ({ ...prev, [name]: validationResult.error }));
+    }
+  };
+
+  const formatPhoneNumber = value => {
+    if (!value) return value;
+    const phoneNumber = value.replace(/[^\d]/g, "");
+    const phoneNumberLength = phoneNumber.length;
+    if (phoneNumberLength <= 3) return phoneNumber;
+    if (phoneNumberLength <= 7) return `${phoneNumber.slice(0, 3)}-${phoneNumber.slice(3)}`;
+    return `${phoneNumber.slice(0, 3)}-${phoneNumber.slice(3, 7)}-${phoneNumber.slice(7, 11)}`;
   };
 
   const validateField = (field, value) => {
     const patterns = {
-      memberName: /^[a-zA-Z가-힣]{2,20}$/,
-      memberPassword: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/,
-      passwordConfirm: val => val === formData.memberPassword,
-      memberEmail: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-      memberBirthday: /^\d{8}$/,
-      memberPhoneNumber: /^010\d{8}$/,
+      memberId: {
+        regex: /^[a-zA-Z0-9]{4,20}$/,
+        message: "아이디 - 4~20자의 영문 대소문자와 숫자만 사용 가능합니다.",
+      },
+      memberName: {
+        regex: /^[가-힣]{2,10}$/,
+        message: "이름 - 2~10자의 한글만 사용 가능합니다.",
+      },
+      memberPassword: {
+        regex: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/,
+        message: "비밀번호 - 8자 이상의 영문자와 숫자 조합이어야 합니다.",
+      },
+      memberEmail: {
+        regex: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        message: "이메일 - 올바른 이메일 형식이 아닙니다.",
+      },
+      memberBirthday: { regex: /^\d{8}$/, message: "8자리 숫자로 입력해주세요." },
+      memberPhoneNumber: {
+        regex: /^010-\d{4}-\d{4}$/,
+        message: "전화번호 - 올바른 전화번호 형식이 아닙니다.",
+      },
+      gender: { regex: /^(MALE|FEMALE)$/, message: "성별 - 성별을 선택해주세요." },
     };
 
-    if (field === "passwordConfirm") {
-      return patterns[field](value);
-    }
-    return patterns[field].test(value);
+    const pattern = patterns[field];
+    if (!pattern) return { isValid: true, error: "" };
+
+    const isValid = pattern.regex.test(value);
+    return { isValid, error: isValid ? "" : pattern.message };
   };
 
-  const sendEmailCode = () => {
-    console.log("이메일 인증 코드 발송:", formData.memberEmail);
-    setEmailSent(true);
-    // 이메일 인증 로직 구현
+  const isFormValid = () => {
+    return (
+      Object.keys(formData).every(key => formData[key] && !errors[key] && isChecked) && isVerified
+    );
+  };
+
+  const resetVerificationState = () => {
+    setIsCodeSent(false);
+    setTimeLeft(150);
+    setVerificationFailed(false);
+    setFormData(prev => ({ ...prev, verificationCode: "" }));
+  };
+
+  const sendVerificationCodeMutation = useMutation({
+    mutationFn: postMessage,
+    onSuccess: () => {
+      setIsCodeSent(true);
+      setTimeLeft(150);
+      toast.success("인증번호가 발송되었습니다.");
+    },
+    onError: () => {
+      toast.error("인증번호 발송에 실패했습니다.");
+    },
+  });
+
+  const sendVerificationCode = () => {
+    if (isPhoneValid) {
+      const memberPhoneInfo = {
+        phoneNumber: formData.memberPhoneNumber,
+        userName: formData.memberId,
+      };
+      sendVerificationCodeMutation.mutate(memberPhoneInfo);
+      resetVerificationState();
+      if (verificationFailed) {
+        setReAuthCooldown(5);
+      }
+    } else {
+      toast.error("올바른 전화번호를 입력해주세요.");
+    }
+  };
+
+  useEffect(() => {
+    let timer;
+    if (reAuthCooldown > 0) {
+      timer = setInterval(() => {
+        setReAuthCooldown(prev => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [reAuthCooldown]);
+
+  useEffect(() => {
+    let timer;
+    if (isCodeSent && timeLeft > 0) {
+      timer = setInterval(() => {
+        setTimeLeft(prev => prev - 1);
+      }, 1000);
+    } else if (timeLeft === 0) {
+      setIsCodeSent(false);
+    }
+    return () => clearInterval(timer);
+  }, [isCodeSent, timeLeft]);
+
+  const { data: isVerify, refetch: verifyRefetch } = useQuery({
+    queryKey: ["verifyMessage"],
+    queryFn: () =>
+      fetchMessageVerify({ username: formData.memberId, code: formData.verificationCode }),
+    enabled: false,
+  });
+
+  const handleVerify = () => {
+    verifyRefetch().then(result => {
+      const isSuccess = result.data;
+      const message = isSuccess ? "인증이 완료되었습니다." : "인증에 실패했습니다.";
+      const toastType = isSuccess ? toast.success : toast.error;
+
+      toastType(message);
+      setIsVerified(isSuccess);
+      setVerificationFailed(!isSuccess);
+      if (isSuccess) {
+        setIsCodeSent(false);
+      }
+    });
   };
 
   const registerMutation = useMutation({
-    mutationFn: data => axios.post("/api/members/register", data),
+    mutationFn: postMember,
     onSuccess: () => {
-      alert("회원가입이 완료되었습니다.");
-      // 회원가입 성공 후 처리 (예: 로그인 페이지로 이동)
+      toast.success("회원가입이 완료되었습니다.");
+      navigate("/login");
     },
     onError: error => {
-      alert(
-        "회원가입에 실패했습니다: " + error.response?.data?.message ||
-          "알 수 없는 오류가 발생했습니다."
-      );
+      toast.error("회원가입에 실패했습니다. ");
     },
   });
 
   const handleSubmit = e => {
     e.preventDefault();
-    if (formData.memberPassword !== formData.passwordConfirm) {
-      alert("비밀번호가 일치하지 않습니다.");
+    if (!isVerified) {
+      toast.error("전화번호 인증을 완료해주세요.");
       return;
     }
-    // 생년월일 형식 변환 (YYYYMMDD to ISO Date)
     const formattedBirthday = `${formData.memberBirthday.slice(0, 4)}-${formData.memberBirthday.slice(4, 6)}-${formData.memberBirthday.slice(6, 8)}`;
 
     const registerData = {
       ...formData,
       memberBirthday: formattedBirthday,
     };
-    delete registerData.passwordConfirm;
+    delete registerData.verificationCode;
 
     registerMutation.mutate(registerData);
   };
 
-  const renderInput = (name, label, type = "text", placeholder = "") => {
-    return (
-      <div key={name} className='mb-4'>
-        <label className='input input-bordered flex items-center gap-2'>
-          {label}
+  return (
+    <form onSubmit={handleSubmit} className='space-y-4 p-4 px-12'>
+      <div className='relative'>
+        <div className='relative'>
+          <LuUser2 className='absolute left-3 top-1/2 -translate-y-1/2 transform text-gray-400' />
           <input
-            type={type}
-            name={name}
-            value={formData[name]}
+            type='text'
+            name='memberId'
+            value={formData.memberId}
             onChange={handleChange}
-            className='grow'
-            placeholder={placeholder}
+            placeholder='아이디'
+            className='input input-bordered h-12 w-full rounded-b-none pl-10 focus:border-black focus:outline-none focus:ring-0'
           />
-        </label>
-        {name === "memberEmail" && (
+        </div>
+        <div className='relative'>
+          <LuLock className='absolute left-3 top-1/2 -translate-y-1/2 transform text-gray-400' />
+          <input
+            type='password'
+            name='memberPassword'
+            value={formData.memberPassword}
+            onChange={handleChange}
+            placeholder='비밀번호'
+            className='input input-bordered h-12 w-full rounded-none pl-10 focus:border-black focus:outline-none focus:ring-0'
+          />
+        </div>
+        <div className='relative'>
+          <SlEnvolope className='absolute left-3 top-1/2 -translate-y-1/2 transform text-gray-400' />
+          <input
+            type='email'
+            name='memberEmail'
+            value={formData.memberEmail}
+            onChange={handleChange}
+            placeholder='이메일'
+            className='input input-bordered h-12 w-full rounded-t-none pl-10 focus:border-black focus:outline-none focus:ring-0'
+          />
+        </div>
+        {errors.memberId && <p className='mt-1 text-xs text-red-500'>{errors.memberId}</p>}
+        {errors.memberPassword && (
+          <p className='mt-1 text-xs text-red-500'>{errors.memberPassword}</p>
+        )}
+        {errors.memberEmail && <p className='mt-1 text-xs text-red-500'>{errors.memberEmail}</p>}
+      </div>
+      <div className='relative'>
+        <div className='relative'>
+          <LuUser2 className='absolute left-3 top-1/2 -translate-y-1/2 transform text-gray-400' />
+          <input
+            type='text'
+            name='memberName'
+            value={formData.memberName}
+            onChange={handleChange}
+            placeholder='이름'
+            className='input input-bordered h-12 w-full rounded-b-none pl-10 focus:border-black focus:outline-none focus:ring-0'
+          />
+        </div>
+        <div className='relative'>
+          <LuCake className='absolute left-3 top-1/2 -translate-y-1/2 transform text-xl text-gray-400' />
+          <input
+            type='tel'
+            name='memberBirthday'
+            value={formData.memberBirthday}
+            onChange={handleChange}
+            placeholder='생년월일 8자리'
+            className='input input-bordered h-12 w-full rounded-none pl-10 focus:border-black focus:outline-none focus:ring-0'
+          />
+        </div>
+        <div className='border-l-1 relative border-[1px]'>
+          <PiGenderNeuterLight className='absolute left-2 top-1/2 -translate-y-1/2 transform text-2xl text-gray-400' />
+          <div className='flex w-full justify-center'>
+            <label className='flex cursor-pointer items-center'>
+              <input
+                type='radio'
+                name='gender'
+                value='MALE'
+                onChange={handleChange}
+                className='peer sr-only'
+              />
+              <span className='peer-checked:bg-green-shine my-[7.2px] rounded-l-lg border border-gray-300 px-10 py-1 focus:outline-none peer-checked:border-[#00835F] peer-checked:text-white'>
+                남성
+              </span>
+            </label>
+            <label className='flex cursor-pointer items-center'>
+              <input
+                type='radio'
+                name='gender'
+                value='FEMALE'
+                onChange={handleChange}
+                className='peer sr-only'
+              />
+              <span className='peer-checked:bg-green-shine rounded-r-lg border border-gray-300 px-10 py-1 focus:outline-none peer-checked:border-[#00835F] peer-checked:text-white'>
+                여성
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <div className='relative'>
+          <MdSmartphone className='absolute left-3 top-1/2 -translate-y-1/2 transform text-gray-400' />
+          <input
+            type='tel'
+            name='memberPhoneNumber'
+            value={formData.memberPhoneNumber}
+            onChange={handleChange}
+            placeholder='전화번호'
+            className='input input-bordered h-12 w-full rounded-t-none pl-10 focus:border-black focus:outline-none focus:ring-0'
+            disabled={isVerified}
+          />
+          {isPhoneValid && !isVerified && (
+            <button
+              type='button'
+              onClick={sendVerificationCode}
+              className='bg-green-shine hover:bg-green-shine btn absolute right-0 top-0 w-16 rounded-s-none rounded-t-none text-white'
+              disabled={isCodeSent && timeLeft > 0}>
+              {isCodeSent && timeLeft > 0
+                ? `${Math.floor(timeLeft / 60)}:${(timeLeft % 60).toString().padStart(2, "0")}`
+                : "인증"}
+            </button>
+          )}
+        </div>
+
+        {isCodeSent && !isVerified && (
+          <div className='form-control'>
+            <label className='input input-bordered flex items-center gap-2'>
+              <input
+                type='text'
+                name='verificationCode'
+                value={formData.verificationCode}
+                onChange={handleChange}
+                placeholder='인증번호 입력'
+                className='grow'
+              />
+            </label>
+            <button type='button' onClick={handleVerify} className='btn btn-outline btn-info mt-2'>
+              인증번호 확인
+            </button>
+          </div>
+        )}
+        {verificationFailed && (
           <button
-            onClick={sendEmailCode}
-            className='mt-2 rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 disabled:bg-gray-400'
-            disabled={!validateField("memberEmail", formData.memberEmail) || emailSent}>
-            {emailSent ? "인증 코드 발송됨" : "인증 코드 발송"}
+            type='button'
+            onClick={sendVerificationCode}
+            className='btn btn-error w-full'
+            disabled={reAuthCooldown > 0}>
+            {reAuthCooldown > 0 ? `재인증 (${reAuthCooldown}초 후 가능)` : "재인증"}
           </button>
         )}
-      </div>
-    );
-  };
 
-  return (
-    <form onSubmit={handleSubmit} className='noScrollbar p-4'>
-      {renderInput("memberName", "이름")}
-      {renderInput("memberPassword", "비밀번호", "password")}
-      {renderInput("passwordConfirm", "비밀번호 재입력", "password")}
-      {renderInput("memberEmail", "이메일", "email")}
-      {renderInput("memberBirthday", "생년월일", "text", "YYYYMMDD")}
-      {renderInput("memberPhoneNumber", "휴대폰 번호")}
-      <div className='mb-4'>
-        <label className='input input-bordered flex items-center gap-2'>
-          성별
-          <select name='gender' value={formData.gender} onChange={handleChange} className='grow'>
-            <option value='MALE'>남성</option>
-            <option value='FEMALE'>여성</option>
-          </select>
-        </label>
+        {errors.memberName && <p className='mt-1 text-xs text-red-500'>{errors.memberName}</p>}
+        {errors.memberBirthday && (
+          <p className='mt-1 text-xs text-red-500'>{errors.memberBirthday}</p>
+        )}
+        {errors.gender && <p className='mt-1 text-xs text-red-500'>{errors.gender}</p>}
+        {errors.memberPhoneNumber && (
+          <p className='mt-1 text-xs text-red-500'>{errors.memberPhoneNumber}</p>
+        )}
+
+        <div className='flex items-center space-x-2 rounded-lg bg-white p-4'>
+          <input
+            type='checkbox'
+            className='checkbox'
+            checked={isChecked}
+            onChange={() => setIsChecked(!isChecked)}
+          />
+          <span className='text-sm'>[필수] 인증 약관 전체동의</span>
+        </div>
+
+        <button
+          type='submit'
+          className='bg-green-shine hover:bg-green-shine btn w-full'
+          disabled={registerMutation.isPending || !isFormValid()}>
+          {registerMutation.isPending ? "처리 중..." : "회원가입"}
+        </button>
+
+        <Toaster />
       </div>
-      <button
-        type='submit'
-        className='btn btn-success w-full text-white'
-        disabled={registerMutation.isPending}>
-        {registerMutation.isPending ? "처리 중..." : "회원가입"}
-      </button>
     </form>
   );
 };
-
 export default SignUp;

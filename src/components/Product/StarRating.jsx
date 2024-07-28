@@ -13,7 +13,7 @@ const StarRating = ({ rating }) => {
   }
 
   return (
-    <div className='flex'>
+    <div className='mt-[3px] flex'>
       {[...Array(MAX_STARS)].map((_, index) => (
         <div key={index} className='relative -ml-[2px] h-4 w-4'>
           <svg
@@ -48,7 +48,7 @@ const StarRating = ({ rating }) => {
           </div>
         </div>
       ))}
-      <span className='-mt-[5px] ml-1 text-gray-500'>{rating}</span>
+      <span className='-mt-[3px] ml-1 text-gray-500'>{rating}</span>
     </div>
   );
 };

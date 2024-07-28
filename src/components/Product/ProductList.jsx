@@ -65,7 +65,7 @@ const ProductList = ({ useQueryHook, additionalProps = {}, gridCols = 1 }) => {
   const products = data?.pages.flatMap(page => page.content) || [];
 
   return (
-    <div className='container mx-auto p-1'>
+    <div className='container mx-auto p-4'>
       {/* 상품 목록 그리드 레이아웃 */}
       <div className={`grid grid-cols-${gridCols} gap-4`}>
         {products.map((product, index) => (

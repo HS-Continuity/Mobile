@@ -1,22 +1,53 @@
-import { useState } from "react";
-import { FaEdit, FaTrash, FaPlus, FaSearch, FaTimes } from "react-icons/fa";
+import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import DaumPostcode from "react-daum-postcode";
-import {
-  fetchMemberAddresses,
-  addAddress,
-  updateAddress,
-  deleteAddress,
-  setDefaultAddress,
-} from "../../apis";
+import { FaPlus, FaTimes } from "react-icons/fa";
+import { fetchMemberAddresses, deleteAddress, setDefaultAddress } from "../../apis";
+import AddressRegisterModal from "../../components/Order/AddressRegisterModal";
+import AddressEditModal from "../../components/Order/AddressEditModal";
 
-const AddressModal = ({ isOpen, onClose, memberId }) => {
-  const [editingAddress, setEditingAddress] = useState(null);
-  const [newAddress, setNewAddress] = useState({
-    general_address: "",
-    detail_address: "",
-  });
-  const [isAddressSearchOpen, setIsAddressSearchOpen] = useState(false);
+const Modal = ({ isOpen, onClose, title, children }) => {
+  const [isAnimatingIn, setIsAnimatingIn] = useState(false);
+
+  React.useEffect(() => {
+    if (isOpen) {
+      setIsAnimatingIn(true);
+    }
+  }, [isOpen]);
+
+  const handleClose = () => {
+    setIsAnimatingIn(false);
+    setTimeout(() => {
+      onClose();
+    }, 300);
+  };
+
+  if (!isOpen && !isAnimatingIn) return null;
+
+  return (
+    <div className='fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50'>
+      <div
+        className={`h-full w-full bg-white shadow-xl transition-all duration-300 ease-in-out sm:w-full md:w-full lg:w-[500px] xl:w-[500px] ${
+          isAnimatingIn ? "scale-100 opacity-100" : "scale-95 opacity-0"
+        }`}>
+        <div className='flex h-full flex-col'>
+          <div className='flex items-center justify-between border-b p-4'>
+            <h2 className='text-xl font-bold'>{title}</h2>
+            <button onClick={handleClose} className='text-gray-500 hover:text-gray-700'>
+              <FaTimes className='text-xl' />
+            </button>
+          </div>
+          <div className='noScrollbar flex-grow overflow-y-auto p-4'>{children}</div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const AddressModal = ({ isOpen, onClose, memberId, onSelectAddress }) => {
+  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingAddressId, setEditingAddressId] = useState(null);
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
   const queryClient = useQueryClient();
 
   const {
@@ -28,228 +59,135 @@ const AddressModal = ({ isOpen, onClose, memberId }) => {
     queryFn: () => fetchMemberAddresses(memberId),
   });
 
-  const addAddressMutation = useMutation({
-    mutationFn: addAddress,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses", memberId] });
-      setNewAddress({ general_address: "", detail_address: "" });
-    },
-  });
-
-  const updateAddressMutation = useMutation({
-    mutationFn: updateAddress,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses", memberId] });
-      setEditingAddress(null);
-    },
-  });
-
-  const deleteAddressMutation = useMutation({
+  const deleteMutation = useMutation({
     mutationFn: deleteAddress,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses", memberId] });
+      queryClient.invalidateQueries(["addresses", memberId]);
     },
   });
 
-  const setDefaultAddressMutation = useMutation({
-    mutationFn: setDefaultAddress,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["addresses", memberId] });
+  const setDefaultMutation = useMutation({
+    mutationFn: ({ memberAddressId, memberId }) => setDefaultAddress(memberAddressId, memberId),
+    onSuccess: (_, variables) => {
+      queryClient.setQueryData(["addresses", memberId], oldData => {
+        return oldData.map(address => ({
+          ...address,
+          isDefaultAddress:
+            address.memberAddressId === variables.memberAddressId ? "ACTIVE" : "INACTIVE",
+        }));
+      });
     },
   });
 
-  const handleAddAddress = () => {
-    if (addresses && addresses.length >= 5) {
-      alert("주소는 최대 5개까지만 저장할 수 있습니다.");
-      return;
+  const handleDelete = memberAddressId => {
+    if (window.confirm("정말로 이 주소를 삭제하시겠습니까?")) {
+      deleteMutation.mutate(memberAddressId);
     }
-    if (!newAddress.general_address) {
-      alert("주소를 검색해주세요.");
-      return;
+  };
+
+  const handleSetDefault = memberAddressId => {
+    setDefaultMutation.mutate({ memberAddressId, memberId });
+  };
+
+  const handleEditClick = memberAddressId => {
+    setEditingAddressId(memberAddressId);
+    setIsEditModalOpen(true);
+  };
+
+  const handleSelectAddress = () => {
+    const selectedAddress = addresses.find(
+      address => address.memberAddressId === selectedAddressId
+    );
+    if (selectedAddress) {
+      onSelectAddress(selectedAddress);
+      onClose();
     }
-    addAddressMutation.mutate({
-      memberId,
-      general_address: newAddress.general_address.trim(),
-      detail_address: newAddress.detail_address.trim(),
-    });
   };
 
-  const handleUpdateAddress = id => {
-    updateAddressMutation.mutate({
-      id,
-      general_address: editingAddress.general_address.trim(),
-      detail_address: editingAddress.detail_address.trim(),
-      is_default_address: editingAddress.is_default_address,
-    });
-  };
-
-  const handleDeleteAddress = id => {
-    deleteAddressMutation.mutate(id);
-  };
-
-  const handleSetDefaultAddress = id => {
-    setDefaultAddressMutation.mutate({ memberId, addressId: id });
-  };
-
-  const handleComplete = data => {
-    let fullAddress = data.address;
-    let extraAddress = "";
-
-    if (data.addressType === "R") {
-      if (data.bname !== "") {
-        extraAddress += data.bname;
-      }
-      if (data.buildingName !== "") {
-        extraAddress += extraAddress !== "" ? `, ${data.buildingName}` : data.buildingName;
-      }
-      fullAddress += extraAddress !== "" ? ` (${extraAddress})` : "";
-    }
-
-    if (editingAddress) {
-      setEditingAddress(prev => ({
-        ...prev,
-        general_address: fullAddress,
-      }));
-    } else {
-      setNewAddress(prev => ({
-        ...prev,
-        general_address: fullAddress,
-      }));
-    }
-    setIsAddressSearchOpen(false);
-  };
-
-  if (!isOpen) return null;
-
-  if (isLoading) return <div>Loading...</div>;
-  if (isError) return <div>Error loading addresses</div>;
+  if (isLoading) return <div className='flex h-screen items-center justify-center'>로딩 중...</div>;
+  if (isError)
+    return <div className='alert alert-error'>주소 정보를 불러오는 중 오류가 발생했습니다.</div>;
 
   return (
-    <div className='fixed inset-0 flex h-full w-full items-center justify-center overflow-y-auto bg-gray-600 bg-opacity-50'>
-      <div className='w-full max-w-md rounded-lg bg-white p-5'>
-        <h2 className='mb-4 text-xl font-bold'>배송지 관리</h2>
-        <div className='space-y-4'>
-          {addresses &&
-            addresses.map(address => (
-              <div key={address.id} className='relative rounded-lg border p-4'>
-                {editingAddress && editingAddress.id === address.id ? (
-                  <div className='space-y-2'>
-                    <div className='flex'>
-                      <input
-                        type='text'
-                        value={editingAddress.general_address}
-                        readOnly
-                        className='w-full rounded border p-2'
-                        placeholder='주소'
-                      />
-                      <button
-                        onClick={() => setIsAddressSearchOpen(true)}
-                        className='ml-2 rounded bg-gray-200 p-2'>
-                        <FaSearch />
-                      </button>
-                    </div>
-                    <input
-                      type='text'
-                      value={editingAddress.detail_address}
-                      onChange={e =>
-                        setEditingAddress({ ...editingAddress, detail_address: e.target.value })
-                      }
-                      className='w-full rounded border p-2'
-                      placeholder='상세주소'
-                    />
-                    <div className='flex justify-end space-x-2'>
-                      <button
-                        onClick={() => handleUpdateAddress(address.id)}
-                        className='rounded bg-blue-500 px-4 py-2 text-white'>
-                        저장
-                      </button>
-                      <button
-                        onClick={() => setEditingAddress(null)}
-                        className='rounded bg-gray-300 px-4 py-2'>
-                        취소
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <div className='text-gray-600'>{address.general_address}</div>
-                    <div className='text-gray-600'>{address.detail_address}</div>
-                    {address.is_default_address && (
-                      <span className='absolute right-2 top-2 rounded bg-blue-500 px-2 py-1 text-xs text-white'>
-                        기본
-                      </span>
-                    )}
-                    <div className='mt-2 flex justify-end space-x-2'>
-                      <button onClick={() => setEditingAddress(address)} className='text-blue-500'>
-                        <FaEdit />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteAddress(address.id)}
-                        className='text-red-500'>
-                        <FaTrash />
-                      </button>
-                      {!address.is_default_address && (
-                        <button
-                          onClick={() => handleSetDefaultAddress(address.id)}
-                          className='text-gray-500'>
-                          기본 배송지로 설정
-                        </button>
-                      )}
-                    </div>
-                  </>
-                )}
+    <Modal isOpen={isOpen} onClose={onClose} title='배송지 관리'>
+      <div className='container mx-auto p-2'>
+        {addresses &&
+          addresses.map(address => (
+            <div key={address.memberAddressId} className='mb-4 rounded-lg border p-4'>
+              <div className='flex items-center justify-between'>
+                <div className='flex items-center'>
+                  <input
+                    type='radio'
+                    id={`address-${address.memberAddressId}`}
+                    name='selectedAddress'
+                    value={address.memberAddressId}
+                    checked={selectedAddressId === address.memberAddressId}
+                    onChange={() => setSelectedAddressId(address.memberAddressId)}
+                    className='mr-2'
+                  />
+                  <label
+                    htmlFor={`address-${address.memberAddressId}`}
+                    className='text-xl font-bold'>
+                    {address.addressName}
+                  </label>
+                  {address.isDefaultAddress === "ACTIVE" ? (
+                    <span className='bg-green-shine btn btn-xs ml-2 cursor-default text-xs font-light text-white hover:bg-[#00835F]'>
+                      기본배송지
+                    </span>
+                  ) : (
+                    <button
+                      onClick={() => handleSetDefault(address.memberAddressId)}
+                      className='btn btn-xs ml-2 border border-gray-300 bg-white text-xs font-light hover:bg-white'>
+                      기본배송지 설정
+                    </button>
+                  )}
+                </div>
+                <div>
+                  <button
+                    className='btn btn-xs border border-gray-300 bg-white text-sm hover:bg-white'
+                    onClick={() => handleEditClick(address.memberAddressId)}>
+                    수정
+                  </button>
+                  <button
+                    className='btn btn-xs ml-2 border border-gray-300 bg-white text-sm hover:bg-white'
+                    onClick={() => handleDelete(address.memberAddressId)}>
+                    삭제
+                  </button>
+                </div>
               </div>
-            ))}
-        </div>
-        <div className='mt-4 space-y-2'>
-          <div className='flex'>
-            <input
-              type='text'
-              value={newAddress.general_address}
-              disabled
-              className='w-full rounded border p-2'
-              placeholder='새 주소 입력 (검색 버튼을 눌러주세요)'
-            />
-            <button
-              onClick={() => setIsAddressSearchOpen(true)}
-              className='ml-2 rounded bg-gray-200 p-2'>
-              <FaSearch />
-            </button>
-          </div>
-          <input
-            type='text'
-            value={newAddress.detail_address}
-            onChange={e => setNewAddress({ ...newAddress, detail_address: e.target.value })}
-            className='w-full rounded border p-2'
-            placeholder='상세주소 입력'
-          />
-          <button
-            onClick={handleAddAddress}
-            className='flex w-full items-center justify-center rounded bg-green-500 p-2 text-white'>
-            <FaPlus className='mr-2' /> 새 배송지 추가
-          </button>
-        </div>
-        <button onClick={onClose} className='mt-4 w-full rounded bg-gray-300 p-2 text-gray-700'>
-          닫기
+              <p className='mt-2'>{address.generalAddress}</p>
+              <p>{address.detailAddress}</p>
+              <p className='text-gray-500'>
+                {address.recipientName} / {address.recipientPhoneNumber}
+              </p>
+            </div>
+          ))}
+        <button
+          onClick={() => setIsRegisterModalOpen(true)}
+          className='bg-green-shine btn w-full text-base text-white hover:bg-[#00835F]'>
+          <FaPlus className='mr-2' /> 새 배송지 등록
         </button>
+        <button
+          onClick={handleSelectAddress}
+          className='btn mt-2 w-full bg-blue-500 text-base text-white hover:bg-blue-600'
+          disabled={!selectedAddressId}>
+          선택하기
+        </button>
+
+        <AddressRegisterModal
+          isOpen={isRegisterModalOpen}
+          onClose={() => setIsRegisterModalOpen(false)}
+          memberId={memberId}
+        />
+
+        <AddressEditModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          memberId={memberId}
+          addressId={editingAddressId}
+        />
       </div>
-      {isAddressSearchOpen && (
-        <div className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50'>
-          <div className='relative w-full max-w-md'>
-            <button
-              onClick={() => setIsAddressSearchOpen(false)}
-              className='absolute -top-10 left-52 z-10 rounded-full bg-white p-2 text-gray-600 hover:bg-gray-100'>
-              <FaTimes />
-            </button>
-            <DaumPostcode
-              onComplete={handleComplete}
-              autoClose={false}
-              onClose={() => setIsAddressSearchOpen(false)}
-            />
-          </div>
-        </div>
-      )}
-    </div>
+    </Modal>
   );
 };
 

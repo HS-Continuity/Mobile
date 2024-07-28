@@ -1,7 +1,7 @@
 const OrderItems = ({ orderItems }) => {
   return (
-    <div className='rounded-lg bg-white p-4 shadow'>
-      <h2 className='mb-2 font-bold'>주문 상품</h2>
+    <div className='bg-white p-4'>
+      <h2 className='mb-2 text-xl font-bold'>주문 상품</h2>
       {orderItems.map((item, index) => (
         <div key={index} className='mb-2 flex items-center'>
           <img

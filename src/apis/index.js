@@ -1,5 +1,14 @@
 import axios from "axios";
-import { apiGet, apiPut, apiDelete, apiPost } from "./apiUtils";
+import {
+  apiGet,
+  apiPut,
+  apiDelete,
+  apiPost,
+  memberApiGet,
+  memberApiPost,
+  memberApiPut,
+  memberApiDelete,
+} from "./apiUtils";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
 // -------------------------[CART]-------------------------
@@ -262,14 +271,140 @@ export const putDefaultCard = (memberPaymentCardId, memberId) => {
 // =================================================================
 const API_BASE_URL = "http://localhost:3001";
 const DB_URL = "http://localhost:8020/api";
+const config = {
+  headers: {
+    "Content-Type": "application/json",
+    credentials: "true",
+  },
+};
 
-export const createSubscriptionOrder = async orderData => {
-  const response = await axios.post(`${API_BASE_URL}/subscriptionOrders`, orderData);
+// -------------------------[MEMBER]-------------------------
+// [GET] 회원 정보 조회
+export const fetchMemberInfo = memberId => memberApiGet(`/member`, { memberId });
+
+// [GET] 회원 로그인
+export const postLogin = memberData => {
+  return axios.post("http://localhost:8010/api/auth/login", {
+    username: memberData.username,
+    password: memberData.password,
+  });
+};
+
+// [GET] 회원 쿠폰 조회
+export const fetchMemberCoupon = async memberId => {
+  const response = await axios.get(`${API_BASE_URL}/coupon`, {
+    params: {
+      member_id: memberId,
+    },
+  });
+  return response.data;
+// Social Login
+export const handleSocialLogin = provider => {
+  window.location.href = `http://localhost:8010/oauth2/authorization/${provider}`;
+};
+
+// [GET] 회원 정보 조회
+export const fetchMemberInfo = async memberId => {
+  const response = await axios.get(`${API_BASE_URL}/member`, {
+    params: { member_id: memberId },
+  });
   return response.data;
 };
 
-export const getSubscriptionOrderDetails = async orderId => {
-  const response = await axios.get(`${API_BASE_URL}/subscriptionOrders/${orderId}`);
+// [GET] 회원 주소 정보 조회
+export const fetchMemberAddresses = async memberId => {
+  const response = await axios.get(`${API_BASE_URL}/address`, {
+    params: { member_id: memberId },
+  });
+  return response.data;
+};
+
+// [POST] 회원 주소지 추가
+export const addAddress = async ({ memberId, general_address, detail_address }) => {
+  const newAddress = {
+    member_id: memberId,
+    general_address,
+    detail_address,
+    is_default_address: false,
+  };
+
+  const response = await axios.post(`${API_BASE_URL}/address`, newAddress);
+  return response.data;
+};
+
+// [PUT] 회원 주소지 수정
+export const updateAddress = async ({
+  id,
+  general_address,
+  detail_address,
+  is_default_address,
+}) => {
+  const response = await axios.put(`${API_BASE_URL}/address/${id}`, {
+    general_address,
+    detail_address,
+    is_default_address,
+  });
+  return response.data;
+};
+
+// [DELETE] 회원 주소지 삭제
+export const deleteAddress = async id => {
+  const response = await axios.delete(`${API_BASE_URL}/address/${id}`);
+  return response.data;
+};
+
+// [PATCH] 회원 대표 주소지 설정
+export const setDefaultAddress = async ({ memberId, addressId }) => {
+  const allAddresses = await fetchMemberAddresses(memberId);
+  for (let address of allAddresses) {
+    if (address.is_default_address) {
+      await axios.patch(`${API_BASE_URL}/address/${address.id}`, {
+        is_default_address: false,
+      });
+    }
+  }
+
+  const response = await axios.patch(`${API_BASE_URL}/address/${addressId}`, {
+    is_default_address: true,
+  });
+  return response.data;
+};
+
+// [GET] 회원별 카드 정보 조회
+export const fetchMemberCard = async memberId => {
+  const response = await axios.get(`${API_BASE_URL}/card`, {
+    params: {
+      member_id: memberId,
+    },
+  });
+
+  return response.data;
+};
+
+// [POST] 회원 카드 추가
+export const addMemberCard = async ({ memberId, ...cardData }) => {
+  const response = await axios.post(`${API_BASE_URL}/card`, {
+    member_id: memberId,
+    ...cardData,
+  });
+  return response.data;
+};
+
+// [PUT] 회원 카드 수정
+export const updateMemberCard = async ({ memberId, id, ...cardData }) => {
+  if (!id) {
+    throw new Error("Card ID is required for updating");
+  }
+  const response = await axios.put(`${API_BASE_URL}/card/${id}`, {
+    member_id: memberId,
+    ...cardData,
+  });
+  return response.data;
+};
+
+// [DELETE] 회원 카드 삭제
+export const deleteMemberCard = async ({ memberId, cardId }) => {
+  const response = await axios.delete(`${API_BASE_URL}/card/${cardId}`);
   return response.data;
 };
 

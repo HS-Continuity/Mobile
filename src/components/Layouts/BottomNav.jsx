@@ -6,11 +6,14 @@ import { fetchCartItemsCount } from "../../apis";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { IoMdTime } from "react-icons/io";
 import { IoCartOutline } from "react-icons/io5";
-import { AiFillHome } from "react-icons/ai";
 import { HiOutlineUser } from "react-icons/hi";
+import logoWhite from "../../assets/images/logo_white.png";
+import useAuthStore from "../../stores/useAuthStore";
 
 const BottomNav = () => {
-  const memberId = import.meta.env.VITE_MEMBER_ID;
+  const { username, isAuthenticated } = useAuthStore();
+  const memberId = username;
+  // const memberId = import.meta.env.VITE_MEMBER_ID;
   const cartTypeId = null;
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [activeItem, setActiveItem] = useState("");
@@ -20,12 +23,13 @@ const BottomNav = () => {
   const { data: cartItemsCount, isLoading } = useQuery({
     queryKey: ["cart", memberId, cartTypeId],
     queryFn: () => fetchCartItemsCount(memberId, cartTypeId),
+    enabled: !!isAuthenticated && !!memberId,
   });
 
   const navItems = [
     { icon: RxHamburgerMenu, label: "카테고리", action: () => setIsCategoryOpen(true) },
     { icon: IoMdTime, label: "타임세일", path: "/timesale" },
-    { icon: AiFillHome, label: "", path: "/" },
+    { icon: null, label: "", path: "/" }, // 아이콘을 null로 설정
     { icon: HiOutlineUser, label: "내정보", path: "/mypage" },
     { icon: IoCartOutline, label: "카트", path: "/cart" },
   ];
@@ -70,12 +74,24 @@ const BottomNav = () => {
               onClick={() => handleNavigation(navItems.find(item => item.label === label))}>
               <div
                 className={`relative flex items-center justify-center ${
-                  label === "" ? "rounded-full bg-[#00835F] p-[10px] shadow-lg" : ""
+                  label === "" ? "rounded-full bg-green-shine p-[10px] shadow-lg" : ""
                 }`}>
-                <Icon
-                  className={`h-6 w-6 ${getItemStyle(label)} ${label === "" ? "h-8 w-8" : ""}`}
-                />
-                {label === "카트" && cartItemsCount > 0 && (
+                {label === "" ? (
+                  <div className='flex h-10 w-10 items-center justify-center'>
+                    <img
+                      src={logoWhite}
+                      alt='Logo'
+                      className='max-h-full max-w-full object-contain'
+                    />
+                  </div>
+                ) : (
+                  Icon && (
+                    <Icon
+                      className={`h-6 w-6 ${getItemStyle(label)} ${label === "" ? "h-8 w-8" : ""}`}
+                    />
+                  )
+                )}
+                {label === "카트" && isAuthenticated && cartItemsCount > 0 && (
                   <span className='absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white'>
                     {cartItemsCount}
                   </span>

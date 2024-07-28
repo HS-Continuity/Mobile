@@ -40,6 +40,26 @@
       #006061 100%
     );
   }
+  .bg-custom-green {
+    background-color: #00835f;
+  }
+
+  .bg-gradient-shine {
+    background-image: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.2) 0%,
+      rgba(255, 255, 255, 0) 100%
+    );
+  }
+
+  .bg-green-shine {
+    background-color: #00835f;
+    background-image: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.2) 0%,
+      rgba(255, 255, 255, 0) 100%
+    );
+  }
 }
 @font-face {
   font-family: "Apple SD Gothic Neo";

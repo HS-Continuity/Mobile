@@ -32,8 +32,8 @@ const SearchResult = () => {
   };
 
   const performSearch = searchTerm => {
-    addSearch(searchTerm.trim());
-    const searchPath = `/search-result?keyword=${encodeURIComponent(searchTerm.trim())}`;
+    addSearch(searchTerm);
+    const searchPath = `/search-result?keyword=${searchTerm}`;
     navigate(searchPath);
   };
 

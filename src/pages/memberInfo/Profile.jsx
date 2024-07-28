@@ -2,9 +2,13 @@ import { useState, useEffect } from "react";
 import { FaUser, FaEnvelope, FaLock, FaBirthdayCake, FaPhone } from "react-icons/fa";
 import useMemberStore from "../../stores/useMemberStore";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { fetchMemberInfo, updateUser } from "../../apis";
+import { changePassword, fetchMemberInfo, updateUser, verifyPassword } from "../../apis";
+import useAuthStore from "../../stores/useAuthStore";
+import toast from "react-hot-toast";
 
 const Profile = () => {
+  const { username } = useAuthStore();
+  const memberId = username;
   const queryClient = useQueryClient();
   const { user, setUser } = useMemberStore();
 
@@ -15,48 +19,21 @@ const Profile = () => {
   });
 
   const [passwordError, setPasswordError] = useState("");
+  const [formData, setFormData] = useState(null);
 
   const {
     data: userData,
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["member"],
-    queryFn: () => fetchMemberInfo(1),
-  });
-
-  const updateUserMutation = useMutation({
-    mutationFn: updateData => updateUser({ id: userData[0].id, userData: updateData }),
-    onSuccess: () => {
-      queryClient.invalidateQueries(["member"]);
-      setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
-      setPasswordError("");
-      alert("비밀번호가 성공적으로 변경되었습니다.");
-    },
-    onError: error => {
-      if (error.response && error.response.status === 401) {
-        setPasswordError("현재 비밀번호가 올바르지 않습니다.");
-      } else {
-        setPasswordError("비밀번호 변경에 실패했습니다. " + error.message);
-      }
-    },
-  });
-
-  const [formData, setFormData] = useState({
-    member_id: "",
-    member_name: "",
-    member_email: "",
-    member_password: "",
-    member_birthday: "",
-    member_phone_number: "",
-    member_gender: "",
-    id: "",
+    queryKey: ["member", memberId],
+    queryFn: () => fetchMemberInfo(memberId),
   });
 
   useEffect(() => {
     if (userData) {
-      setUser(userData[0]);
-      setFormData(userData[0]);
+      setUser(userData);
+      setFormData(userData);
     }
   }, [userData, setUser]);
 
@@ -65,19 +42,12 @@ const Profile = () => {
   };
 
   const validatePasswordChange = () => {
-    if (!passwordForm.currentPassword) {
-      setPasswordError("현재 비밀번호를 입력해주세요.");
-      return false;
-    }
-
-    if (passwordForm.currentPassword !== userData[0].member_password) {
-      console.log(passwordForm.currentPassword);
-      console.log(userData[0].member_password);
-      setPasswordError("현재 비밀번호가 일치하지 않습니다.");
-      return false;
-    }
-    if (!passwordForm.newPassword || !passwordForm.confirmPassword) {
-      setPasswordError("새 비밀번호와 확인 비밀번호를 모두 입력해주세요.");
+    if (
+      !passwordForm.currentPassword ||
+      !passwordForm.newPassword ||
+      !passwordForm.confirmPassword
+    ) {
+      setPasswordError("모든 비밀번호 필드를 입력해주세요.");
       return false;
     }
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
@@ -87,6 +57,39 @@ const Profile = () => {
     return true;
   };
 
+  const verifyPasswordMutation = useMutation({
+    mutationFn: () => verifyPassword(memberId, passwordForm.currentPassword),
+    onSuccess: isValid => {
+      console.log(isValid);
+      if (isValid) {
+        changePasswordMutation.mutate();
+      } else {
+        setPasswordError("현재 비밀번호가 올바르지 않습니다.@");
+      }
+    },
+    onError: () => {
+      setPasswordError("비밀번호 검증에 실패했습니다.");
+    },
+  });
+
+  const changePasswordMutation = useMutation({
+    mutationFn: () =>
+      changePassword({
+        memberId: memberId,
+        currentPassword: passwordForm.currentPassword,
+        newPassword: passwordForm.newPassword,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["member"]);
+      setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+      setPasswordError("");
+      toast.success("비밀번호가 성공적으로 변경되었습니다.");
+    },
+    onError: error => {
+      setPasswordError("비밀번호 변경에 실패했습니다. " + error.message);
+    },
+  });
+
   const handleSubmit = e => {
     e.preventDefault();
     setPasswordError("");
@@ -95,112 +98,100 @@ const Profile = () => {
       return;
     }
 
-    updateUserMutation.mutate({
-      ...formData,
-      member_password: passwordForm.confirmPassword,
-    });
+    verifyPasswordMutation.mutate();
   };
 
-  if (isLoading) return <div>Loading...</div>;
-  if (isError) return <div>Error loading user data</div>;
+  if (isLoading) return <div className='flex h-screen items-center justify-center'>로딩 중...</div>;
+  if (isError)
+    return (
+      <div className='text-center text-red-500'>
+        사용자 데이터를 불러오는 중 오류가 발생했습니다.
+      </div>
+    );
+  if (!formData) return null;
 
   return (
-    <div className='flex flex-col'>
-      <form onSubmit={handleSubmit} className='flex-1 space-y-4 p-4'>
-        <label className='input input-bordered flex items-center gap-2'>
-          <FaUser />
-          회원명
-          <input
-            type='text'
-            name='member_name'
-            className='grow'
-            value={formData.member_name}
-            disabled
-          />
-        </label>
-        <label className='input input-bordered flex items-center gap-2'>
-          <FaEnvelope />
-          아이디
-          <input
-            type='text'
-            name='member_email'
-            className='grow'
-            value={formData.member_email}
-            disabled
-          />
-        </label>
+    <div className='flex flex-col bg-gray-50'>
+      <form onSubmit={handleSubmit} className='flex-1 bg-white shadow-sm'>
+        <div className='space-y-4 p-4'>
+          <div className='grid grid-cols-2 gap-4'>
+            <InfoField icon={<FaUser />} label='회원명' value={formData.memberName} />
+            <InfoField icon={<FaBirthdayCake />} label='생년월일' value={formData.memberBirthday} />
+          </div>
+          <InfoField icon={<FaEnvelope />} label='아이디' value={formData.memberEmail} />
+          <InfoField icon={<FaPhone />} label='휴대폰번호' value={formData.memberPhoneNumber} />
+        </div>
 
-        <label className='input input-bordered flex items-center gap-2'>
-          <FaLock />
-          현재 비밀번호
-          <input
-            type='password'
-            className='grow'
-            name='currentPassword'
-            value={passwordForm.currentPassword}
-            onChange={handlePasswordChange}
-          />
-        </label>
-        <label className='input input-bordered flex items-center gap-2'>
-          <FaLock />
-          새 비밀번호
-          <input
-            type='password'
-            className='grow'
-            name='newPassword'
-            value={passwordForm.newPassword}
-            onChange={handlePasswordChange}
-          />
-        </label>
-        <label className='input input-bordered flex items-center gap-2'>
-          <FaLock />
-          새 비밀번호 확인
-          <input
-            type='password'
-            className='grow'
-            name='confirmPassword'
-            value={passwordForm.confirmPassword}
-            onChange={handlePasswordChange}
-          />
-        </label>
-        <label className='input input-bordered flex items-center gap-2'>
-          <FaBirthdayCake />
-          생년월일
-          <input
-            name='member_birthday'
-            type='text'
-            className='grow'
-            value={formData.member_birthday}
-            disabled
-          />
-        </label>
-        <label className='input input-bordered flex items-center gap-2'>
-          <FaPhone />
-          휴대폰번호
-          <input
-            name='member_phone_number'
-            type='text'
-            className='grow'
-            value={formData.member_phone_number}
-            disabled
-          />
-        </label>
-        {/* <label className='input input-bordered flex items-center gap-2'>
-          <FaVenusMars />
-          성별
-          <input
-            name='member_gender'
-            type='text'
-            className='grow'
-            value={formData.member_gender}
-            disabled
-          />
-        </label> */}
-        {passwordError && <div className='text-red-500'>{passwordError}</div>}
-        <button className='btn btn-primary w-full'>비밀번호 변경</button>
+        <div className='p-4'>
+          <h2 className='mb-1 text-lg font-semibold text-gray-700'>비밀번호 변경</h2>
+          <div className='space-y-2'>
+            <PasswordField
+              icon={<FaLock />}
+              label='현재 비밀번호'
+              name='currentPassword'
+              value={passwordForm.currentPassword}
+              onChange={handlePasswordChange}
+            />
+            <PasswordField
+              icon={<FaLock />}
+              label='새 비밀번호'
+              name='newPassword'
+              value={passwordForm.newPassword}
+              onChange={handlePasswordChange}
+            />
+            <PasswordField
+              icon={<FaLock />}
+              label='새 비밀번호 확인'
+              name='confirmPassword'
+              value={passwordForm.confirmPassword}
+              onChange={handlePasswordChange}
+            />
+          </div>
+        </div>
+
+        {passwordError && <div className='pb-4 pl-4 text-sm text-red-500'>{passwordError}</div>}
+        <div className='px-4'>
+          <button
+            className='btn w-full bg-[#00835F] p-4 text-white hover:bg-[#00734F]'
+            disabled={verifyPasswordMutation.isLoading || changePasswordMutation.isLoading}>
+            {verifyPasswordMutation.isLoading || changePasswordMutation.isLoading
+              ? "처리 중..."
+              : "비밀번호 변경"}
+          </button>
+        </div>
       </form>
     </div>
   );
 };
+
+const InfoField = ({ icon, label, value }) => (
+  <div className='flex items-center space-x-3 rounded-lg bg-gray-50 p-1'>
+    <span className='ml-3 text-gray-500'>{icon}</span>
+    <div>
+      <p className='text-sm text-gray-500'>{label}</p>
+      <p className='font-medium text-gray-800'>{value}</p>
+    </div>
+  </div>
+);
+
+const PasswordField = ({ icon, label, name, value, onChange }) => (
+  <div className='flex items-center space-x-4 rounded-lg border border-gray-200 bg-white p-3'>
+    <div className='flex min-w-[120px] items-center space-x-3'>
+      <span className='text-gray-500'>{icon}</span>
+      <label htmlFor={name} className='text-sm font-medium text-gray-700'>
+        {label}
+      </label>
+    </div>
+    <input
+      id={name}
+      type='password'
+      name={name}
+      value={value}
+      onChange={onChange}
+      className='flex-1 border-b border-gray-200 bg-transparent py-1 text-gray-800 focus:border-[#00835F] focus:outline-none'
+      placeholder='비밀번호를 입력하세요'
+    />
+  </div>
+);
 
 export default Profile;

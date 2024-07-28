@@ -107,7 +107,7 @@ const SubscriptionSetup = () => {
               {["1주", "2주", "3주", "4주", "매일"].map(option => (
                 <button
                   key={option}
-                  className={`btn ${subscriptionDetails.frequency === option ? "btn-primary" : "btn-outline"}`}
+                  className={`btn border border-gray-400 ${subscriptionDetails.frequency === option ? "bg-green-shine text-white hover:bg-[#00835F]" : "hover:bg-green-shine bg-white hover:text-white"}`}
                   onClick={() => handleFrequencyChange(option)}>
                   {option}
                 </button>
@@ -123,7 +123,7 @@ const SubscriptionSetup = () => {
               {["1개월", "2개월", "3개월", "4개월", "5개월", "6개월"].map(option => (
                 <button
                   key={option}
-                  className={`btn ${subscriptionDetails.duration === option ? "btn-primary" : "btn-outline"}`}
+                  className={`btn border border-gray-400 ${subscriptionDetails.duration === option ? "bg-green-shine text-white hover:bg-[#00835F]" : "hover:bg-green-shine bg-white hover:text-white"}`}
                   onClick={() => handleDurationChange(option)}>
                   {option}
                 </button>
@@ -139,7 +139,7 @@ const SubscriptionSetup = () => {
               {["월", "화", "수", "목", "금"].map(day => (
                 <button
                   key={day}
-                  className={`btn ${subscriptionDetails.selectedDays.includes(day) ? "btn-primary" : "btn-outline"}`}
+                  className={`btn border border-gray-400 ${subscriptionDetails.selectedDays.includes(day) ? "bg-green-shine text-white hover:bg-[#00835F]" : "hover:bg-green-shine bg-white hover:text-white"}`}
                   onClick={() => handleDayToggle(day)}>
                   {day}
                 </button>
@@ -163,7 +163,7 @@ const SubscriptionSetup = () => {
         <div className='main-container w-full'>
           <button
             className={`w-full p-4 text-lg font-bold text-white ${
-              isAllSelected ? "bg-[#00835F]" : "bg-gray-400"
+              isAllSelected ? "bg-green-shine" : "bg-gray-400"
             }`}
             onClick={handleSubmit}
             disabled={!isAllSelected}>

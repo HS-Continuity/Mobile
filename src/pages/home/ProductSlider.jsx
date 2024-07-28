@@ -15,6 +15,8 @@ const ProductSlider = () => {
     touchMove: true,
     centerMode: true,
     centerPadding: "0px",
+    autoplay: true,
+    autoplaySpeed: 3000,
   };
 
   const images = [

@@ -49,7 +49,7 @@ const SearchPage = () => {
   // 검색 실행 함수 (검색어 저장, 검색 결과 페이지로 이동)
   const performSearch = searchTerm => {
     addSearch(searchTerm.trim());
-    const searchPath = `/search-result?keyword=${encodeURIComponent(searchTerm.trim())}`;
+    const searchPath = `/search-result?keyword=${searchTerm.trim()}`;
     navigate(searchPath);
   };
 

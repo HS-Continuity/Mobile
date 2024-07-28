@@ -9,17 +9,22 @@ import {
 } from "../../apis";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
-import Skeleton from "../../components/Skeletons/Skeleton";
 import CartSkeleton from "../../components/Skeletons/CartSkeleton";
 import { AiOutlineMinus, AiOutlinePlus } from "react-icons/ai";
 import { GoTrash } from "react-icons/go";
+import useAuthStore from "../../stores/useAuthStore";
+import { FaLeaf } from "react-icons/fa";
+import EmptyCart from "./EmptyCart";
 
 const Cart = () => {
-  const memberId = import.meta.env.VITE_MEMBER_ID;
+  const { username } = useAuthStore();
+  const memberId = username;
+  // const memberId = import.meta.env.VITE_MEMBER_ID;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState(1);
   const [checkedItems, setCheckedItems] = useState({});
+  const [imgError, setImgError] = useState(false);
 
   // [GET] 장바구니 아이템 조회
   const { data: cartItems, isLoading } = useQuery({
@@ -177,6 +182,11 @@ const Cart = () => {
     return !hasCheckedItems || hasSoldOutCheckedItems;
   };
 
+  // 이미지 에러 핸들러
+  const handleImageError = () => {
+    setImgError(true);
+  };
+
   const handleOrder = () => {
     const selectedItems = cartItems?.filter(item => checkedItems[item.cartProductId]) || [];
 
@@ -228,21 +238,6 @@ const Cart = () => {
         </button>
       </div>
 
-      {/* 체크박스 전체 선택 */}
-      <div className='bg-white px-6 py-3'>
-        {!isLoading && cartItems && cartItems.length > 0 && (
-          <label className='flex items-center'>
-            <input
-              type='checkbox'
-              className='checkbox-primary checkbox mr-2'
-              checked={isAllChecked}
-              onChange={e => handleAllCheck(e.target.checked)}
-            />
-            <span>전체 선택</span>
-          </label>
-        )}
-      </div>
-
       {/* 장바구니 아이템 */}
       <div className='noScrollbar flex-1 overflow-auto bg-gray-50 p-2'>
         {isLoading || isDeliveryFeeLoading ? (
@@ -251,109 +246,133 @@ const Cart = () => {
             <CartSkeleton />
           </>
         ) : cartItems && cartItems.length > 0 ? (
-          Object.entries(groupedItems || {}).map(([customerId, items]) => (
-            <div key={customerId} className='mb-4 rounded-lg bg-white p-4 shadow'>
-              <h3 className='mb-2 font-bold'>{items[0].storeName}</h3>
-              {items.map(item => (
-                <div
-                  key={item.cartProductId}
-                  className='relative mb-2 flex items-start border-b p-2'>
+          <>
+            {/* 체크박스 전체 선택 */}
+            <div className='-mt-2 mb-2 bg-white px-6 py-3'>
+              {!isLoading && cartItems && cartItems.length > 0 && (
+                <label className='flex items-center'>
                   <input
                     type='checkbox'
-                    className='checkbox-primary checkbox mr-2 mt-1'
-                    checked={checkedItems[item.cartProductId] === true}
-                    onChange={() => handleCheckboxChange(item.cartProductId)}
+                    className='checkbox-primary checkbox mr-2'
+                    checked={isAllChecked}
+                    onChange={e => handleAllCheck(e.target.checked)}
                   />
-                  <Link to={`/product/${item.productId}`} className='mr-4'>
-                    <img
-                      src={item.productImage}
-                      alt={item.productName}
-                      className='h-20 w-20 rounded object-cover'
+                  <span>전체 선택</span>
+                </label>
+              )}
+            </div>
+            {Object.entries(groupedItems || {}).map(([customerId, items]) => (
+              <div key={customerId} className='mb-4 rounded-lg bg-white p-4 shadow-sm'>
+                <h3 className='mb-2 font-bold'>{items[0].storeName}</h3>
+                {items.map(item => (
+                  <div
+                    key={item.cartProductId}
+                    className='relative mb-2 flex items-start border-b p-2'>
+                    <input
+                      type='checkbox'
+                      className='checkbox-primary checkbox mr-2 mt-1'
+                      checked={checkedItems[item.cartProductId] === true}
+                      onChange={() => handleCheckboxChange(item.cartProductId)}
                     />
-                  </Link>
-                  <div className='mt-2 flex-grow'>
-                    <div className='flex justify-between'>
-                      <Link to={`/product/${item.productId}`}>
-                        <h4 className='font-bold'>{item.productName}</h4>
-                      </Link>
-                      <button
-                        className='text-gray-500 hover:text-red-500'
-                        onClick={() => handleDeleteItem(item.cartProductId)}
-                        disabled={deleteItemMutation.isLoading}>
-                        <GoTrash />
-                      </button>
-                    </div>
-                    <div className='flex items-center justify-between'>
-                      <div>
-                        <span className='font-bold'>{item.productPrice.toLocaleString()}원 </span>
-                        <span className='text-xs font-bold text-gray-400 line-through'>
-                          {item.productBasePrice.toLocaleString()}원
-                        </span>
-                      </div>
-                      <div className='flex items-center rounded-md border'>
-                        <button
-                          onClick={() => handleQuantityChange(item.cartProductId, false)}
-                          className={`${item.quantity == 1 || item.soldOut ? "bg-gray-100 hover:bg-gray-100" : ""} px-2 py-2 text-gray-500 hover:bg-gray-100`}
-                          disabled={
-                            item.quantity == 1 || item.soldOut || decrementMutation.isLoading
-                          }>
-                          <AiOutlineMinus />
-                        </button>
-                        <input
-                          type='text'
-                          value={item.soldOut ? "품절" : item.quantity}
-                          readOnly
-                          className='w-12 border-none text-center focus:outline-none'
+                    <Link to={`/product/${item.productId}`} className='mr-4'>
+                      {!imgError ? (
+                        <img
+                          src={item.productImage}
+                          alt={item.productName}
+                          className='h-20 w-20 rounded object-cover'
+                          onError={handleImageError}
                         />
+                      ) : (
+                        <div className='flex h-20 w-20 items-center justify-center bg-gradient-to-br from-green-100 to-green-200'>
+                          <FaLeaf className='mx-auto mb-2 text-4xl text-green-500' />
+                        </div>
+                      )}
+                    </Link>
+                    <div className='mt-2 flex-grow'>
+                      <div className='flex justify-between'>
+                        <Link to={`/product/${item.productId}`}>
+                          <h4 className='font-bold'>{item.productName}</h4>
+                        </Link>
                         <button
-                          onClick={() => handleQuantityChange(item.cartProductId, true)}
-                          className={`${item.soldOut && "bg-gray-100 hover:bg-gray-100"} px-3 py-2 text-gray-500 hover:bg-gray-100`}
-                          disabled={item.soldOut || incrementMutation.isLoading}>
-                          <AiOutlinePlus />
+                          className='text-gray-500 hover:text-red-500'
+                          onClick={() => handleDeleteItem(item.cartProductId)}
+                          disabled={deleteItemMutation.isLoading}>
+                          <GoTrash />
                         </button>
+                      </div>
+                      <div className='flex items-center justify-between'>
+                        <div>
+                          <span className='font-bold'>{item.productPrice.toLocaleString()}원 </span>
+                          <span className='text-xs font-bold text-gray-400 line-through'>
+                            {item.productBasePrice.toLocaleString()}원
+                          </span>
+                        </div>
+                        <div className='flex items-center rounded-md border'>
+                          <button
+                            onClick={() => handleQuantityChange(item.cartProductId, false)}
+                            className={`${item.quantity == 1 || item.soldOut ? "bg-gray-100 hover:bg-gray-100" : ""} px-2 py-2 text-gray-500 hover:bg-gray-100`}
+                            disabled={
+                              item.quantity == 1 || item.soldOut || decrementMutation.isLoading
+                            }>
+                            <AiOutlineMinus />
+                          </button>
+                          <input
+                            type='text'
+                            value={item.soldOut ? "품절" : item.quantity}
+                            readOnly
+                            className='w-12 border-none text-center focus:outline-none'
+                          />
+                          <button
+                            onClick={() => handleQuantityChange(item.cartProductId, true)}
+                            className={`${item.soldOut && "bg-gray-100 hover:bg-gray-100"} px-3 py-2 text-gray-500 hover:bg-gray-100`}
+                            disabled={item.soldOut || incrementMutation.isLoading}>
+                            <AiOutlinePlus />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
-              <div className='mt-2 flex-col justify-center text-center'>
-                {(() => {
-                  const customerTotal = calculateCustomerTotal(items);
-                  const deliveryFee =
-                    deliveryFees && deliveryFees[customerId] ? deliveryFees[customerId] : 0;
-                  return (
-                    <>
-                      {activeTab === 2 ? (
-                        <div className='flex items-center justify-center'>
-                          <p className='text-sm font-bold'>주문 금액 {"\u00A0"}</p>
-                          <p className='text-lg font-bold'> {customerTotal.toLocaleString()}</p>원
-                        </div>
-                      ) : (
-                        <div className='flex items-center justify-center'>
-                          <p className='text-sm font-bold'>주문 금액 {"\u00A0"}</p>
-                          <p className='text-lg font-bold'>
-                            {(customerTotal + deliveryFee).toLocaleString()}원
-                          </p>
-                        </div>
-                      )}
-                      <div className='flex items-center justify-center'>
-                        <p className='text-sm'>{customerTotal.toLocaleString()}원 + </p>
+                ))}
+                <div className='mt-2 flex-col justify-center text-center'>
+                  {(() => {
+                    const customerTotal = calculateCustomerTotal(items);
+                    const deliveryFee =
+                      deliveryFees && deliveryFees[customerId] ? deliveryFees[customerId] : 0;
+                    return (
+                      <>
                         {activeTab === 2 ? (
-                          <p className='text-xs text-red-600 line-through'>
-                            배송비 {deliveryFee.toLocaleString()}원
-                          </p>
+                          <div className='mt-1 flex items-center justify-center'>
+                            <p className='text-sm font-bold'>주문 금액 {"\u00A0"}</p>
+                            <p className='text-lg font-bold'> {customerTotal.toLocaleString()}</p>원
+                          </div>
                         ) : (
-                          <p className='text-xs'>배송비 {deliveryFee.toLocaleString()}원</p>
+                          <div className='mt-1 flex items-center justify-center'>
+                            <p className='text-sm font-bold'>주문 금액 {"\u00A0"}</p>
+                            <p className='text-lg font-bold'>
+                              {(customerTotal + deliveryFee).toLocaleString()}
+                            </p>
+                            원
+                          </div>
                         )}
-                      </div>
-                    </>
-                  );
-                })()}
+                        <div className='flex items-center justify-center'>
+                          <p className='text-sm'>{customerTotal.toLocaleString()}원 + </p>
+                          {activeTab === 2 ? (
+                            <p className='text-xs text-red-600 line-through'>
+                              배송비 {deliveryFee.toLocaleString()}원
+                            </p>
+                          ) : (
+                            <p className='text-xs'>배송비 {deliveryFee.toLocaleString()}원</p>
+                          )}
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
               </div>
-            </div>
-          ))
+            ))}
+          </>
         ) : (
-          <p>장바구니가 비어있습니다.</p>
+          <EmptyCart />
         )}
       </div>
 
@@ -362,7 +381,7 @@ const Cart = () => {
         <div className='main-container w-full'>
           <button
             className={`w-full p-4 text-lg font-bold text-white ${
-              isOrderDisabled() ? "bg-gray-400" : "bg-[#00835F]"
+              isOrderDisabled() ? "bg-gray-400" : "bg-green-shine"
             }`}
             disabled={isOrderDisabled()}
             onClick={handleOrder}>

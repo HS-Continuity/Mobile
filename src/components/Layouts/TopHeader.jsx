@@ -104,7 +104,7 @@ const TopHeader = () => {
               <Link
                 to='/login'
                 className='col-span-1 -ml-1 flex justify-center text-base text-[#00835F]'>
-                🌿로그인
+                🌿테스트
               </Link>
             )}
           </div>

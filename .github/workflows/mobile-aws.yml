@@ -22,7 +22,7 @@ jobs:
         run: npm install
 
       - name: Build application
-        run: vite build
+        run: npx vite build
 
       - name: Sync files to S3
         uses: jakejarvis/s3-sync-action@v0.5.1

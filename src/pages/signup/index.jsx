@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { LuCake, LuLock, LuUser2 } from "react-icons/lu";
 import { SlEnvolope } from "react-icons/sl";
 import { PiGenderNeuterLight } from "react-icons/pi";
@@ -297,7 +297,7 @@ const SignUp = () => {
                 onChange={handleChange}
                 className='peer sr-only'
               />
-              <span className='peer-checked:bg-green-shine my-[7.2px] rounded-l-lg border border-gray-300 px-10 py-1 focus:outline-none peer-checked:border-[#00835F] peer-checked:text-white'>
+              <span className='my-[7.2px] rounded-l-lg border border-gray-300 px-10 py-1 focus:outline-none peer-checked:border-[#00835F] peer-checked:bg-green-shine peer-checked:text-white'>
                 남성
               </span>
             </label>
@@ -309,7 +309,7 @@ const SignUp = () => {
                 onChange={handleChange}
                 className='peer sr-only'
               />
-              <span className='peer-checked:bg-green-shine rounded-r-lg border border-gray-300 px-10 py-1 focus:outline-none peer-checked:border-[#00835F] peer-checked:text-white'>
+              <span className='rounded-r-lg border border-gray-300 px-10 py-1 focus:outline-none peer-checked:border-[#00835F] peer-checked:bg-green-shine peer-checked:text-white'>
                 여성
               </span>
             </label>
@@ -331,7 +331,7 @@ const SignUp = () => {
             <button
               type='button'
               onClick={sendVerificationCode}
-              className='bg-green-shine hover:bg-green-shine btn absolute right-0 top-0 w-16 rounded-s-none rounded-t-none text-white'
+              className='btn absolute right-0 top-0 w-16 rounded-s-none rounded-t-none bg-green-shine text-white hover:bg-green-shine'
               disabled={isCodeSent && timeLeft > 0}>
               {isCodeSent && timeLeft > 0
                 ? `${Math.floor(timeLeft / 60)}:${(timeLeft % 60).toString().padStart(2, "0")}`
@@ -388,12 +388,10 @@ const SignUp = () => {
 
         <button
           type='submit'
-          className='bg-green-shine hover:bg-green-shine btn w-full'
+          className='btn w-full bg-green-shine hover:bg-green-shine'
           disabled={registerMutation.isPending || !isFormValid()}>
           {registerMutation.isPending ? "처리 중..." : "회원가입"}
         </button>
-
-        <Toaster />
       </div>
     </form>
   );

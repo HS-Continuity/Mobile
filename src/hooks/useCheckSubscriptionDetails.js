@@ -8,15 +8,16 @@ const useCheckSubscriptionDetails = subscriptionDetails => {
     const isSubscriptionDetailsValid = () => {
       return (
         subscriptionDetails &&
-        subscriptionDetails.frequency &&
-        subscriptionDetails.duration &&
-        subscriptionDetails.selectedDays &&
-        subscriptionDetails.selectedDays.length > 0
+        subscriptionDetails.deliveryCycle &&
+        subscriptionDetails.startDate &&
+        subscriptionDetails.endDate &&
+        subscriptionDetails.deliveryDayOfWeeks &&
+        subscriptionDetails.deliveryDayOfWeeks.length > 0
       );
     };
 
     if (!isSubscriptionDetailsValid()) {
-      navigate("/cart");
+      navigate("/subscription-setup");
     }
   }, [subscriptionDetails, navigate]);
 };

@@ -525,18 +525,22 @@ export const putSubscriptionOrderCancel = async regularOrderId => {
   return response;
 };
 
+// [POST] 상품 리뷰 등록
+export const postProductReview = async reviewData => {
+  const formData = new FormData();
 
-// [DELETE] 회원 카드 삭제
-export const deleteMemberCard = async ({ memberId, cardId }) => {
-  const response = await axios.delete(`${API_BASE_URL}/card/${cardId}`);
-  return response.data;
-};
+  // ofRegisterProductReview 객체를 직접 추가
+  formData.append(
+    "ofRegisterProductReview",
+    new Blob([JSON.stringify(reviewData.ofRegisterProductReview)], {
+      type: "application/json",
+    })
+  );
 
-// [UPDATE] 회원 정보 수정
-export const updateUser = async ({ id, userData }) => {
-  const response = await axios.put(`${API_BASE_URL}/member/${id}`, userData);
-  return response.data;
-};
+  // 이미지 추가
+  if (reviewData.image) {
+    formData.append("image", reviewData.image);
+  }
 
   const response = await axios.post(`http://localhost:8020/api/product-review`, formData, {
     headers: {

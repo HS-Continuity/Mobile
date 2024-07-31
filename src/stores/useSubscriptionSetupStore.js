@@ -2,9 +2,13 @@ import { create } from "zustand";
 
 export const useSubscriptionSetupStore = create(set => ({
   subscriptionDetails: {
-    frequency: "",
-    duration: "",
-    selectedDays: [],
+    deliveryDayOfWeeks: [],
+    startDate: null,
+    endDate: null,
+    deliveryCycle: null,
   },
-  setSubscriptionDetails: details => set({ subscriptionDetails: details }),
+  setSubscriptionDetails: details =>
+    set(state => ({
+      subscriptionDetails: { ...state.subscriptionDetails, ...details },
+    })),
 }));

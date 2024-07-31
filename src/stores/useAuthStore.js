@@ -2,25 +2,65 @@ import { create } from "zustand";
 import axios from "axios";
 import base64 from "base-64";
 
-let isRefreshing = false;
-let failedQueue = [];
-
-const processQueue = (error, token = null) => {
-  failedQueue.forEach(prom => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve(token);
-    }
-  });
-
-  failedQueue = [];
-};
-
-const useAuthStore = create(set => ({
-  token: null,
+const useAuthStore = create((set, get) => ({
+  accessToken: null,
   username: null,
   isAuthenticated: false,
+  isInitializing: true,
+  initializeAttempts: 0,
+  maxInitializeAttempts: 3,
+
+  initializeAuth: async () => {
+    const { initializeAttempts, maxInitializeAttempts } = get();
+    if (initializeAttempts >= maxInitializeAttempts) {
+      console.error("Max initialization attempts reached");
+      set({ isInitializing: false });
+      return false;
+    }
+
+    set({ initializeAttempts: initializeAttempts + 1 });
+
+    try {
+      const response = await axios.get(
+        "http://localhost:8010/access-token",
+        { timeout: 5000 },
+        { withCredentials: true }
+      );
+
+      const authHeader = response.headers["authorization"];
+      if (authHeader && authHeader.startsWith("Bearer ")) {
+        const token = authHeader.substring(7);
+        const payload = JSON.parse(base64.decode(token.split(".")[1]));
+        const username = payload.username;
+
+        set({
+          accessToken: token,
+          username: username,
+          isAuthenticated: true,
+          isInitializing: false,
+          initializeAttempts: 0,
+        });
+        axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+        return true;
+      }
+    } catch (error) {
+      console.error("Failed to refresh token:", error);
+      if (error.code === "ECONNREFUSED") {
+        console.log("Server is not responding. Retrying in 5 seconds...");
+        setTimeout(() => get().initializeAuth(), 5000);
+      } else {
+        set({
+          accessToken: null,
+          username: null,
+          isAuthenticated: false,
+          isInitializing: false,
+        });
+        delete axios.defaults.headers.common["Authorization"];
+      }
+    }
+    return false;
+  },
+
   login: async loginData => {
     try {
       const response = await axios.post("http://localhost:8010/api/auth/login", loginData, {
@@ -28,24 +68,17 @@ const useAuthStore = create(set => ({
           "Content-Type": "application/json",
         },
         withCredentials: true,
+        timeout: 5000,
       });
 
-      console.log(response);
-      const authHeader = response.headers["authorization"]; // Bearer 포함
-
+      const authHeader = response.headers["authorization"];
       if (authHeader && authHeader.startsWith("Bearer ")) {
-        const token = authHeader.substring(7); // "Bearer " 이후의 문자열 추출
-
+        const token = authHeader.substring(7);
         const payload = JSON.parse(base64.decode(token.split(".")[1]));
-
         const username = payload.username;
 
-        console.log(username);
-        set({ accessToken: authHeader, username: username, isAuthenticated: true });
-
-        // 향후 요청에 대한 기본 헤더 설정
-        axios.defaults.headers.common["Authorization"] = authHeader;
-
+        set({ accessToken: token, username: username, isAuthenticated: true });
+        axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
         return true;
       } else {
         console.error("No valid Authorization header found");
@@ -53,97 +86,45 @@ const useAuthStore = create(set => ({
       }
     } catch (error) {
       console.error("Login failed:", error);
-      if (error.response) {
-        console.error("Response data:", error.response.data);
-        console.error("Response status:", error.response.status);
-        console.error("Response headers:", error.response.headers);
-      }
       return false;
     }
   },
+
   logout: async () => {
     try {
-      await axios.post("http://localhost:8010/api/auth/logout", {}, { withCredentials: true });
+      await axios.post(
+        "http://localhost:8010/api/auth/logout",
+        {},
+        {
+          withCredentials: true,
+          timeout: 5000,
+        }
+      );
     } catch (error) {
       console.error("Logout failed:", error);
     }
     set({ accessToken: null, username: null, isAuthenticated: false });
     delete axios.defaults.headers.common["Authorization"];
   },
-  refreshToken: async () => {
-    try {
-      const response = await axios.post(
-        "http://localhost:8010/api/access-token",
-        {},
-        {
-          withCredentials: true,
-        }
-      );
-      const authHeader = response.headers["authorization"]; // Bearer 포함
 
-      if (authHeader && authHeader.startsWith("Bearer ")) {
-        const token = authHeader.substring(7); // "Bearer " 이후의 문자열 추출
-
-        const payload = JSON.parse(base64.decode(token.split(".")[1]));
-
-        const username = payload.username;
-
-        console.log(username);
-        set({ accessToken: token, username: username, isAuthenticated: true });
-
-        // 향후 요청에 대한 기본 헤더 설정
-        axios.defaults.headers.common["Authorization"] = authHeader;
-
-        return true;
-      }
-    } catch (error) {
-      console.error("Token refresh failed:", error);
-      set({ accessToken: null, username: null, isAuthenticated: false });
-      delete axios.defaults.headers.common["Authorization"];
-      return false;
-    }
-  },
   setupInterceptors: () => {
     axios.interceptors.response.use(
       response => response,
       async error => {
         const originalRequest = error.config;
 
-        if (error.response.status === 401 && !originalRequest._retry) {
-          if (isRefreshing) {
-            return new Promise((resolve, reject) => {
-              failedQueue.push({ resolve, reject });
-            })
-              .then(token => {
-                originalRequest.headers["Authorization"] = "Bearer " + token;
-                return axios(originalRequest);
-              })
-              .catch(err => Promise.reject(err));
-          }
-
+        if (error.response && error.response.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
-          isRefreshing = true;
 
-          return new Promise((resolve, reject) => {
-            get()
-              .refreshToken()
-              .then(token => {
-                if (token) {
-                  processQueue(null, token);
-                  resolve(axios(originalRequest));
-                } else {
-                  processQueue(new Error("Failed to refresh token"));
-                  reject(error);
-                }
-              })
-              .catch(err => {
-                processQueue(err);
-                reject(err);
-              })
-              .finally(() => {
-                isRefreshing = false;
-              });
-          });
+          try {
+            const isRefreshed = await get().initializeAuth();
+            if (isRefreshed) {
+              originalRequest.headers["Authorization"] = `Bearer ${get().accessToken}`;
+              return axios(originalRequest);
+            }
+          } catch (refreshError) {
+            console.error("Token refresh failed:", refreshError);
+          }
         }
 
         return Promise.reject(error);

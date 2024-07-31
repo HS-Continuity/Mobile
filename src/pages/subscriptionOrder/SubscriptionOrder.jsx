@@ -3,12 +3,13 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   addMemberCard,
-  createSubscriptionOrder,
+  // createSubscriptionOrder,
   deleteMemberCard,
   fetchMemberAddresses,
   fetchMemberCard,
   fetchMemberCoupon,
   fetchMemberInfo,
+  postSubscriptionOrder,
 } from "../../apis/index";
 import { useSubscriptionSetupStore } from "../../stores/useSubscriptionSetupStore";
 import useCheckSubscriptionDetails from "../../hooks/useCheckSubscriptionDetails";
@@ -23,6 +24,10 @@ import Payment from "../../components/Order/Payment";
 import ConsentPayment from "../../components/Order/ConsentPayment";
 import useCardColorStore from "../../stores/useCardColorStore";
 import useAuthStore from "../../stores/useAuthStore";
+import DeliveryMemo from "../../components/Order/DeliveryMemo";
+import SubscriptionInfo from "../../components/Order/SubscriptionInfo";
+import OrderSkeleton from "../../components/Skeletons/OrderSkeleton";
+import toast from "react-hot-toast";
 
 const SubscriptionOrder = () => {
   const queryClient = useQueryClient();
@@ -30,11 +35,20 @@ const SubscriptionOrder = () => {
   const navigate = useNavigate();
 
   // 주문 아이템
-  const { orderItems, totalProductPrice, totalDeliveryFee } = location.state || { orderItems: [] };
+  const { groupedItems, totalProductPrice, totalDeliveryFee } = location.state || {
+    groupedItems: {},
+    totalProductPrice: 0,
+    totalDeliveryFee: 0,
+  };
   // 쿠폰
   const [selectedCoupon, setSelectedCoupon] = useState(null);
   // 받는 사람
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState(null);
+
+  // 배송 메모
+  const [orderMemo, setOrderMemo] = useState("");
+
   // 결제 수단
   const [consentPayment, setConsentPayment] = useState(false);
   const [selectedCardIndex, setSelectedCardIndex] = useState(0);
@@ -43,26 +57,45 @@ const SubscriptionOrder = () => {
   // 카드 색깔 전역 변수
   const getCardColor = useCardColorStore(state => state.getCardColor);
 
+  const [isPaymentEnabled, setIsPaymentEnabled] = useState(false);
+  const [hasUserSelectedAddress, setHasUserSelectedAddress] = useState(false);
+
   const { subscriptionDetails } = useSubscriptionSetupStore();
 
+  useOrderItemsValidation(groupedItems);
   useCheckSubscriptionDetails(subscriptionDetails);
-  useOrderItemsValidation(orderItems);
 
   // 설정 값
   const { username } = useAuthStore();
   const memberId = username;
-  // const memberId = import.meta.env.VITE_memberId;
-  // const totalPrice = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  // const shippingFee = 2500;
-  // const regularShippingDiscount = -2500;
-  // const totalPrice = totalProductPrice;
-  const couponDiscount = selectedCoupon ? selectedCoupon.discount_amount : 0;
+  const couponDiscount = selectedCoupon ? selectedCoupon.discountAmount : 0;
   const finalPrice = totalProductPrice - couponDiscount;
 
   const createOrderMutation = useMutation({
-    mutationFn: createSubscriptionOrder,
-    onSuccess: data => {
-      navigate("/order-complete", { state: { orderId: data.id } });
+    mutationFn: postSubscriptionOrder,
+    onSuccess: (data, variables) => {
+      // const orderDetailId = data?.data?.result?.orderDetailId;
+      console.log(data.data.result.regularDeliveryApplicationId);
+      // if (!orderDetailId) {
+      //   console.error("Order detail ID not found in the response");
+      //   toast.error("주문 생성 중 오류가 발생했습니다.");
+      //   return;
+      // }
+
+      const successData = {
+        recipientName: selectedAddress.recipientName,
+        recipientAddress: `${selectedAddress.generalAddress} ${selectedAddress.detailAddress}`,
+        recipientPhoneNumber: selectedAddress.recipientPhoneNumber,
+        orderMemo: orderMemo,
+        totalAmount: finalPrice,
+        cardInfo: cards[selectedCardIndex - 1],
+        orderDetailId: 0,
+        regularDeliveryApplicationId: data.data.result.regularDeliveryApplicationId,
+      };
+      navigate("/order-success", { state: successData });
+    },
+    onError: () => {
+      navigate("/order-fail");
     },
   });
 
@@ -142,6 +175,17 @@ const SubscriptionOrder = () => {
       .join("");
   };
 
+  const isCardExpired = expirationDate => {
+    const [expirationYear, expirationMonth] = expirationDate.split("-").map(Number);
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth() + 1;
+    return (
+      expirationYear < currentYear ||
+      (expirationYear === currentYear && expirationMonth < currentMonth)
+    );
+  };
+
   // EVENT HANDLERS
   // 카드 추가 핸들러
   const handleAddCard = cardData => {
@@ -176,11 +220,12 @@ const SubscriptionOrder = () => {
 
   // 쿠폰 핸들러
   const handleCouponChange = e => {
-    const couponId = e.target.value;
-    if (couponId === "") {
+    const memberCouponId = e.target.value;
+    console.log(memberCouponId);
+    if (memberCouponId == "") {
       setSelectedCoupon(null);
     } else {
-      const selected = coupons.find(coupon => coupon.id === couponId);
+      const selected = coupons.find(coupon => coupon.memberCouponId == memberCouponId);
       setSelectedCoupon(selected || null);
     }
   };
@@ -196,54 +241,127 @@ const SubscriptionOrder = () => {
     queryClient.invalidateQueries(["address", memberId]);
   };
 
-  // useEffect(() => {
-  //   if (memberInfo && memberInfo.length > 0) {
-  //     setRecipientName(memberInfo[0].memberName);
-  //     setRecipientPhone(memberInfo[0].memberPhoneNumber);
-  //   }
-  // }, [memberInfo]);
+  const handleSelectAddress = address => {
+    setSelectedAddress(address);
+    setHasUserSelectedAddress(true);
+  };
+
+  useEffect(() => {
+    if (addresses && addresses.length > 0 && !hasUserSelectedAddress) {
+      const defaultAddress = addresses.find(address => address.isDefaultAddress === "ACTIVE");
+      if (defaultAddress) {
+        setSelectedAddress(defaultAddress);
+      }
+    }
+  }, [addresses, hasUserSelectedAddress]);
+
+  useEffect(() => {
+    if (cards && cards.length > 0) {
+      const defaultCardIndex = cards.findIndex(card => card.isDefaultPaymentCard === "ACTIVE");
+      setSelectedCardIndex(defaultCardIndex !== -1 ? defaultCardIndex + 1 : 0);
+    }
+  }, [cards]);
+
+  useEffect(() => {
+    const isValidCard =
+      cards &&
+      cards.length > 0 &&
+      selectedCardIndex !== null &&
+      selectedCardIndex > 0 &&
+      cards[selectedCardIndex - 1] &&
+      !isCardExpired(cards[selectedCardIndex - 1].cardExpiration);
+    const isValidAddress = selectedAddress !== null;
+
+    setIsPaymentEnabled(isValidAddress && isValidCard && consentPayment);
+  }, [selectedAddress, cards, selectedCardIndex, consentPayment]);
 
   if (couponsLoading || memberInfoLoading || addressesLoading || cardsLoading)
-    return <div>불러오는중...</div>;
+    return <OrderSkeleton />;
   if (couponsError || memberInfoError || addressesError || cardsError)
     return <div>Error loading data</div>;
 
-  const defaultAddress = addresses.find(address => address.is_default_address);
+  const handlePlaceOrder = () => {
+    if (!isPaymentEnabled) {
+      if (!selectedAddress) {
+        toast.error("배송지를 선택해주세요.");
+      } else if (!cards || cards.length === 0 || selectedCardIndex === 0) {
+        toast.error("결제 카드를 선택해주세요.");
+      } else if (!consentPayment) {
+        toast.error("결제 동의가 필요합니다.");
+      }
+      return;
+    }
 
-  // const handleSubmit = () => {
-  //   const orderData = {
-  //     items: orderItems,
-  //     subscriptionDetails,
-  //     totalPrice: finalPrice,
-  //     paymentMethod,
-  //   };
-  //   createOrderMutation.mutate(orderData);
-  // };
+    const convertDeliveryCycle = cycle => {
+      return cycle.replace(/[^0-9]/g, "");
+    };
+
+    const convertDayOfWeek = day => {
+      const dayMap = {
+        월: "MONDAY",
+        화: "TUESDAY",
+        수: "WEDNESDAY",
+        목: "THURSDAY",
+        금: "FRIDAY",
+        토: "SATURDAY",
+        일: "SUNDAY",
+      };
+      return dayMap[day] || day;
+    };
+
+    const orderRequests = Object.entries(groupedItems).map(([customerId, group]) => ({
+      customerId: parseInt(customerId),
+      memberId: memberId,
+      memberCouponId: selectedCoupon ? selectedCoupon.memberCouponId : null,
+      orderMemo: orderMemo,
+      paymentCardId: cards[selectedCardIndex - 1].memberPaymentCardId,
+      productOrderList: {
+        productOrderList: group.items.map(item => ({
+          productId: item.productId,
+          quantity: item.quantity,
+        })),
+      },
+      deliveryPeriod: {
+        startDate: subscriptionDetails.startDate,
+        endDate: subscriptionDetails.endDate,
+        deliveryCycle: parseInt(convertDeliveryCycle(subscriptionDetails.deliveryCycle)),
+        deliveryDayOfWeeks: subscriptionDetails.deliveryDayOfWeeks.map(convertDayOfWeek),
+      },
+      recipient: {
+        recipient: selectedAddress.recipientName,
+        recipientPhoneNumber: selectedAddress.recipientPhoneNumber,
+        recipientAddress: `${selectedAddress.generalAddress} ${selectedAddress.detailAddress}`,
+      },
+    }));
+
+    orderRequests.forEach(orderData => {
+      createOrderMutation.mutate(orderData);
+    });
+  };
 
   return (
-    <div className='noScrollbar flex h-screen flex-col bg-gray-50 pb-14'>
-      <div className='noScrollbar flex-1 space-y-4 overflow-auto p-4'>
+    <div className='noScrollbar flex h-screen flex-col bg-gray-50 pb-16'>
+      <div className='noScrollbar flex-1 space-y-2 overflow-auto'>
         {/* 주문 아이템 */}
-        <OrderItems orderItems={orderItems} />
+        <OrderItems groupedItems={groupedItems} />
 
         {/* 배송 주기 */}
-        <div className='mb-4 rounded-lg bg-white p-4 shadow'>
-          <h2 className='mb-2 font-bold'>정기 배송 정보</h2>
-          <p>배송주기: {subscriptionDetails.frequency}</p>
-          <p>배송기간: {subscriptionDetails.duration}</p>
-          <p>배송요일: {subscriptionDetails.selectedDays.join(", ")}</p>
-        </div>
+        <SubscriptionInfo subscriptionDetails={subscriptionDetails} />
 
         {/* 구매자 정보 */}
         <OrderMemberInfo memberInfo={memberInfo} />
 
+        {/* 배송 메모 */}
+        <DeliveryMemo onChange={setOrderMemo} />
+
         {/* 받는 사람 주소 */}
         <DeliveryAddress
-          defaultAddress={defaultAddress}
+          selectedAddress={selectedAddress}
           isAddressModalOpen={isAddressModalOpen}
           handleOpenAddressModal={handleOpenAddressModal}
           handleCloseAddressModal={handleCloseAddressModal}
           memberId={memberId}
+          onSelectAddress={handleSelectAddress}
         />
 
         {/* 회원 쿠폰 리스트 */}
@@ -264,6 +382,7 @@ const SubscriptionOrder = () => {
 
         {/*  결제 수단 */}
         <Payment
+          memberId={memberId}
           cards={cards}
           selectedCardIndex={selectedCardIndex}
           handlePrevCard={handlePrevCard}
@@ -274,17 +393,25 @@ const SubscriptionOrder = () => {
           handleAddCard={handleAddCard}
           getCardColor={getCardColor}
           maskDigits={maskDigits}
+          queryClient={queryClient}
         />
 
         {/* 결제 동의 */}
         <div className=''>
-          <label className='flex items-center'>
+          <label className='flex items-center justify-center rounded-lg border bg-white p-4'>
             <input
+              type='checkbox'
+              onChange={handleConsentPayment}
+              checked={consentPayment}
+              className='checkbox mr-3 border-gray-500 [--chkbg:#00835F] [--chkfg:white] checked:border-[#00835F]'
+            />
+
+            {/* <input
               type='checkbox'
               className='checkbox-primary checkbox mr-2'
               onChange={handleConsentPayment}
               checked={consentPayment}
-            />
+            /> */}
             <span className='text-sm'>위 내용을 확인하였으며 결제에 동의합니다.</span>
           </label>
         </div>
@@ -295,6 +422,8 @@ const SubscriptionOrder = () => {
         consentPayment={consentPayment}
         handleConsentPayment={handleConsentPayment}
         finalPrice={finalPrice}
+        handlePlaceOrder={handlePlaceOrder}
+        isPaymentEnabled={isPaymentEnabled}
       />
     </div>
   );

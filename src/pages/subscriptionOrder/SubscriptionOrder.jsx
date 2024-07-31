@@ -3,7 +3,10 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   addMemberCard,
+<<<<<<< HEAD
   //createSubscriptionOrder,
+=======
+>>>>>>> b226f244e0e80583d448ed574114fbde2f0d1316
   deleteMemberCard,
   fetchMemberAddresses,
   fetchMemberCard,

@@ -2,6 +2,7 @@ import axios from "axios";
 
 const DB_URL = import.meta.env.VITE_DB_URL;
 const MEMBER_DB_URL = import.meta.env.VITE_MEMBER_DB_URL;
+const ORDER_DB_URL = import.meta.env.VITE_ORDER_DB_URL;
 const config = import.meta.env.VITE_CONFIG;
 
 // 에러 처리 공통 함수
@@ -48,5 +49,11 @@ export const memberApiGet = (url, params) => apiGet(url, params, MEMBER_DB_URL);
 export const memberApiPost = (url, data) => apiPost(url, data, MEMBER_DB_URL);
 export const memberApiPut = (url, data) => apiPut(url, data, MEMBER_DB_URL);
 export const memberApiDelete = url => apiDelete(url, MEMBER_DB_URL);
+
+// ORDER_DB_URL을 사용하는 API 호출 함수
+export const orderApiGet = (url, params) => apiGet(url, params, ORDER_DB_URL);
+export const orderApiPost = (url, data) => apiPost(url, data, ORDER_DB_URL);
+export const orderApiPut = (url, data) => apiPut(url, data, ORDER_DB_URL);
+export const orderApiDelete = url => apiDelete(url, ORDER_DB_URL);
 
 export { DB_URL, MEMBER_DB_URL, config };

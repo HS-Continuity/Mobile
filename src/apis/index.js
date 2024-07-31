@@ -8,6 +8,10 @@ import {
   memberApiPost,
   memberApiPut,
   memberApiDelete,
+  orderApiDelete,
+  orderApiGet,
+  orderApiPost,
+  orderApiPut,
 } from "./apiUtils";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
@@ -58,45 +62,65 @@ export const useCustomerProductsQuery = customerId =>
   });
 
 // -------------------------[PRODUCT]-------------------------
+// 트래픽 몰리는 시간대
+const isHighTrafficTime = () => {
+  const now = new Date();
+  const hour = now.getHours();
+  const day = now.getDay(); // 0 (일요일) 부터 6 (토요일)
+
+  // 점심 시간 (11:00 - 14:00)
+  const isLunchTime = hour >= 11 && hour < 14;
+
+  // 저녁 시간 (17:00 - 20:00)
+  const isDinnerTime = hour >= 17 && hour < 20;
+
+  // 주말 오전 (토,일 10:00 - 13:00)
+  const isWeekendMorning = (day === 0 || day === 6) && hour >= 10 && hour < 13;
+
+  // 금요일 저녁 (금요일 17:00 이후)
+  const isFridayEvening = day === 5 && hour >= 17;
+
+  return isLunchTime || isDinnerTime || isWeekendMorning || isFridayEvening;
+};
+
 // [GET] 상품 전체 조회
 const fetchProducts = ({ pageParam = 0 }) =>
   apiGet("/shopping/product/search", { startPage: pageParam, pageSize: 10 });
 
-// [GET] 상품 상세 이미지 조회
-export const fetchProductDetailImage = productId => apiGet(`/product-image/${productId}`);
-
-// [GET] 친환경 상품 인증서 이미지 조회
-export const fetchEcoProductImage = productId =>
-  apiGet(`/product-image/certification/${productId}`);
-
 // [GET] 상품 전체 무한 스크롤 조회
-export const useProductsQuery = () =>
-  useInfiniteQuery({
-    queryKey: ["products"],
+export const useProductsQuery = () => {
+  const isHighTraffic = isHighTrafficTime();
+  const staleTime = isHighTraffic ? 5 * 60 * 1000 : 30 * 60 * 1000; // 5분 또는 30분
+  const cacheTime = isHighTraffic ? 10 * 60 * 1000 : 60 * 60 * 1000; // 10분 또는 60분
+
+  return useInfiniteQuery({
+    queryKey: ["allproducts"],
     queryFn: fetchProducts,
+    staleTime: staleTime,
+    cacheTime: cacheTime,
+    keepPreviousData: true,
     getNextPageParam: lastPage => (lastPage.last ? undefined : lastPage.number + 1),
-    retry: false,
-    throwOnError: () => {},
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  });
+};
+
+// [GET] 일반 상품 전체 조회
+export const fetchGeneralItems = ({ pageParam = 0 }) =>
+  apiGet("/shopping/product/search", {
+    isCertification: "INACTIVE",
+    startPage: pageParam,
+    pageSize: 10,
   });
 
-// [GET] 상품 내용 상세 조회
-export const fetchProductDetail = productId => apiGet(`/shopping/product/${productId}`);
+// [GET] 일반 상품 전체 무한 스크롤 조회
+export const useGeneralProductsQuery = () =>
+  useInfiniteQuery({
+    queryKey: ["generalproducts"],
+    queryFn: fetchGeneralItems,
+    getNextPageParam: lastPage => (lastPage.last ? undefined : lastPage.number + 1),
+  });
 
-// [GET] 상품별 리뷰 조회
-export const fetchLatestProductReviews = productId =>
-  apiGet(`/product-review/${productId}`, { pageSize: 3 });
-
-// [GET] 상품 리뷰 전체 조회
-export const fetchProductReviews = (productId, startPage = 0, sortOption = "latest") => {
-  const sortParams = {
-    lowRating: { sort: "reviewScore", direction: "asc" },
-    highRating: { sort: "reviewScore", direction: "desc" },
-    latest: { sort: "createDate", direction: "desc" },
-  };
-  const { sort, direction } = sortParams[sortOption] || sortParams.latest;
-
-  return apiGet(`/product-review/${productId}`, {
-    startPage,
     pageSize: 10,
     sort,
     direction,

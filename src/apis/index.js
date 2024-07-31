@@ -199,6 +199,15 @@ export const fetchProductReviews = (productId, startPage = 0, sortOption = "late
 // [GET] 인기 검색어 조회
 export const fetchPopularKeyword = () => apiGet("/shopping/product/ranking");
 
+// [GET] 광고 상품 조회
+export const fetchAdvertisementProductList = async ({ pageParam = 0 }) => {
+  const pageSize = 5;
+  const response = await axios.get(
+    `http://localhost:8020/api/advertisement/product/list?startPage=${pageParam}&pageSize=${pageSize}`
+  );
+  return response;
+};
+
 // -------------------------[COUPON]-------------------------
 // [GET] 회원 쿠폰 조회
 export const fetchMemberCoupon = memberId => memberApiGet(`/member-coupon/list`, { memberId });
@@ -215,7 +224,7 @@ export const postLogin = memberData => {
   });
 };
 
-// Social Login
+// 소셜 로그인
 export const handleSocialLogin = provider => {
   window.location.href = `http://localhost:8010/oauth2/authorization/${provider}`;
 };
@@ -313,7 +322,7 @@ export const updateAddress = addressData => {
 export const fetchMemberCard = memberId => memberApiGet(`/member-payment/list`, { memberId });
 
 // [POST] 회원 카드 등록
-export const addMemberCard = cardData =>
+export const addMemberCard = cardData => {
   memberApiPost("/member-payment", {
     memberId: cardData.memberId,
     cardCompany: cardData.cardCompany,
@@ -325,6 +334,7 @@ export const addMemberCard = cardData =>
     isSimplePaymentAgreed: cardData.isSimplePaymentAgreed,
     isDefaultPaymentCard: cardData.isDefaultPaymentCard,
   });
+};
 
 // [DELETE] 회원 카드 삭제
 export const deleteMemberCard = memberPaymentCardId =>
@@ -337,14 +347,6 @@ export const putDefaultCard = (memberPaymentCardId, memberId) => {
   memberApiPut(`/member-payment/${memberPaymentCardId}?memberId=${memberId}`);
 };
 
-// =================================================================
-const API_BASE_URL = "http://localhost:3001";
-const DB_URL = "http://localhost:8020/api";
-const config = {
-  headers: {
-    "Content-Type": "application/json",
-    credentials: "true",
-  },
 };
 
 // -------------------------[MEMBER]-------------------------

@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { FaChevronDown, FaLeaf, FaMinusCircle, FaShare } from "react-icons/fa";
+import { FaChevronDown, FaLeaf, FaShare } from "react-icons/fa";
 import { CiShoppingCart } from "react-icons/ci";
 import { BsHouse, BsLightningChargeFill } from "react-icons/bs";
 import { MdChevronRight } from "react-icons/md";
 import { AiOutlineMinus, AiOutlinePlus } from "react-icons/ai";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 
 import PriceBox from "../../components/Product/PriceBox";
 import DetailImage from "../../components/Product/DetailImage";
@@ -25,7 +25,7 @@ import useAuthStore from "../../stores/useAuthStore";
 const ProductDetail = () => {
   const { username, isAuthenticated } = useAuthStore();
   const memberId = username;
-  // const memberId = import.meta.env.VITE_MEMBER_ID;
+
   const { productId } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -223,7 +223,7 @@ const ProductDetail = () => {
               <Link to={`/shop/${product.customerId}`}>
                 <div className='mt-[2px] flex'>
                   <BsHouse className='mt-[3px] text-lg' />
-                  <h3 className='ml-2 mt-[2px]'>{product.customerId}</h3>
+                  <h3 className='ml-2 mt-[2px]'>{product.storeName}</h3>
                   <MdChevronRight className='ml-1 mt-[5px]' />
                 </div>
               </Link>
@@ -237,7 +237,7 @@ const ProductDetail = () => {
             </div>
           </div>
           <div className='mr-4 flex items-center'>
-            <StarRating rating={product.averageScore} />
+            <StarRating rating={product.averageScore} count={product.reviewCount} />
           </div>
           <p className='mb-4 text-gray-600'>{product.productDescription}</p>
 
@@ -274,6 +274,9 @@ const ProductDetail = () => {
         {/* 리뷰 */}
         <div className='mb-3 bg-white p-4'>
           <div id='review-section'>
+            <div className='flex items-center'>
+              <h2 className='text-xl font-bold'>고객 리뷰</h2>
+            </div>
             <ReviewList productId={productId} product_name={product.productName} />
           </div>
         </div>
@@ -284,17 +287,17 @@ const ProductDetail = () => {
           <div className='flex gap-2'>
             <button
               onClick={() => openModal("PRODUCT_INFO")}
-              className='btn btn-sm h-12 flex-1 border-gray-200 bg-white'>
+              className='btn btn-sm h-12 flex-1 border-gray-200 bg-white hover:bg-white'>
               상품 정보
             </button>
             <button
               onClick={() => openModal("SHIPPING_INFO")}
-              className='btn btn-sm h-12 flex-1 border-gray-200 bg-white'>
+              className='btn btn-sm h-12 flex-1 border-gray-200 bg-white hover:bg-white'>
               배송 정보
             </button>
             <button
               onClick={() => openModal("RETURN_POLICY")}
-              className='btn btn-sm h-12 flex-1 border-gray-200 bg-white'>
+              className='btn btn-sm h-12 flex-1 border-gray-200 bg-white hover:bg-white'>
               교환 및 반품 정책
             </button>
           </div>
@@ -317,7 +320,7 @@ const ProductDetail = () => {
               <div className='flex items-center rounded-md border'>
                 <button
                   onClick={handleDecrease}
-                  className='px-3 py-2 text-gray-500 hover:bg-gray-100'
+                  className={`px-3 py-2 text-gray-500 hover:bg-gray-100 ${quantity == 1 && "bg-gray-100"}`}
                   disabled={quantity === 1}>
                   <AiOutlineMinus />
                 </button>
@@ -407,9 +410,6 @@ const ProductDetail = () => {
           <ProductInfoModal product={product} activeModal={activeModal} />
         </Modal>
       </div>
-
-      {/* toast 알림 */}
-      <Toaster />
     </>
   );
 };

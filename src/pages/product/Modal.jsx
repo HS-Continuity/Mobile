@@ -1,29 +1,34 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { FaTimes } from "react-icons/fa";
 
 const Modal = ({ isOpen, onClose, title, children }) => {
-  const [isAnimatingIn, setIsAnimatingIn] = useState(false);
+  const [isAnimatingOut, setIsAnimatingOut] = useState(false);
 
   useEffect(() => {
-    if (isOpen) {
-      setIsAnimatingIn(true);
+    if (!isOpen) {
+      setIsAnimatingOut(true);
+      const timer = setTimeout(() => {
+        setIsAnimatingOut(false);
+      }, 300);
+      return () => clearTimeout(timer);
     }
   }, [isOpen]);
 
   const handleClose = () => {
-    setIsAnimatingIn(false);
+    setIsAnimatingOut(true);
     setTimeout(() => {
       onClose();
+      setIsAnimatingOut(false);
     }, 300);
   };
 
-  if (!isOpen && !isAnimatingIn) return null;
+  if (!isOpen && !isAnimatingOut) return null;
 
   return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50'>
+    <div className='fixed inset-0 z-50 flex items-center justify-center'>
       <div
         className={`h-full w-full bg-white shadow-xl transition-all duration-300 ease-in-out sm:w-full md:w-full lg:w-[500px] xl:w-[500px] ${
-          isAnimatingIn ? "scale-100 opacity-100" : "scale-95 opacity-0"
+          isAnimatingOut ? "scale-95 opacity-0" : "scale-100 opacity-100"
         }`}>
         <div className='flex h-full flex-col'>
           <div className='flex items-center justify-between border-b p-4'>

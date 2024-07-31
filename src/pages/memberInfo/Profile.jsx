@@ -2,9 +2,39 @@ import { useState, useEffect } from "react";
 import { FaUser, FaEnvelope, FaLock, FaBirthdayCake, FaPhone } from "react-icons/fa";
 import useMemberStore from "../../stores/useMemberStore";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { changePassword, fetchMemberInfo, updateUser, verifyPassword } from "../../apis";
+import { changePassword, fetchMemberInfo, verifyPassword } from "../../apis";
 import useAuthStore from "../../stores/useAuthStore";
 import toast from "react-hot-toast";
+
+const InfoField = ({ icon, label, value }) => (
+  <div className='flex items-center space-x-3 rounded-lg bg-gray-50 p-1'>
+    <span className='ml-3 text-gray-500'>{icon}</span>
+    <div>
+      <p className='text-sm text-gray-500'>{label}</p>
+      <p className='font-medium text-gray-800'>{value}</p>
+    </div>
+  </div>
+);
+
+const PasswordField = ({ icon, label, name, value, onChange }) => (
+  <div className='flex items-center space-x-4 rounded-lg border border-gray-200 bg-white p-3'>
+    <div className='flex min-w-[120px] items-center space-x-3'>
+      <span className='text-gray-500'>{icon}</span>
+      <label htmlFor={name} className='text-sm font-medium text-gray-700'>
+        {label}
+      </label>
+    </div>
+    <input
+      id={name}
+      type='password'
+      name={name}
+      value={value}
+      onChange={onChange}
+      className='flex-1 border-b border-gray-200 bg-transparent py-1 text-gray-800 focus:border-[#00835F] focus:outline-none'
+      placeholder='8글자 이상 영문, 숫자를 입력하세요'
+    />
+  </div>
+);
 
 const Profile = () => {
   const { username } = useAuthStore();
@@ -64,7 +94,7 @@ const Profile = () => {
       if (isValid) {
         changePasswordMutation.mutate();
       } else {
-        setPasswordError("현재 비밀번호가 올바르지 않습니다.@");
+        setPasswordError("현재 비밀번호가 올바르지 않습니다.");
       }
     },
     onError: () => {
@@ -79,11 +109,13 @@ const Profile = () => {
         currentPassword: passwordForm.currentPassword,
         newPassword: passwordForm.newPassword,
       }),
-    onSuccess: () => {
-      queryClient.invalidateQueries(["member"]);
-      setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
-      setPasswordError("");
-      toast.success("비밀번호가 성공적으로 변경되었습니다.");
+    onSuccess: data => {
+      if (data.resultCode == "200") {
+        queryClient.invalidateQueries(["member"]);
+        toast.success("비밀번호가 성공적으로 변경되었습니다.");
+        setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+        setPasswordError("");
+      }
     },
     onError: error => {
       setPasswordError("비밀번호 변경에 실패했습니다. " + error.message);
@@ -163,35 +195,5 @@ const Profile = () => {
     </div>
   );
 };
-
-const InfoField = ({ icon, label, value }) => (
-  <div className='flex items-center space-x-3 rounded-lg bg-gray-50 p-1'>
-    <span className='ml-3 text-gray-500'>{icon}</span>
-    <div>
-      <p className='text-sm text-gray-500'>{label}</p>
-      <p className='font-medium text-gray-800'>{value}</p>
-    </div>
-  </div>
-);
-
-const PasswordField = ({ icon, label, name, value, onChange }) => (
-  <div className='flex items-center space-x-4 rounded-lg border border-gray-200 bg-white p-3'>
-    <div className='flex min-w-[120px] items-center space-x-3'>
-      <span className='text-gray-500'>{icon}</span>
-      <label htmlFor={name} className='text-sm font-medium text-gray-700'>
-        {label}
-      </label>
-    </div>
-    <input
-      id={name}
-      type='password'
-      name={name}
-      value={value}
-      onChange={onChange}
-      className='flex-1 border-b border-gray-200 bg-transparent py-1 text-gray-800 focus:border-[#00835F] focus:outline-none'
-      placeholder='비밀번호를 입력하세요'
-    />
-  </div>
-);
 
 export default Profile;

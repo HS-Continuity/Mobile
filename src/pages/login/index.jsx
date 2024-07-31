@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import kakaoLogo from "../../assets/images/kakao_icon.png";
 import googleLogo from "../../assets/images/google_icon.png";
 import logo from "../../assets/images/logo.png";
 import { useMutation } from "@tanstack/react-query";
-import { handleSocialLogin, postLogin } from "../../apis";
-import toast, { Toaster } from "react-hot-toast";
+import { handleSocialLogin } from "../../apis";
+import toast from "react-hot-toast";
 import useAuthStore from "../../stores/useAuthStore";
 
 const Login = () => {
@@ -72,7 +72,7 @@ const Login = () => {
       try {
         await loginMutation.mutateAsync(loginData);
       } catch (error) {
-        // 오류는 mutation의 onError에서 처리됩니다.
+        // 오류는 mutation의 onError에서 처리
       }
     } else {
       toast.error("아이디와 비밀번호를 모두 입력해주세요.");
@@ -128,11 +128,6 @@ const Login = () => {
             )}
           </div>
 
-          {/* <div className='flex items-center'>
-            <input type='checkbox' className='checkbox-success checkbox checkbox-sm mr-2' />
-            <span className='text-sm text-gray-600'>로그인 상태 유지</span>
-          </div> */}
-
           <button
             type='submit'
             className='btn w-full bg-green-shine text-white hover:bg-green-shine'
@@ -164,7 +159,6 @@ const Login = () => {
           </div>
         </div>
       </div>
-      <Toaster position='bottom-center' />
     </div>
   );
 };

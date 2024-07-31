@@ -1,5 +1,4 @@
-import React from "react";
-import { FaPercent, FaRegClock } from "react-icons/fa";
+import { FaRegClock } from "react-icons/fa";
 import { BsLightningCharge } from "react-icons/bs";
 
 const PriceBox = ({ originalPrice, discountRate, finalPrice, isRegular }) => {

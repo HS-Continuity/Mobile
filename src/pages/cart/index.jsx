@@ -19,7 +19,6 @@ import EmptyCart from "./EmptyCart";
 const Cart = () => {
   const { username } = useAuthStore();
   const memberId = username;
-  // const memberId = import.meta.env.VITE_MEMBER_ID;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState(1);
@@ -200,6 +199,26 @@ const Cart = () => {
       return;
     }
 
+    // Group selected items by customerId
+    const groupedItems = selectedItems.reduce((acc, item) => {
+      if (!acc[item.customerId]) {
+        acc[item.customerId] = {
+          items: [],
+          storeName: item.storeName, // 각 그룹에 storeName 추가
+        };
+      }
+      acc[item.customerId].items.push({
+        productId: item.productId,
+        name: item.productName,
+        originPrice: item.productBasePrice,
+        discountAmount: item.productBasePrice - item.productPrice,
+        finalPrice: item.productPrice,
+        quantity: item.quantity,
+        status: "PENDING",
+      });
+      return acc;
+    }, {});
+
     const totalProductPrice = selectedItems.reduce(
       (sum, item) => sum + item.productPrice * item.quantity,
       0
@@ -216,12 +235,13 @@ const Cart = () => {
 
     navigate(activeTab === 2 ? "/subscription-setup" : "/order", {
       state: {
-        orderItems: selectedItems,
+        groupedItems: groupedItems,
         totalProductPrice: totalProductPrice,
         totalDeliveryFee: totalDeliveryFee,
       },
     });
   };
+
   return (
     <div className='noScrollbar flex flex-col bg-gray-50 pb-12'>
       {/* 배송 탭 */}
@@ -253,10 +273,16 @@ const Cart = () => {
                 <label className='flex items-center'>
                   <input
                     type='checkbox'
+                    checked={isAllChecked}
+                    onChange={e => handleAllCheck(e.target.checked)}
+                    className='checkbox mr-3 border-gray-500 [--chkbg:#00835F] [--chkfg:white] checked:border-[#00835F]'
+                  />
+                  {/* <input
+                    type='checkbox'
                     className='checkbox-primary checkbox mr-2'
                     checked={isAllChecked}
                     onChange={e => handleAllCheck(e.target.checked)}
-                  />
+                  /> */}
                   <span>전체 선택</span>
                 </label>
               )}
@@ -270,10 +296,16 @@ const Cart = () => {
                     className='relative mb-2 flex items-start border-b p-2'>
                     <input
                       type='checkbox'
+                      checked={checkedItems[item.cartProductId] === true}
+                      onChange={() => handleCheckboxChange(item.cartProductId)}
+                      className='checkbox mr-3 border-gray-500 [--chkbg:#00835F] [--chkfg:white] checked:border-[#00835F]'
+                    />
+                    {/* <input
+                      type='checkbox'
                       className='checkbox-primary checkbox mr-2 mt-1'
                       checked={checkedItems[item.cartProductId] === true}
                       onChange={() => handleCheckboxChange(item.cartProductId)}
-                    />
+                    /> */}
                     <Link to={`/product/${item.productId}`} className='mr-4'>
                       {!imgError ? (
                         <img
@@ -302,8 +334,10 @@ const Cart = () => {
                       </div>
                       <div className='flex items-center justify-between'>
                         <div>
-                          <span className='font-bold'>{item.productPrice.toLocaleString()}원 </span>
-                          <span className='text-xs font-bold text-gray-400 line-through'>
+                          <span className='font-normal'>
+                            {item.productPrice.toLocaleString()}원{" "}
+                          </span>
+                          <span className='text-xs font-normal text-gray-400 line-through'>
                             {item.productBasePrice.toLocaleString()}원
                           </span>
                         </div>
@@ -320,7 +354,7 @@ const Cart = () => {
                             type='text'
                             value={item.soldOut ? "품절" : item.quantity}
                             readOnly
-                            className='w-12 border-none text-center focus:outline-none'
+                            className={`w-12 border-none text-center focus:outline-none ${item.soldOut ? "text-red-300" : ""}`}
                           />
                           <button
                             onClick={() => handleQuantityChange(item.cartProductId, true)}

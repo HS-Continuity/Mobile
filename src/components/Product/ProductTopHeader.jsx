@@ -2,17 +2,19 @@ import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { MdArrowBackIosNew } from "react-icons/md";
 import { IoCartOutline } from "react-icons/io5";
 import { useQuery } from "@tanstack/react-query";
-import { fetchCartItemsCount, fetchProductDetail } from "../../apis";
+import { fetchCartItemsCount, fetchProductDetail, fetchTimeSaleItemDetail } from "../../apis";
 import { FiSearch } from "react-icons/fi";
 import useAuthStore from "../../stores/useAuthStore";
 
 const ProductTopHeader = () => {
   const { username, isAuthenticated } = useAuthStore();
   const memberId = username;
-  // const memberId = import.meta.env.VITE_MEMBER_ID;
   const cartTypeId = null;
   const navigate = useNavigate();
-  const { productId } = useParams();
+  const location = useLocation();
+  const { productId, timesaleId } = useParams();
+
+  const isTimeSale = location.pathname.startsWith("/timesale/");
 
   const { data: cartItemsCount } = useQuery({
     queryKey: ["cart", memberId, cartTypeId],
@@ -25,8 +27,10 @@ const ProductTopHeader = () => {
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["product", productId],
-    queryFn: () => fetchProductDetail(productId),
+    queryKey: isTimeSale ? ["timeSaleDetailItem", timesaleId] : ["product", productId],
+    queryFn: () =>
+      isTimeSale ? fetchTimeSaleItemDetail(timesaleId) : fetchProductDetail(productId),
+    enabled: isTimeSale ? !!timesaleId : !!productId,
   });
 
   const handleScroll = target => {

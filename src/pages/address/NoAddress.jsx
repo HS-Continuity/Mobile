@@ -1,6 +1,6 @@
 import { FaMapMarkerAlt } from "react-icons/fa";
 
-const NoAddress = ({ onAddAddress }) => {
+const NoAddress = () => {
   return (
     <div className='flex flex-col items-center justify-center rounded-lg bg-white p-8'>
       <FaMapMarkerAlt className='mb-4 text-6xl text-gray-300' />

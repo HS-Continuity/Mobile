@@ -1,5 +1,3 @@
-import React from "react";
-
 const CardSkeleton = () => {
   return (
     <div className='animate-pulse space-y-4'>

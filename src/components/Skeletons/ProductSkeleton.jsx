@@ -4,7 +4,7 @@ const ProductSkeleton = ({ gridCols = 1 }) => {
   const isMultiColumn = gridCols > 1;
 
   return (
-    <div className={`card bg-base-100 shadow-xl ${isMultiColumn ? "h-full" : ""}`}>
+    <div className={`card bg-base-100 ${isMultiColumn ? "h-full" : ""}`}>
       <Skeleton className={`w-full ${isMultiColumn ? "h-32" : "h-48"}`} />
       <div className='card-body p-4'>
         <div className='flex flex-col'>

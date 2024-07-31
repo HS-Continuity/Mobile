@@ -10,33 +10,43 @@ import {
   fetchMemberCard,
   fetchMemberCoupon,
   fetchMemberInfo,
+  postOrder,
 } from "../../apis";
 
 import OrderItems from "../../components/Order/OrderItems";
 import OrderMemberInfo from "../../components/Order/OrderMemberInfo";
-import DeliveryMemberInfo from "../../components/Order/DeliveryMemberInfo";
 import DeliveryAddress from "../../components/Order/DeliveryAddress";
 import MemberCouponList from "../../components/Order/MemberCouponList";
 import OrderPrice from "../../components/Order/OrderPrice";
 import Payment from "../../components/Order/Payment";
+import DeliveryMemo from "../../components/Order/DeliveryMemo";
 import ConsentPayment from "../../components/Order/ConsentPayment";
 import useAuthStore from "../../stores/useAuthStore";
+import OrderSkeleton from "../../components/Skeletons/OrderSkeleton";
+import toast from "react-hot-toast";
 
 const Order = () => {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const location = useLocation();
 
   // 주문 아이템
-  const { orderItems, totalProductPrice, totalDeliveryFee } = location.state || { orderItems: [] };
+  const { groupedItems, totalProductPrice, totalDeliveryFee } = location.state || {
+    groupedItems: [],
+  };
   // 쿠폰
   const [selectedCoupon, setSelectedCoupon] = useState(null);
   // 받는 사람
   const [recipientName, setRecipientName] = useState("");
   const [recipientPhone, setRecipientPhone] = useState("");
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+
+  // 배송 메모
+  const [orderMemo, setOrderMemo] = useState("");
+
   // 결제 수단
   const [consentPayment, setConsentPayment] = useState(false);
-  const [selectedCardIndex, setSelectedCardIndex] = useState(0);
+  const [selectedCardIndex, setSelectedCardIndex] = useState(null);
   const [isCardRegistrationModalOpen, setIsCardRegistrationModalOpen] = useState(false);
 
   const [selectedAddress, setSelectedAddress] = useState(null);
@@ -49,7 +59,7 @@ const Order = () => {
   const getCardColor = useCardColorStore(state => state.getCardColor);
 
   // 주문 아이템 존재하는지
-  useOrderItemsValidation(orderItems);
+  useOrderItemsValidation(groupedItems);
 
   // 설정 값
   const { username } = useAuthStore();
@@ -94,8 +104,9 @@ const Order = () => {
     data: cards,
     isLoading: cardsLoading,
     isError: cardsError,
+    refetch,
   } = useQuery({
-    queryKey: ["card", memberId],
+    queryKey: ["cards", memberId],
     queryFn: () => fetchMemberCard(memberId),
   });
 
@@ -104,7 +115,7 @@ const Order = () => {
   const addCardMutation = useMutation({
     mutationFn: addMemberCard,
     onSuccess: () => {
-      queryClient.invalidateQueries(["card", memberId]);
+      queryClient.invalidateQueries(["cards", memberId]);
       setIsCardRegistrationModalOpen(false);
     },
   });
@@ -113,9 +124,94 @@ const Order = () => {
   const deleteCardMutation = useMutation({
     mutationFn: deleteMemberCard,
     onSuccess: () => {
-      queryClient.invalidateQueries(["card", memberId]);
+      queryClient.invalidateQueries(["cards", memberId]);
     },
   });
+
+  // 주문 생성
+  const createOrderMutation = useMutation({
+    mutationFn: postOrder,
+    onSuccess: (data, variables) => {
+      // 응답 구조 확인 및 안전한 접근
+      const orderDetailId = data?.data?.result?.orderDetailId;
+      console.log(orderDetailId);
+      if (!orderDetailId) {
+        console.error("Order detail ID not found in the response");
+        toast.error("주문 생성 중 오류가 발생했습니다.");
+        return;
+      }
+
+      const successData = {
+        recipientName: selectedAddress.recipientName,
+        recipientAddress: `${selectedAddress.generalAddress} ${selectedAddress.detailAddress}`,
+        recipientPhoneNumber: selectedAddress.recipientPhoneNumber,
+        orderMemo: orderMemo,
+        totalAmount: finalPrice,
+        cardInfo: cards[selectedCardIndex - 1],
+        orderDetailId: orderDetailId,
+        regularDeliveryApplicationId: 0,
+      };
+      navigate("/order-success", { state: successData });
+    },
+    onError: error => {
+      console.error("Order creation failed:", error);
+      navigate("/order-fail");
+    },
+  });
+
+  const handlePlaceOrder = () => {
+    if (!isPaymentEnabled) {
+      if (!selectedAddress) {
+        toast.error("배송지를 선택해주세요.");
+      } else if (!cards || cards.length === 0 || selectedCardIndex === 0) {
+        toast.error("결제 카드를 선택해주세요.");
+      } else if (!consentPayment) {
+        toast.error("결제 동의가 필요합니다.");
+      }
+      return;
+    }
+
+    const orderRequests = Object.entries(groupedItems).map(([customerId, group]) => ({
+      customerId: parseInt(customerId),
+      memberCouponId: selectedCoupon ? selectedCoupon.memberCouponId : null,
+      storeName: group.storeName,
+      productOrderList: {
+        productOrderList: group.items.map(item => ({
+          productId: item.productId,
+          name: item.name,
+          originPrice: item.originPrice,
+          discountAmount: item.discountAmount,
+          finalPrice: item.finalPrice,
+          quantity: item.quantity,
+          status: "PENDING",
+        })),
+      },
+      recipient: {
+        recipient: selectedAddress.recipientName,
+        recipientPhoneNumber: selectedAddress.recipientPhoneNumber,
+        recipientAddress: `${selectedAddress.generalAddress} ${selectedAddress.detailAddress}`,
+      },
+      originProductAmount: group.items.reduce(
+        (sum, item) => sum + item.originPrice * item.quantity,
+        0
+      ),
+      totalDiscountAmount: group.items.reduce(
+        (sum, item) => sum + item.discountAmount * item.quantity,
+        0
+      ),
+      paymentAmount:
+        group.items.reduce((sum, item) => sum + item.finalPrice * item.quantity, 0) +
+        totalDeliveryFee -
+        couponDiscount,
+      deliveryFee: totalDeliveryFee,
+      orderMemo: orderMemo,
+      paymentCardId: cards[selectedCardIndex - 1].memberPaymentCardId,
+    }));
+
+    orderRequests.forEach(orderData => {
+      createOrderMutation.mutate(orderData);
+    });
+  };
 
   // 카드 번호 마스킹 함수
   const maskDigits = inputStr => {
@@ -142,9 +238,31 @@ const Order = () => {
 
   // 카드 삭제 핸들러
   const handleDeleteCard = memberPaymentCardId => {
-    if (window.confirm("정말 이 카드를 삭제하시겠습니까?")) {
-      deleteCardMutation.mutate(memberPaymentCardId);
-    }
+    toast(
+      t => (
+        <span>
+          배송지를 삭제하시겠습니까?
+          <button
+            className='btn ml-2 h-10 rounded bg-transparent px-2 py-1 text-black hover:bg-white'
+            onClick={() => {
+              deleteCardMutation.mutate(memberPaymentCardId);
+              toast.dismiss(t.id);
+            }}>
+            확인
+          </button>
+          <button
+            className='btn ml-2 h-10 rounded bg-red-500 px-2 py-1 text-white hover:bg-red-500'
+            onClick={() => {
+              toast.dismiss(t.id);
+            }}>
+            취소
+          </button>
+        </span>
+      ),
+      {
+        duration: 2000,
+      }
+    );
   };
 
   // 이전 카드 선택
@@ -205,24 +323,35 @@ const Order = () => {
     }
   }, [memberInfo]);
 
+  const isCardExpired = expirationDate => {
+    const [expirationYear, expirationMonth] = expirationDate.split("-").map(Number);
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth() + 1; // getMonth()는 0부터 시작하므로 1을 더해줍니다.
+
+    // 년도가 현재보다 크거나, 년도가 같고 월이 현재 이상이면 만료되지 않은 것
+    return (
+      expirationYear < currentYear ||
+      (expirationYear === currentYear && expirationMonth < currentMonth)
+    );
+  };
+
   // 결제 버튼 활성화 여부 확인
   useEffect(() => {
     const isValidCard =
       cards &&
       cards.length > 0 &&
       selectedCardIndex !== null &&
-      cards[selectedCardIndex] &&
-      new Date(cards[selectedCardIndex].expiry_date) > new Date();
-    const isValidAddress = addresses && addresses.some(address => address.is_default_address);
+      selectedCardIndex > 0 && // 카드가 선택되었는지 확인
+      cards[selectedCardIndex - 1] &&
+      !isCardExpired(cards[selectedCardIndex - 1].cardExpiration);
+    const isValidAddress = selectedAddress !== null; // 배송지가 선택되었는지 확인
 
-    setIsPaymentEnabled(
-      recipientName !== "" &&
-        recipientPhone !== "" &&
-        isValidAddress &&
-        isValidCard &&
-        consentPayment
-    );
-  }, [recipientName, recipientPhone, addresses, cards, selectedCardIndex, consentPayment]);
+    console.log(isValidCard);
+    console.log(isValidAddress);
+    console.log(consentPayment);
+    setIsPaymentEnabled(isValidAddress && isValidCard && consentPayment);
+  }, [selectedAddress, cards, selectedCardIndex, consentPayment]);
 
   useEffect(() => {
     if (addresses && addresses.length > 0 && !hasUserSelectedAddress) {
@@ -233,8 +362,17 @@ const Order = () => {
     }
   }, [addresses, hasUserSelectedAddress]);
 
+  useEffect(() => {
+    if (cards && cards.length > 0) {
+      const defaultCardIndex = cards.findIndex(card => card.isDefaultPaymentCard === "ACTIVE");
+      setSelectedCardIndex(defaultCardIndex !== -1 ? defaultCardIndex + 1 : 1);
+    } else {
+      setSelectedCardIndex(0);
+    }
+  }, [cards]);
+
   if (couponsLoading || memberInfoLoading || addressesLoading || cardsLoading)
-    return <div>불러오는중...</div>;
+    return <OrderSkeleton />;
   if (couponsError || memberInfoError || addressesError || cardsError)
     return <div>Error loading data</div>;
 
@@ -242,12 +380,15 @@ const Order = () => {
 
   return (
     <div className='flex flex-col bg-gray-50 pb-20'>
-      <div className='noScrollbar flex-1 space-y-4 overflow-auto'>
+      <div className='noScrollbar flex-1 space-y-2 overflow-auto'>
         {/* 주문 아이템 */}
-        <OrderItems orderItems={orderItems} />
+        <OrderItems groupedItems={groupedItems} />
 
         {/* 구매자 정보 */}
         <OrderMemberInfo memberInfo={memberInfo} />
+
+        {/* 배송 메모 */}
+        <DeliveryMemo onChange={setOrderMemo} />
 
         {/* 받는 사람 주소 */}
         <DeliveryAddress
@@ -276,6 +417,7 @@ const Order = () => {
 
         {/*  결제 수단 */}
         <Payment
+          memberId={memberId}
           cards={cards}
           selectedCardIndex={selectedCardIndex}
           handlePrevCard={handlePrevCard}
@@ -286,17 +428,25 @@ const Order = () => {
           handleAddCard={handleAddCard}
           getCardColor={getCardColor}
           maskDigits={maskDigits}
+          queryClient={queryClient}
+          refetch={refetch}
         />
 
         {/* 결제 동의 */}
         <div className=''>
-          <label className='flex items-center'>
+          <label className='flex items-center justify-center rounded-lg border bg-white p-4'>
             <input
+              type='checkbox'
+              onChange={handleConsentPayment}
+              checked={consentPayment}
+              className='checkbox mr-3 border-gray-500 [--chkbg:#00835F] [--chkfg:white] checked:border-[#00835F]'
+            />
+            {/* <input
               type='checkbox'
               className='checkbox-primary checkbox mr-2'
               onChange={handleConsentPayment}
               checked={consentPayment}
-            />
+            /> */}
             <span className='text-sm'>위 내용을 확인하였으며 결제에 동의합니다.</span>
           </label>
         </div>
@@ -307,6 +457,8 @@ const Order = () => {
         consentPayment={consentPayment}
         handleConsentPayment={handleConsentPayment}
         finalPrice={finalPrice}
+        handlePlaceOrder={handlePlaceOrder}
+        isPaymentEnabled={isPaymentEnabled}
       />
     </div>
   );

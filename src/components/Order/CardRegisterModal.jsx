@@ -1,10 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import VirtualKeypad from "./VirtualKeypad";
 import Modal from "../../pages/product/Modal";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
+import useAuthStore from "../../stores/useAuthStore";
 
-const CardRegisterModal = ({ isOpen, onClose, onSubmit }) => {
-  const memberId = import.meta.env.VITE_MEMBER_ID;
+const CardRegisterModal = ({ isOpen, onClose, onSubmit, refetch }) => {
+  // const memberId = import.meta.env.VITE_MEMBER_ID;
+  const { username } = useAuthStore();
+  const memberId = username;
 
   const [isValid, setIsValid] = useState(false);
   const [activeInput, setActiveInput] = useState(null);
@@ -92,18 +95,6 @@ const CardRegisterModal = ({ isOpen, onClose, onSubmit }) => {
       isSimplePaymentAgreed;
 
     setIsValid(newIsValid);
-
-    // 디버깅을 위한 로그
-    // console.log({
-    //   isCardNumberValid,
-    //   isCardCompanySelected,
-    //   isExpirationValid,
-    //   isPasswordValid,
-    //   isCvcValid,
-    //   isBirthdayValid,
-    //   isSimplePaymentAgreed,
-    //   newIsValid,
-    // });
   }, [cardData]);
 
   const validateInput = (name, value) => {
@@ -219,7 +210,9 @@ const CardRegisterModal = ({ isOpen, onClose, onSubmit }) => {
       memberId: memberId,
     };
     try {
-      await onSubmit(formattedData);
+      const response = await onSubmit(formattedData);
+      console.log(response);
+
       toast.success("카드가 성공적으로 등록되었습니다!", {
         style: {
           border: "1px solid #00835F",
@@ -233,11 +226,12 @@ const CardRegisterModal = ({ isOpen, onClose, onSubmit }) => {
         duration: 2000,
         position: "bottom-center",
       });
+      refetch();
+      onClose();
     } catch (error) {
       toast.error("카드 등록에 실패했습니다. 다시 시도해 주세요.");
       console.error("카드 등록 오류:", error);
     }
-    window.location.reload();
   };
 
   const currentYear = new Date().getFullYear();
@@ -408,12 +402,20 @@ const CardRegisterModal = ({ isOpen, onClose, onSubmit }) => {
             <label className='flex items-center'>
               <input
                 type='checkbox'
+                required
+                name='isSimplePaymentAgreed'
+                checked={cardData.isSimplePaymentAgreed}
+                onChange={handleChange}
+                className='checkbox mr-3 border-gray-500 [--chkbg:#00835F] [--chkfg:white] checked:border-[#00835F]'
+              />
+              {/* <input
+                type='checkbox'
                 name='isSimplePaymentAgreed'
                 checked={cardData.isSimplePaymentAgreed}
                 onChange={handleChange}
                 className='mr-2'
                 required
-              />
+              /> */}
               <span className='text-sm'>간편결제 동의 (필수)</span>
             </label>
           </div>
@@ -424,8 +426,15 @@ const CardRegisterModal = ({ isOpen, onClose, onSubmit }) => {
                 name='isDefaultPaymentCard'
                 checked={cardData.isDefaultPaymentCard}
                 onChange={handleChange}
-                className='mr-2'
+                className='checkbox mr-3 border-gray-500 [--chkbg:#00835F] [--chkfg:white] checked:border-[#00835F]'
               />
+              {/* <input
+                type='checkbox'
+                name='isDefaultPaymentCard'
+                checked={cardData.isDefaultPaymentCard}
+                onChange={handleChange}
+                className='mr-2'
+              /> */}
               <span className='text-sm'>대표카드로 설정</span>
             </label>
           </div>
@@ -434,7 +443,7 @@ const CardRegisterModal = ({ isOpen, onClose, onSubmit }) => {
           <button
             type='submit'
             className={`w-full rounded-md px-4 py-4 text-white focus:outline-none focus:ring-2 focus:ring-opacity-50 ${
-              isValid ? "bg-[#00835F] hover:bg-[#00835F]" : "cursor-not-allowed bg-gray-400"
+              isValid ? "bg-green-shine hover:bg-green-shine" : "cursor-not-allowed bg-gray-400"
             }`}
             disabled={!isValid}>
             카드 등록
@@ -451,7 +460,6 @@ const CardRegisterModal = ({ isOpen, onClose, onSubmit }) => {
           />
         )}
       </Modal>
-      <Toaster position='bottom-center' reverseOrder={false} />
     </>
   );
 };

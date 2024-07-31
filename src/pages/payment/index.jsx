@@ -1,17 +1,17 @@
 import { useState } from "react";
 import CardRegisterModal from "../../components/Order/CardRegisterModal";
-import { FaPlus, FaTrash, FaCreditCard } from "react-icons/fa";
+import { FaPlus, FaCreditCard } from "react-icons/fa";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { addMemberCard, deleteMemberCard, fetchMemberCard, putDefaultCard } from "../../apis";
 import useCardColorStore from "../../stores/useCardColorStore";
 import { FiTrash2 } from "react-icons/fi";
 import useAuthStore from "../../stores/useAuthStore";
 import NoCard from "./NoCard";
+import toast from "react-hot-toast";
 
 const Payment = () => {
   const { username } = useAuthStore();
   const memberId = username;
-  // const memberId = import.meta.env.VITE_MEMBER_ID;
   const queryClient = useQueryClient();
   const getCardColor = useCardColorStore(state => state.getCardColor);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
@@ -70,9 +70,31 @@ const Payment = () => {
   };
 
   const handleDeleteCard = memberPaymentCardId => {
-    if (window.confirm("정말로 이 카드를 삭제하시겠습니까?")) {
-      deleteCardMutation.mutate(memberPaymentCardId, memberId);
-    }
+    toast(
+      t => (
+        <span>
+          카드를 삭제하시겠습니까?
+          <button
+            className='btn ml-2 h-10 rounded bg-transparent px-2 py-1 text-black hover:bg-white'
+            onClick={() => {
+              deleteCardMutation.mutate(memberPaymentCardId, memberId);
+              toast.dismiss(t.id);
+            }}>
+            확인
+          </button>
+          <button
+            className='btn ml-2 h-10 rounded bg-red-500 px-2 py-1 text-white hover:bg-red-500'
+            onClick={() => {
+              toast.dismiss(t.id);
+            }}>
+            취소
+          </button>
+        </span>
+      ),
+      {
+        duration: 2000,
+      }
+    );
   };
 
   const maskCardNumber = cardNumber => {

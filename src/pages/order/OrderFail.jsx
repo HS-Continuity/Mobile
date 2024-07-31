@@ -7,10 +7,6 @@ const OrderFail = () => {
 
   return (
     <div className='noScrollbar flex h-screen flex-col bg-gray-100'>
-      {/* <div className='noScrollbar flex items-center bg-[#00835F] p-4 text-white'>
-        <FaChevronLeft className='mr-4 cursor-pointer' onClick={() => navigate(-1)} />
-        <h1 className='text-xl font-bold'>결제 실패</h1>
-      </div> */}
       <div className='flex-2 flex items-center justify-center bg-gray-100 p-4'>
         <div className='w-full max-w-md rounded-lg bg-white p-4 shadow-md'>
           <div className='mb-3 flex justify-center'>

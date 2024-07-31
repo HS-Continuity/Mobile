@@ -1,3 +1,5 @@
+import React from "react";
+
 const OrderPrice = ({
   regularShippingDiscount,
   totalProductPrice,
@@ -8,42 +10,27 @@ const OrderPrice = ({
   const couponDiscount = selectedCoupon ? selectedCoupon.discountAmount : 0;
 
   return (
-    <div className='bg-white p-4'>
-      <h2 className='mb-2 text-xl font-bold'>결제 금액</h2>
-      <div className='flex justify-between'>
-        <span>총 상품 금액</span>
-        <span>{totalProductPrice.toLocaleString()}원</span>
-      </div>
-      {regularShippingDiscount ? (
-        <div className='flex justify-between text-red-500'>
-          <span>정기 배송비</span>
-          <span>{totalDeliveryFee.toLocaleString()}원</span>
-        </div>
-      ) : (
+    <div className='rounded-lg border bg-white p-4'>
+      <h2 className='mb-4 text-xl font-semibold'>결제 정보</h2>
+      <div className='space-y-2'>
         <div className='flex justify-between'>
-          <span>배송비</span>
+          <span>상품 금액</span>
+          <span>{totalProductPrice.toLocaleString()}원</span>
+        </div>
+        <div className='flex justify-between'>
+          <span>{regularShippingDiscount ? "정기 배송비" : "배송비"}</span>
           <span>{totalDeliveryFee.toLocaleString()}원</span>
         </div>
-      )}
-      {/* <div className='flex justify-between'>
-        <span>배송비</span>
-        <span>{totalDeliveryFee.toLocaleString()}원</span>
-      </div> */}
-      {/* {regularShippingDiscount && (
-        <div className='flex justify-between text-red-500'>
-          <span>정기 배송비 할인</span>
-          <span>-{totalDeliveryFee.toLocaleString()}원</span>
+        {selectedCoupon && (
+          <div className='flex justify-between'>
+            <span>할인 금액</span>
+            <span className='text-red-500'>- {couponDiscount.toLocaleString()}원</span>
+          </div>
+        )}
+        <div className='flex justify-between border-t pt-2 font-bold'>
+          <span>총 결제 금액</span>
+          <span>{finalPrice.toLocaleString()}원</span>
         </div>
-      )} */}
-      {selectedCoupon && (
-        <div className='flex justify-between text-red-500'>
-          <span>쿠폰 할인</span>
-          <span>-{couponDiscount.toLocaleString()}원</span>
-        </div>
-      )}
-      <div className='mt-2 flex justify-between font-bold'>
-        <span>총 결제금액</span>
-        <span>{finalPrice.toLocaleString()}원</span>
       </div>
     </div>
   );

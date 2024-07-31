@@ -144,10 +144,13 @@ export const fetchTimeSaleItems = ({ pageParam = 0 }) =>
 // [GET] 타임세일 상품 전체 무한 스크롤 조회
 export const useTimeSaleProductsQuery = () =>
   useInfiniteQuery({
-    queryKey: ["products"],
+    queryKey: ["timesaleproducts"],
     queryFn: fetchTimeSaleItems,
     getNextPageParam: lastPage => (lastPage.last ? undefined : lastPage.number + 1),
   });
+
+// [GET] 타임세일 상품 전체 조회
+export const fetchTimeSaleItemDetail = timesaleId => apiGet(`/time-sale/${timesaleId}/product`);
 
 // [GET] 검색 상품 조회
 export const fetchSearchItems = ({ keyword, pageParam = 0 }) =>
@@ -168,8 +171,10 @@ export const fetchProductDetailImage = productId => apiGet(`/product-image/${pro
 // [GET] 친환경 상품 인증서 이미지 조회
 export const fetchEcoProductImage = productId =>
   apiGet(`/product-image/certification/${productId}`);
+
 // [GET] 상품 내용 상세 조회
 export const fetchProductDetail = productId => apiGet(`/shopping/product/${productId}`);
+
 // [GET] 인기 검색어 조회
 export const fetchPopularKeyword = () => apiGet("/shopping/product/ranking");
 

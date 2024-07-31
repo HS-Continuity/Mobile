@@ -1,70 +1,116 @@
-import { FaCalendar } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import SubscriptionOrderList from "./SubscriptionOrderList";
+import useAuthStore from "../../stores/useAuthStore";
+import { useEffect, useState } from "react";
 
 const SubscriptionOrderHistory = () => {
-  const navigate = useNavigate();
-  const subscriptions = [
-    {
-      id: 1,
-      period: "2024.06.04 - 2024.08.20",
-      duration: "3개월",
-      status: "정기주문 진행중",
-      productName: "브랜드명 상품명",
-      quantity: 2,
-    },
-    {
-      id: 2,
-      period: "2024.01.01 - 2024.01.22",
-      duration: "1개월",
-      status: "정기주문 완료",
-      productName: "브랜드명 상품명",
-      quantity: 2,
-    },
-  ];
+  const { username } = useAuthStore();
+  const memberId = username;
+
+  const [startDate, setStartDate] = useState(getMonthAgo(1));
+  const [endDate, setEndDate] = useState(getCurrentDate());
+  const [isCustomDate, setIsCustomDate] = useState(false);
+
+  function getMonthAgo(num) {
+    const date = new Date();
+    date.setMonth(date.getMonth() - num);
+    return formatDate(date);
+  }
+
+  function getCurrentDate() {
+    return formatDate(new Date());
+  }
+
+  function formatDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  useEffect(() => {
+    const updateEndDate = () => {
+      const now = new Date();
+      const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+      const timeUntilMidnight = nextMidnight - now;
+
+      setTimeout(() => {
+        setEndDate(getCurrentDate());
+        setInterval(() => setEndDate(getCurrentDate()), 24 * 60 * 60 * 1000);
+      }, timeUntilMidnight);
+    };
+
+    updateEndDate();
+
+    return () => {
+      clearTimeout();
+      clearInterval();
+    };
+  }, []);
+
+  const handleDateChange = e => {
+    const { name, value } = e.target;
+    if (name === "startDate") {
+      setStartDate(value);
+    } else if (name === "endDate") {
+      setEndDate(value);
+    }
+  };
+
+  const handlePeriodClick = months => {
+    setStartDate(getMonthAgo(months));
+    setEndDate(getCurrentDate());
+    setIsCustomDate(false);
+  };
+
+  const handleCustomDateClick = () => {
+    setIsCustomDate(true);
+  };
 
   return (
-    <div className='p-2'>
-      {/* 날짜 선택 */}
-      <div className='mb-4 flex items-center space-x-2'>
-        <input type='date' className='input input-bordered' defaultValue='2023-12-28' />
-        <span>~</span>
-        <input type='date' className='input input-bordered' defaultValue='2024-02-28' />
-        <button className='btn btn-outline btn-sm'>조회</button>
+    <div className='mb-20 space-y-4 p-4'>
+      <div className='mb-4 space-y-2'>
+        <div className='mb-2 flex items-center space-x-2'>
+          <button
+            onClick={() => handlePeriodClick(1)}
+            className='btn flex-1 bg-transparent shadow-sm hover:bg-transparent'>
+            최근 1개월
+          </button>
+          <button
+            onClick={() => handlePeriodClick(3)}
+            className='btn flex-1 bg-transparent shadow-sm hover:bg-transparent'>
+            최근 3개월
+          </button>
+          <button
+            onClick={handleCustomDateClick}
+            className='btn flex-1 bg-transparent shadow-sm hover:bg-transparent'>
+            직접 입력
+          </button>
+        </div>
+        {isCustomDate && (
+          <div className='flex w-full items-center space-x-2'>
+            <input
+              type='date'
+              name='startDate'
+              min={getMonthAgo(3)}
+              max={getCurrentDate()}
+              value={startDate}
+              onChange={handleDateChange}
+              className='input input-bordered w-full'
+            />
+            <span>~</span>
+            <input
+              type='date'
+              name='endDate'
+              value={endDate}
+              max={getCurrentDate()}
+              onChange={handleDateChange}
+              className='input input-bordered w-full'
+            />
+          </div>
+        )}
       </div>
 
-      {/* 구독 목록 */}
-      {subscriptions.map(sub => (
-        <div key={sub.id} className='mb-4 rounded-lg bg-white p-4 shadow-md'>
-          <div className='mb-2 flex items-center justify-between'>
-            <div className='text-sm text-gray-500'>
-              {sub.period} ({sub.duration})
-            </div>
-            <button
-              className='btn btn-ghost btn-xs'
-              onClick={() => navigate("/subscription-manage")}>
-              상세보기
-            </button>
-          </div>
-          <div className='mb-2 flex items-center space-x-2'>
-            <div
-              className={`badge ${sub.status === "정기주문 진행중" ? "badge-primary" : "badge-ghost"}`}>
-              {sub.status}
-            </div>
-          </div>
-          <div className='flex items-center'>
-            <div className='mr-4 h-16 w-16 rounded-md bg-gray-200'></div>
-            <div>
-              <div className='font-semibold'>{sub.productName}</div>
-              <div className='text-sm text-gray-500'>외 {sub.quantity}건</div>
-            </div>
-          </div>
-        </div>
-      ))}
-
-      {/* 달력 아이콘 */}
-      <button className='btn btn-circle btn-lg fixed bottom-4 right-4 bg-primary text-white'>
-        <FaCalendar className='text-2xl' />
-      </button>
+      <SubscriptionOrderList memberId={memberId} startDate={startDate} endDate={endDate} />
     </div>
   );
 };

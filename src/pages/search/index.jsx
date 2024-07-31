@@ -7,6 +7,7 @@ import { fetchPopularKeyword } from "../../apis";
 import RecentSearches from "../../components/Layouts/RecentSearches";
 import PopularKeywords from "../../components/Layouts/PopularKeywords";
 import { MdArrowBackIosNew } from "react-icons/md";
+import AdvertisementProductList from "../../components/Product/AdvertisementProductList";
 
 const SearchPage = () => {
   // 현재 URL에서 검색어 추출
@@ -54,8 +55,8 @@ const SearchPage = () => {
   };
 
   return (
-    <div className='main-container h-full w-full overflow-y-auto bg-white'>
-      <div className='p-4'>
+    <div className='main-container h-full w-full overflow-hidden overflow-y-auto bg-white'>
+      <div className='p-4 pb-20'>
         {/* 검색창 */}
         <form onSubmit={handleSearchSubmit} className='relative mb-4 flex'>
           {/* 뒤로가기 버튼 */}
@@ -99,6 +100,7 @@ const SearchPage = () => {
           />
         )}
       </div>
+      <AdvertisementProductList />
     </div>
   );
 };

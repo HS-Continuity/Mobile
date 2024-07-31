@@ -1,8 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCustomerInfo, useCustomerProductsQuery } from "../../apis";
-
-import { IoMdBusiness, IoMdCall, IoMdHome } from "react-icons/io";
 import ProductList from "../../components/Product/ProductList";
 
 const Shop = () => {
@@ -33,24 +31,31 @@ const Shop = () => {
       </div>
 
       {/* 판매자 정보 */}
-      <div className='card mb-4 bg-base-100 shadow-sm'>
-        <div className='p-4'>
-          <h2 className='card-title justify-center text-2xl font-bold'>{sellerInfo.storeName}</h2>
-          <p className='text-center text-xl'>{sellerInfo.customerName}</p>
-          <div className='divider my-0'></div>
-          <div className='space-y-1'>
-            <div className='flex items-center justify-center'>
-              <IoMdBusiness className='mr-2' />
-              <span>사업자번호 {sellerInfo.storeBusinessNumber}</span>
-            </div>
-            <div className='flex items-center justify-center'>
-              <IoMdHome className='mr-2' />
-              <span>{sellerInfo.storeAddress}</span>
-            </div>
-            <div className='flex items-center justify-center'>
-              <IoMdCall className='mr-2' />
-              <span>{sellerInfo.storePhoneNumber}</span>
-            </div>
+      <div className='mb-8 rounded-lg border bg-white p-4'>
+        <div className='mb-2 flex items-center justify-between'>
+          <h2 className='text-xl font-semibold'>판매자 정보</h2>
+        </div>
+        <hr className='mb-3 border-gray-200' />
+        <div className='space-y-1'>
+          <div>
+            <span className='inline-block w-24 font-light text-gray-500'>상호명</span>
+            <span>{sellerInfo.storeName}</span>
+          </div>
+          <div>
+            <span className='inline-block w-24 font-light text-gray-500'>대표자명</span>
+            <span>{sellerInfo.customerName}</span>
+          </div>
+          <div>
+            <span className='inline-block w-24 font-light text-gray-500'>사업자번호</span>
+            <span>{sellerInfo.storeBusinessNumber}</span>
+          </div>
+          <div>
+            <span className='inline-block w-24 font-light text-gray-500'>주소</span>
+            <span>{sellerInfo.storeAddress}</span>
+          </div>
+          <div>
+            <span className='inline-block w-24 font-light text-gray-500'>전화번호</span>
+            <span>{sellerInfo.storePhoneNumber}</span>
           </div>
         </div>
       </div>

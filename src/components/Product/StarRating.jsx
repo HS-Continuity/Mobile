@@ -1,6 +1,4 @@
-import React from "react";
-
-const StarRating = ({ rating }) => {
+const StarRating = ({ rating, count }) => {
   const MAX_STARS = 5;
   const getStarWidth = starIndex => {
     const width = Math.max(0, Math.min(100, (rating - starIndex) * 100));
@@ -13,7 +11,7 @@ const StarRating = ({ rating }) => {
   }
 
   return (
-    <div className='mt-[3px] flex'>
+    <div className='mt-1 flex'>
       {[...Array(MAX_STARS)].map((_, index) => (
         <div key={index} className='relative -ml-[2px] h-4 w-4'>
           <svg
@@ -48,7 +46,15 @@ const StarRating = ({ rating }) => {
           </div>
         </div>
       ))}
-      <span className='-mt-[3px] ml-1 text-gray-500'>{rating}</span>
+      {count ? (
+        <span className='-mt-[3px] ml-1 flex font-light text-gray-400'>
+          {rating} <p className='mx-1 mt-[3px] text-xs font-[100]'>|</p> {count}건
+        </span>
+      ) : (
+        <span className='-mt-[3px] ml-1 flex font-light text-gray-400'>
+          {rating} <p className='mx-1 mt-[3px] text-xs font-[100]'></p>
+        </span>
+      )}
     </div>
   );
 };

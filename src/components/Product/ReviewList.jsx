@@ -29,7 +29,7 @@ const ReviewList = ({ productId, productName }) => {
   }
 
   return (
-    <div className='mt-8'>
+    <div className='mt-3'>
       {reviews.content && reviews.content.length > 0 ? (
         <>
           {reviews.content.map(review => (
@@ -46,16 +46,16 @@ const ReviewList = ({ productId, productName }) => {
             />
           ))}
           <button
-            className='btn mt-4 w-full border-gray-300 bg-white hover:border-gray-300 hover:bg-white'
+            className='btn w-full border-gray-300 bg-white hover:border-gray-300 hover:bg-white'
             onClick={handleViewAllReviews}>
             상품평 더보기 ({reviews.content.length})
           </button>
         </>
       ) : (
-        <div className='-mt-7 flex flex-col items-center justify-center rounded-lg border border-gray-200 bg-gray-50 p-8 text-center'>
+        <div className='-mt-2 flex flex-col items-center justify-center rounded-lg border border-gray-200 bg-gray-50 p-8 text-center'>
           <FaRegCommentDots className='mb-4 text-4xl text-gray-400' />
-          <p className='text-lg font-semibold text-gray-600'>아직 리뷰가 없습니다.</p>
-          <p className='mt-2 text-sm text-gray-500'>첫 번째 리뷰를 작성해보세요!</p>
+          <p className='text-lg font-semibold text-gray-600'>아직 상품평이 없습니다.</p>
+          <p className='mt-2 text-sm text-gray-500'>첫 번째 상품평을 작성해보세요!</p>
         </div>
       )}
     </div>

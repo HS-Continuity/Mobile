@@ -1,10 +1,11 @@
 import { useTimeSaleProductsQuery } from "../../apis";
-import ProductList from "../../components/Product/ProductList";
+
+import TimesaleList from "./timeSaleList";
 
 const Timesale = () => {
   return (
     <div className='container mx-auto p-1'>
-      <ProductList useQueryHook={useTimeSaleProductsQuery} gridCols={1} />
+      <TimesaleList useQueryHook={useTimeSaleProductsQuery} gridCols={1} />
     </div>
   );
 };

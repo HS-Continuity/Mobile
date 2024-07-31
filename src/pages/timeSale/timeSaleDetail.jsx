@@ -1,50 +1,46 @@
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { FaChevronDown, FaLeaf, FaShare } from "react-icons/fa";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { FaChevronDown, FaLeaf, FaRegClock, FaShare } from "react-icons/fa";
 import { CiShoppingCart } from "react-icons/ci";
 import { BsHouse, BsLightningChargeFill } from "react-icons/bs";
 import { MdChevronRight } from "react-icons/md";
 import { AiOutlineMinus, AiOutlinePlus } from "react-icons/ai";
 import toast from "react-hot-toast";
 
-import PriceBox from "../../components/Product/PriceBox";
 import DetailImage from "../../components/Product/DetailImage";
 import ReviewList from "../../components/Product/ReviewList";
 import StarRating from "../../components/Product/StarRating";
-import Modal from "./Modal";
-import ProductInfoModal, { MODAL_TYPES } from "./ProductInfoModal";
-import {
-  fetchEcoProductImage,
-  fetchProductDetail,
-  fetchProductDetailImage,
-  postCartItem,
-} from "../../apis";
-import useAuthStore from "../../stores/useAuthStore";
+import Modal from "../product/Modal";
 
-const ProductDetail = () => {
+import { fetchEcoProductImage, fetchTimeSaleItemDetail, fetchProductDetailImage } from "../../apis";
+import useAuthStore from "../../stores/useAuthStore";
+import ProductInfoModal, { MODAL_TYPES } from "../product/ProductInfoModal";
+import CountdownTimer from "../../components/Product/CountdownTimer";
+
+const TimeSaleDetail = () => {
   const { username, isAuthenticated } = useAuthStore();
   const memberId = username;
-
-  const { productId } = useParams();
+  const { timesaleId } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const [isAddCartOpen, setIsAddCartOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
-  const [purchaseType, setPurchaseType] = useState("regular");
   const [activeModal, setActiveModal] = useState(null);
   const [imgError, setImgError] = useState(false);
 
-  // 상품 정보 가져오기
+  // 타임세일 상품 정보 가져오기
   const {
     data: product,
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["product", productId],
-    queryFn: () => fetchProductDetail(productId),
+    queryKey: ["timeSaleDetailItem", timesaleId],
+    queryFn: () => fetchTimeSaleItemDetail(timesaleId),
   });
+
+  console.log(product);
 
   // 상품 이미지 가져오기
   const {
@@ -52,8 +48,9 @@ const ProductDetail = () => {
     isImageLoading,
     isImageError,
   } = useQuery({
-    queryKey: ["images", productId],
-    queryFn: () => fetchProductDetailImage(productId),
+    queryKey: ["images", product?.productId],
+    queryFn: () => fetchProductDetailImage(product?.productId),
+    enabled: !!product?.productId,
   });
 
   // 친환경 인증 이미지 가져오기 (친환경 제품일 경우에만)
@@ -62,48 +59,72 @@ const ProductDetail = () => {
     isEcoImageLoading,
     isEcoImageError,
   } = useQuery({
-    queryKey: ["ecoimages", productId],
-    queryFn: () => fetchEcoProductImage(productId),
+    queryKey: ["ecoimages", product?.productId],
+    queryFn: () => fetchEcoProductImage(product?.productId),
     enabled: product?.isCertification === "ACTIVE",
-    retry: false, // 실패 시 재시도하지 않음
+    retry: false,
     onError: error => {
       console.warn("친환경 이미지를 불러오는데 실패했습니다:", error.message);
     },
   });
 
   // 장바구니 추가 mutation
-  const addToCartMutation = useMutation({
-    mutationFn: postCartItem,
-    onSuccess: () => {
-      queryClient.invalidateQueries("cart");
-      // 성공 시 토스트 알림
-      toast.success(
-        <div>
-          장바구니에 담겼습니다.
-          <button
-            className='btn btn-sm ml-3 bg-green-shine text-white hover:bg-[#00835F]'
-            onClick={() => {
-              navigate("/cart");
-            }}>
-            장바구니 가기
-          </button>
-        </div>,
-        {
-          style: {
-            border: "1px solid #00835F",
-            padding: "12px",
-            color: "black",
-          },
-          iconTheme: {
-            primary: "#00835F",
-            secondary: "#FFFAEE",
-          },
-          duration: 2000,
-          position: "bottom-center",
-        }
-      );
-    },
-  });
+  // const addToCartMutation = useMutation({
+  //   mutationFn: postCartItem,
+  //   onSuccess: () => {
+  //     queryClient.invalidateQueries("cart");
+  //     toast.success(
+  //       <div>
+  //         장바구니에 담겼습니다.
+  //         <button
+  //           className='btn btn-sm ml-3 bg-green-shine text-white hover:bg-[#00835F]'
+  //           onClick={() => {
+  //             navigate("/cart");
+  //           }}>
+  //           장바구니 가기
+  //         </button>
+  //       </div>,
+  //       {
+  //         style: {
+  //           border: "1px solid #00835F",
+  //           padding: "12px",
+  //           color: "black",
+  //         },
+  //         iconTheme: {
+  //           primary: "#00835F",
+  //           secondary: "#FFFAEE",
+  //         },
+  //         duration: 2000,
+  //         position: "bottom-center",
+  //       }
+  //     );
+  //   },
+  // });
+
+  // 구매하기
+  const handlePurchase = () => {
+    const orderData = {
+      groupedItems: {
+        [product.customerId]: {
+          storeName: "Store Name", // 실제 스토어 이름이 있다면 그것을 사용
+          items: [
+            {
+              productId: product.productId,
+              name: product.productName,
+              originPrice: product.price,
+              discountAmount: product.price - product.discountPrice,
+              finalPrice: product.discountPrice,
+              quantity: quantity,
+            },
+          ],
+        },
+      },
+      totalProductPrice: product.discountPrice,
+      totalDeliveryFee: product.deliveryFee,
+    };
+
+    navigate("/order", { state: orderData });
+  };
 
   // 이미지 에러 핸들러
   const handleImageError = () => {
@@ -115,24 +136,24 @@ const ProductDetail = () => {
   const handleDecrease = () => quantity > 1 && setQuantity(quantity - 1);
 
   // 장바구니 추가 함수
-  const handleAddToCart = async () => {
-    if (!isAuthenticated) {
-      toast.error("로그인이 필요합니다.", {
-        duration: 1000,
-        position: "bottom-center",
-      });
-      navigate("/login");
-      return;
-    }
+  // const handleAddToCart = async () => {
+  //   if (!isAuthenticated) {
+  //     toast.error("로그인이 필요합니다.", {
+  //       duration: 1000,
+  //       position: "bottom-center",
+  //     });
+  //     navigate("/login");
+  //     return;
+  //   }
 
-    const cartItem = {
-      productId: Number(productId),
-      memberId: memberId,
-      cartTypeId: purchaseType === "regular" ? 1 : 2,
-      quantity: quantity,
-    };
-    addToCartMutation.mutate(cartItem);
-  };
+  //   const cartItem = {
+  //     productId: Number(product.productId),
+  //     memberId: memberId,
+  //     cartTypeId: 1, // 타임세일은 단건구매만 가능하다고 가정
+  //     quantity: quantity,
+  //   };
+  //   addToCartMutation.mutate(cartItem);
+  // };
 
   // 공유 버튼 핸들러 (URL 복사)
   const handleShare = () => {
@@ -164,7 +185,6 @@ const ProductDetail = () => {
   const openModal = modalType => setActiveModal(modalType);
   const closeModal = () => setActiveModal(null);
 
-  // 데이터 로딩/에러 처리
   const getModalTitle = () => {
     switch (activeModal) {
       case MODAL_TYPES.PRODUCT_INFO:
@@ -180,43 +200,50 @@ const ProductDetail = () => {
 
   if (isLoading || isImageLoading || isEcoImageLoading) return <div>Loading...</div>;
   if (isError || isImageError || isEcoImageError) return <div>Error loading product data</div>;
+  if (!product) return <div>No data available</div>;
 
   return (
     <>
       <div className='mx-auto bg-gray-50'>
-        {/* 상품 이미지 및 정보 표시 */}
-        {!imgError ? (
-          <div>
-            <img
-              src={product.productImage}
-              alt={product.productName}
-              className='h-96 w-full object-cover'
-              onError={handleImageError}
-            />
-            {product.soldOut && (
-              <div className='absolute inset-0 flex items-center justify-center bg-black bg-opacity-50'>
-                <span className='text-2xl font-bold text-red-500'>품절</span>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className='flex h-96 w-full items-center justify-center bg-gradient-to-br from-green-100 to-green-200 p-4'>
-            <div className='text-center'>
-              <FaLeaf className='mx-auto mb-2 text-4xl text-green-500' />
-              <h3 className='break-words text-2xl font-semibold text-green-700'>
-                {product.productName}
-              </h3>
+        <div className='relative'>
+          {/* 상품 이미지 및 정보 표시 */}
+          {!imgError ? (
+            <div>
+              <img
+                src={product.productImage}
+                alt={product.productName}
+                className='h-96 w-full object-cover'
+                onError={handleImageError}
+              />
+
+              {product.soldOut && (
+                <div className='absolute inset-0 flex items-center justify-center bg-black bg-opacity-50'>
+                  <span className='text-2xl font-bold text-red-500'>품절</span>
+                </div>
+              )}
             </div>
-            {product.soldOut && (
-              <div className='absolute inset-0 flex items-center justify-center bg-black bg-opacity-50'>
-                <span className='text-2xl font-bold text-red-500'>품절</span>
+          ) : (
+            <div className='flex h-96 w-full items-center justify-center bg-gradient-to-br from-green-100 to-green-200 p-4'>
+              <div className='text-center'>
+                <FaLeaf className='mx-auto mb-2 text-4xl text-green-500' />
+                <h3 className='break-words text-2xl font-semibold text-green-700'>
+                  {product.productName}
+                </h3>
               </div>
-            )}
+
+              {product.soldOut && (
+                <div className='absolute inset-0 flex items-center justify-center bg-black bg-opacity-50'>
+                  <span className='text-2xl font-bold text-red-500'>품절</span>
+                </div>
+              )}
+            </div>
+          )}
+          <div className='absolute bottom-0 w-full p-2 text-center'>
+            <CountdownTimer endDateTime={product.endDateTime} />
           </div>
-        )}
+        </div>
 
         <div className='mb-3 bg-white p-4'>
-          {/* 상품 상세 이미지, 리뷰 */}
           <div className='mb-4 flex items-center justify-between'>
             <div className='flex'>
               <h1 className='mr-4 text-2xl font-bold'>{product.productName}</h1>
@@ -237,26 +264,44 @@ const ProductDetail = () => {
             </div>
           </div>
           <div className='mr-4 flex items-center'>
-            <StarRating rating={product.averageScore} count={product.reviewCount} />
+            <StarRating rating={product.averageRating} />
           </div>
-          <p className='mb-4 text-gray-600'>{product.productDescription}</p>
 
-          {/* 상품 가격 */}
+          {/* 타임세일 가격 */}
           <div className='mb-4 space-y-2'>
-            {product.isRegularSale == "ACTIVE" && (
-              <PriceBox
-                originalPrice={product.productPrice}
-                discountRate={product.regularDiscountRate}
-                finalPrice={product.calculatedRegularPrice}
-                isRegular={true}
-              />
-            )}
-            <PriceBox
-              originalPrice={product.productPrice}
-              discountRate={product.baseDiscountRate}
-              finalPrice={product.calculatedBasePrice}
-              isRegular={false}
-            />
+            <div
+              className={`flex items-center justify-between rounded-lg border border-gray-200 bg-white p-3 shadow-sm transition-all duration-300`}>
+              <div className='flex-grow'>
+                <div className='flex items-center space-x-2'>
+                  <span className='text-sm text-gray-500 line-through'>
+                    {product.price.toLocaleString()}원
+                  </span>
+                  <span className='rounded-full bg-red-100 px-2 py-1 text-xs font-semibold text-red-600'>
+                    {product.discountRate}% 할인
+                  </span>
+                </div>
+                <div className='mt-1 text-xl font-bold text-gray-800'>
+                  {product.discountPrice.toLocaleString()}원
+                </div>
+              </div>
+              <div className='flex flex-col items-end'>
+                <div className='flex items-center text-sm font-semibold text-blue-500'>
+                  <FaRegClock className='mr-1' />
+                  타임세일 할인가
+                </div>
+                <div className='mt-1 text-xs text-gray-500'>
+                  {(product.price - product.discountPrice).toLocaleString()}원 절약
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 타임세일 기간 */}
+          <div className='mb-4'>
+            <p className='text-sm text-gray-600'>
+              타임세일 기간: {new Date(product.startDateTime).toLocaleString()} ~{" "}
+              {new Date(product.endDateTime).toLocaleString()}
+            </p>
           </div>
         </div>
 
@@ -277,7 +322,7 @@ const ProductDetail = () => {
             <div className='flex items-center'>
               <h2 className='text-xl font-bold'>고객 리뷰</h2>
             </div>
-            <ReviewList productId={productId} product_name={product.productName} />
+            <ReviewList productId={product.productId} productName={product.productName} />
           </div>
         </div>
 
@@ -287,17 +332,17 @@ const ProductDetail = () => {
           <div className='flex gap-2'>
             <button
               onClick={() => openModal("PRODUCT_INFO")}
-              className='btn btn-sm h-12 flex-1 border-gray-200 bg-white hover:bg-white'>
+              className='btn btn-sm h-12 flex-1 border-gray-200 bg-white'>
               상품 정보
             </button>
             <button
               onClick={() => openModal("SHIPPING_INFO")}
-              className='btn btn-sm h-12 flex-1 border-gray-200 bg-white hover:bg-white'>
+              className='btn btn-sm h-12 flex-1 border-gray-200 bg-white'>
               배송 정보
             </button>
             <button
               onClick={() => openModal("RETURN_POLICY")}
-              className='btn btn-sm h-12 flex-1 border-gray-200 bg-white hover:bg-white'>
+              className='btn btn-sm h-12 flex-1 border-gray-200 bg-white'>
               교환 및 반품 정책
             </button>
           </div>
@@ -339,53 +384,26 @@ const ProductDetail = () => {
             </div>
           </div>
 
-          {product.isRegularSale == "ACTIVE" && (
-            <div className='mr-7 mt-3 flex items-end justify-end rounded-lg text-sm text-blue-600'>
-              <div className='flex animate-bounce items-center'>
-                <BsLightningChargeFill className='mr-2 text-lg' />
-                <span>
-                  정기 배송 시 매달
-                  <span className='font-bold'>
-                    {(
-                      (product.baseDiscountedPrice - product.calculatedRegularPrice) *
-                      quantity
-                    ).toLocaleString()}
-                    원
-                  </span>
-                  할인!
+          <div className='mr-7 mt-3 flex items-end justify-end rounded-lg text-sm text-blue-600'>
+            <div className='flex animate-bounce items-center'>
+              <BsLightningChargeFill className='mr-2 text-lg' />
+              <span>
+                타임세일 할인
+                <span className='font-bold'>
+                  {((product.price - product.discountPrice) * quantity).toLocaleString()}원
                 </span>
-              </div>
+                !
+              </span>
             </div>
-          )}
+          </div>
 
-          <div className='grid grid-cols-2 gap-3 p-2'>
-            {[
-              { price: product.calculatedBasePrice, label: "단건구매", type: "regular" },
-              ...(product.isRegularSale === "INACTIVE"
-                ? []
-                : [
-                    {
-                      price: product.calculatedRegularPrice,
-                      label: "정기배송",
-                      type: "subscription",
-                    },
-                  ]),
-            ].map(({ price, label, type }, index) => (
-              <button
-                key={index}
-                onClick={() => setPurchaseType(type)}
-                className={`flex flex-col items-center justify-center rounded-lg p-3 transition-all duration-200 ${
-                  purchaseType === type
-                    ? "border-2 border-[#00835F] text-black"
-                    : "border-2 border-gray-300 bg-white text-gray-700"
-                } focus:outline-none`}>
-                <span
-                  className={`mb-1 text-sm ${purchaseType === type ? "text-black" : "text-gray-500"}`}>
-                  {label}
-                </span>
-                <span className='text-lg font-bold'>{(price * quantity).toLocaleString()}원</span>
-              </button>
-            ))}
+          <div className='grid grid-cols-1 gap-3 p-2'>
+            <button className='flex flex-col items-center justify-center rounded-lg border-2 border-[#00835F] p-3 text-black transition-all duration-200 focus:outline-none'>
+              <span className='mb-1 text-sm'>타임세일 구매</span>
+              <span className='text-lg font-bold'>
+                {(product.discountPrice * quantity).toLocaleString()}원
+              </span>
+            </button>
           </div>
         </div>
       )}
@@ -398,9 +416,9 @@ const ProductDetail = () => {
             backgroundImage:
               "linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%)",
           }}
-          onClick={isAddCartOpen ? handleAddToCart : () => setIsAddCartOpen(true)}>
+          onClick={isAddCartOpen ? handlePurchase : () => setIsAddCartOpen(true)}>
           <CiShoppingCart className='mr-1 text-3xl text-white' />
-          {isAddCartOpen ? "장바구니 담기" : "구매 하기"}
+          {isAddCartOpen ? "바로 구매하기" : "구매하기"}
         </button>
       </div>
 
@@ -414,4 +432,4 @@ const ProductDetail = () => {
   );
 };
 
-export default ProductDetail;
+export default TimeSaleDetail;

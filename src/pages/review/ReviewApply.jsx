@@ -1,103 +1,166 @@
-import React, { useState } from "react";
-import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
-import { FiUpload } from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
-
-const StarDisplay = ({ rating }) => {
-  return (
-    <div className='flex'>
-      {[1, 2, 3, 4, 5].map(star => {
-        if (star <= Math.floor(rating)) {
-          return <FaStar key={star} className='text-yellow-400' />;
-        } else if (star === Math.ceil(rating) && !Number.isInteger(rating)) {
-          return <FaStarHalfAlt key={star} className='text-yellow-400' />;
-        } else {
-          return <FaRegStar key={star} className='text-gray-300' />;
-        }
-      })}
-    </div>
-  );
-};
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { FaStar, FaStarHalfAlt } from "react-icons/fa";
+import { FiUpload, FiX } from "react-icons/fi";
+import useAuthStore from "../../stores/useAuthStore";
+import { postProductReview } from "../../apis";
+import { useMutation } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 
 const ReviewApply = () => {
   const navigate = useNavigate();
+  const { productId } = useParams();
+  const { username } = useAuthStore();
+  const memberId = username;
 
   const [rating, setRating] = useState(5);
   const [review, setReview] = useState("");
-  const [images, setImages] = useState([]);
+  const [image, setImage] = useState(null);
+
+  const reviewMutation = useMutation({
+    mutationFn: postProductReview,
+    onSuccess: () => {
+      toast.success("리뷰가 성공적으로 등록되었습니다.");
+      navigate(`/product/${productId}`);
+    },
+    onError: error => {
+      console.error("리뷰 등록 중 오류 발생:", error);
+      toast.error("리뷰 등록 중 오류가 발생했습니다. 다시 시도해 주세요.");
+    },
+  });
 
   const handleImageUpload = e => {
-    const files = Array.from(e.target.files);
-    setImages(prevImages => [...prevImages, ...files]);
+    if (e.target.files && e.target.files[0]) {
+      setImage(e.target.files[0]);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImage(null);
   };
 
   const handleSubmit = e => {
     e.preventDefault();
-    // 여기에 리뷰 제출 로직을 추가합니다.
-    console.log({ rating, review, images });
+    const currentDate = new Date().toISOString();
+
+    const reviewData = {
+      ofRegisterProductReview: {
+        productId: parseInt(productId),
+        memberId,
+        createDate: currentDate,
+        reviewContent: review,
+        reviewScore: rating,
+      },
+      image: image,
+    };
+
+    reviewMutation.mutate(reviewData);
+  };
+
+  const renderStars = () => {
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 !== 0;
+
+    for (let i = 0; i < fullStars; i++) {
+      stars.push(<FaStar key={i} className='text-5xl text-yellow-400' />);
+    }
+
+    if (hasHalfStar) {
+      stars.push(<FaStarHalfAlt key='half' className='text-5xl text-yellow-400' />);
+    }
+
+    while (stars.length < 5) {
+      stars.push(<FaStar key={`empty-${stars.length}`} className='text-5xl text-gray-300' />);
+    }
+
+    return stars;
   };
 
   return (
-    <form onSubmit={handleSubmit} className='space-y-4 rounded-lg bg-white p-4 shadow'>
-      <h2 className='mb-4 text-xl font-bold'>리뷰 작성</h2>
-
-      <div>
-        <label className='mb-2 block font-semibold'>별점</label>
-        <div className='flex items-center space-x-4'>
-          <select
-            value={rating}
-            onChange={e => setRating(parseFloat(e.target.value))}
-            className='rounded-lg border p-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500'>
-            {[1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5].map(value => (
-              <option key={value} value={value}>
-                {value}
-              </option>
-            ))}
-          </select>
-          <StarDisplay rating={rating} />
-        </div>
-      </div>
-
-      <div>
-        <label className='mb-2 block font-semibold'>이미지 업로드</label>
-        <div className='flex items-center space-x-2'>
-          <label className='cursor-pointer rounded-lg bg-blue-500 px-4 py-2 text-white transition duration-300 hover:bg-blue-600'>
-            <FiUpload className='mr-2 inline-block' />
-            이미지 선택
+    <div className='bg-white p-4'>
+      <form onSubmit={handleSubmit} className='space-y-6 bg-white p-4'>
+        <div>
+          <div className='flex flex-col items-center space-y-2'>
+            <div className='mb-8 mt-3 flex'>{renderStars()}</div>
             <input
-              type='file'
-              className='hidden'
-              multiple
-              onChange={handleImageUpload}
-              accept='image/*'
+              type='range'
+              min='20'
+              max='100'
+              value={rating * 20}
+              onChange={e => setRating(Math.round((e.target.value / 20) * 2) / 2)}
+              className='range [--range-shdw:#00835F]'
+              step='10'
             />
-          </label>
-          <span className='text-sm text-gray-500'>{images.length}개의 이미지 선택됨</span>
+            <div className='flex w-full justify-between px-2 text-xs'>
+              <span>|</span>
+              <span>|</span>
+              <span>|</span>
+              <span>|</span>
+              <span>|</span>
+              <span>|</span>
+              <span>|</span>
+              <span>|</span>
+              <span>|</span>
+            </div>
+            <span className='text-md text-gray-500'>{rating} / 5</span>
+          </div>
         </div>
-      </div>
 
-      <div>
-        <label htmlFor='review' className='mb-2 block font-semibold'>
-          상품평
-        </label>
-        <textarea
-          id='review'
-          rows='4'
-          className='w-full rounded-lg border p-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500'
-          value={review}
-          onChange={e => setReview(e.target.value)}
-          placeholder='상품에 대한 평가를 작성해주세요.'></textarea>
-      </div>
+        <div>
+          <label htmlFor='review' className='mb-2 block text-sm font-semibold text-gray-700'>
+            상품평
+          </label>
+          <textarea
+            id='review'
+            rows='2'
+            className='textarea textarea-bordered w-full'
+            value={review}
+            onChange={e => setReview(e.target.value)}
+            placeholder='상품에 대한 평가를 작성해주세요.'></textarea>
+        </div>
 
-      <div className='flex justify-end space-x-2'>
-        <button type='button' className='btn btn-outline' onClick={() => navigate(-1)}>
-          취소
-        </button>
-        <button type='submit' className='btn btn-primary'>
-          등록하기
-        </button>
-      </div>
-    </form>
+        <div>
+          <div className='flex items-center justify-start gap-4'>
+            <label className='btn btn-sm bg-transparent hover:bg-transparent'>
+              <FiUpload className='mr-2 inline-block' />
+              이미지 (선택)
+              <input type='file' className='hidden' onChange={handleImageUpload} accept='image/*' />
+            </label>
+            {image && (
+              <div className='relative'>
+                <img
+                  src={URL.createObjectURL(image)}
+                  alt='Preview'
+                  className='h-10 w-10 rounded-md object-cover'
+                />
+                <button
+                  type='button'
+                  onClick={handleRemoveImage}
+                  className='btn btn-circle btn-xs absolute -right-2 -top-2 bg-red-500 text-white'>
+                  <FiX />
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className='flex justify-center space-x-2'>
+          <button
+            type='button'
+            className='btn btn-md bg-transparent hover:bg-transparent'
+            onClick={() => navigate(-1)}>
+            취소
+          </button>
+          <button
+            type='submit'
+            className='btn btn-md bg-green-shine text-white'
+            disabled={reviewMutation.isLoading}>
+            {reviewMutation.isLoading ? "등록 중..." : "등록"}
+          </button>
+        </div>
+      </form>
+    </div>
   );
 };
 

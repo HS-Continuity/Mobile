@@ -1,5 +1,3 @@
-import React from "react";
-
 export const MODAL_TYPES = {
   PRODUCT_INFO: "PRODUCT_INFO", // 상품 정보
   SHIPPING_INFO: "SHIPPING_INFO", // 배송 정보

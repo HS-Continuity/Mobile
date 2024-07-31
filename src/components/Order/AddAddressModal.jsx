@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { FaPlus, FaSearch } from "react-icons/fa";
 import DaumPostcode from "react-daum-postcode";
@@ -167,7 +167,7 @@ const AddAddressModal = ({ isOpen, onClose, memberId }) => {
         <div className='mt-6'>
           <button
             type='submit'
-            className='btn w-full bg-[#00835F] text-base text-white hover:bg-[#00835F]'>
+            className='btn w-full bg-green-shine text-base text-white hover:bg-green-shine'>
             <FaPlus className='mr-2 text-base text-white' /> 등록
           </button>
         </div>

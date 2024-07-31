@@ -1,7 +1,4 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useInView } from "react-intersection-observer";
-import { useNavigate } from "react-router-dom";
-import { FaChevronLeft } from "react-icons/fa";
 import ReviewBox from "./ReviewBox";
 import ReviewListSkeleton from "../Skeletons/ReviewListSkeleton";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -9,7 +6,6 @@ import { fetchProductReviews } from "../../apis";
 import { IoIosRefresh } from "react-icons/io";
 
 const ReviewAllList = ({ productId, productName }) => {
-  const navigate = useNavigate();
   const observerTarget = useRef(null);
   const [sortOption, setSortOption] = useState("latest");
 
@@ -22,12 +18,6 @@ const ReviewAllList = ({ productId, productName }) => {
         return lastPage.number + 1;
       },
     });
-
-  // useEffect(() => {
-  //   if (inView && hasNextPage) {
-  //     fetchNextPage();
-  //   }
-  // }, [inView, fetchNextPage, hasNextPage]);
 
   const handleObserver = useCallback(
     entries => {
@@ -79,11 +69,10 @@ const ReviewAllList = ({ productId, productName }) => {
     <div className='container mx-auto p-4'>
       <div className='mb-4 flex items-center justify-between'>
         <div className='flex items-center'>
-          <FaChevronLeft className='cursor-pointer text-xl' onClick={() => navigate(-1)} />
           <h2 className='ml-4 text-xl font-bold'>고객 리뷰</h2>
         </div>
         <select
-          className='rounded border border-gray-300 bg-white px-4 py-2 pr-8 leading-tight text-gray-700 focus:border-gray-500 focus:bg-white focus:outline-none'
+          className='select rounded border border-gray-300 bg-white px-4 py-2 pr-8 leading-tight text-gray-700 focus:border-gray-500 focus:bg-white focus:outline-none'
           value={sortOption}
           onChange={handleSortChange}>
           <option value='latest'>최신순</option>

@@ -1,7 +1,8 @@
-import React from "react";
-import { FaChevronLeft, FaChevronRight, FaPlus } from "react-icons/fa";
+import { useState } from "react";
+import { FaChevronLeft, FaChevronRight, FaPlus, FaStar } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
 import CardRegisterModal from "./CardRegisterModal";
+import { putDefaultCard } from "../../apis";
 
 const Payment = ({
   cards,
@@ -14,7 +15,13 @@ const Payment = ({
   handleAddCard,
   getCardColor,
   maskDigits,
+  memberId,
+  refetch,
 }) => {
+  const [localDefaultCard, setLocalDefaultCard] = useState(
+    () => cards.find(card => card.isDefaultPaymentCard === "ACTIVE")?.memberPaymentCardId
+  );
+
   const isCardExpired = card => {
     const expirationMonth = parseInt(card.cardExpiration.slice(0, 2), 10);
     const expirationYear = parseInt("20" + card.cardExpiration.slice(2), 10);
@@ -27,12 +34,37 @@ const Payment = ({
     );
   };
 
-  const selectedCard = cards && cards[selectedCardIndex - 1];
+  const handleSetDefaultCard = (memberPaymentCardId, memberId) => {
+    setLocalDefaultCard(memberPaymentCardId);
+    putDefaultCard(memberPaymentCardId, memberId);
+  };
+
+  const selectedCard = cards && selectedCardIndex !== null ? cards[selectedCardIndex - 1] : null;
   const canRegisterCard = cards.length < 3;
+  const hasCards = cards.length > 0;
 
   return (
-    <div className='bg-white p-4'>
-      <h2 className='mb-4 text-xl font-bold'>결제 수단</h2>
+    <div className='rounded-lg border bg-white p-4'>
+      <svg width='0' height='0' style={{ position: "absolute" }}>
+        <defs>
+          <filter id='outline'>
+            <feMorphology
+              in='SourceAlpha'
+              result='DILATED'
+              operator='dilate'
+              radius='1'></feMorphology>
+            <feFlood floodColor='gray' floodOpacity='1' result='COLORED'></feFlood>
+            <feComposite in='COLORED' in2='DILATED' operator='in' result='OUTLINE'></feComposite>
+            <feMerge>
+              <feMergeNode in='OUTLINE' />
+              <feMergeNode in='SourceGraphic' />
+            </feMerge>
+          </filter>
+        </defs>
+      </svg>
+
+      <h2 className='mb-2 text-xl font-bold'>결제 수단</h2>
+      <hr className='mb-3 border-gray-200' />
       <div className='relative w-full' style={{ height: "220px" }}>
         <div className='absolute inset-0 flex items-center justify-center overflow-hidden'>
           <div className='relative w-[312px]'>
@@ -44,16 +76,16 @@ const Payment = ({
               }}>
               {/* 카드 등록하기 카드 */}
               <div
-                className={`ml-[52px] w-[208px] flex-shrink-0 transition-all duration-300 ease-in-out ${
+                className={`ml-[52px] w-[208px] flex-shrink-0 bg-gradient-shine transition-all duration-300 ease-in-out ${
                   selectedCardIndex === 0 ? "z-10 scale-110" : "scale-100 opacity-50"
                 } ${!canRegisterCard ? "cursor-not-allowed opacity-50" : ""}`}>
                 <div
-                  className={`flex h-[140px] items-center justify-center rounded-xl bg-gray-300 p-4 text-white shadow ${
+                  className={`flex h-[140px] flex-col items-center justify-center rounded-xl bg-gradient-shine bg-gradient-to-br from-green-400 to-blue-500 p-4 text-white shadow ${
                     canRegisterCard ? "cursor-pointer" : "cursor-not-allowed"
                   }`}
                   onClick={() => canRegisterCard && setIsCardRegistrationModalOpen(true)}>
-                  <FaPlus className='text-4xl text-gray-500' />
-                  <span className='ml-2 text-xl font-bold text-gray-500'>카드 등록하기</span>
+                  <FaPlus className='mb-2 text-4xl' />
+                  <span className='text-center text-xl font-bold'>카드 등록하기</span>
                 </div>
               </div>
 
@@ -82,11 +114,27 @@ const Payment = ({
                         }}>
                         <div className='mb-2 flex justify-between'>
                           <p className='text-lg font-bold'>{card.cardCompany}</p>
-                          <button
-                            onClick={() => handleDeleteCard(card.memberPaymentCardId)}
-                            className='-mt-2 text-white opacity-70 hover:opacity-100'>
-                            <FiTrash2 />
-                          </button>
+                          <div>
+                            <button
+                              onClick={() =>
+                                handleSetDefaultCard(card.memberPaymentCardId, memberId)
+                              }
+                              className='text-white opacity-70'>
+                              <FaStar
+                                className={`text-lg ${
+                                  localDefaultCard === card.memberPaymentCardId
+                                    ? "text-yellow-400 opacity-100"
+                                    : "text-gray-300"
+                                }`}
+                                style={{ filter: "url(#outline)" }}
+                              />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteCard(card.memberPaymentCardId)}
+                              className='ml-2 text-lg text-white opacity-70 hover:opacity-100'>
+                              <FiTrash2 />
+                            </button>
+                          </div>
                         </div>
                         <div className='mb-2 mt-4'>
                           <p className='text-lg tracking-wider'>{maskDigits(card.cardNumber)}</p>
@@ -119,23 +167,28 @@ const Payment = ({
           </div>
         </div>
         {/* 이전 카드 */}
-        <button
-          onClick={handlePrevCard}
-          className='absolute left-8 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white p-6 text-xl shadow'>
-          <FaChevronLeft />
-        </button>
+        {hasCards && (
+          <button
+            onClick={handlePrevCard}
+            className='absolute left-8 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white p-6 text-xl shadow'>
+            <FaChevronLeft />
+          </button>
+        )}
         {/* 다음 카드 */}
-        <button
-          onClick={handleNextCard}
-          className='absolute right-8 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white p-6 text-xl shadow'>
-          <FaChevronRight />
-        </button>
+        {hasCards && (
+          <button
+            onClick={handleNextCard}
+            className='absolute right-8 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white p-6 text-xl shadow'>
+            <FaChevronRight />
+          </button>
+        )}
       </div>
       <p className='text-center text-sm text-gray-600'>법인/체크카드는 일시불로 결제됩니다</p>
       <CardRegisterModal
         isOpen={isCardRegistrationModalOpen}
         onClose={() => setIsCardRegistrationModalOpen(false)}
         onSubmit={handleAddCard}
+        refetch={refetch}
       />
     </div>
   );

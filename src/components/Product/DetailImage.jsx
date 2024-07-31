@@ -4,7 +4,7 @@ import DetailDefaultImage from "../../assets/images/detail_image.jpg";
 import CertDefaultImage from "../../assets/images/certification.jpg";
 
 const DetailImage = ({ productImage, ecoImages, isEcoCertified }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
   const [imgDetailError, setImgDetailError] = useState(false);
   const [imgCertErrors, setImgCertErrors] = useState({});
 

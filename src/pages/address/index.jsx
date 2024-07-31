@@ -7,11 +7,12 @@ import AddressEditModal from "../../components/Order/AddressEditModal";
 import useAuthStore from "../../stores/useAuthStore";
 import AddressSkeleton from "../../components/Skeletons/AddressSkeleton";
 import NoAddress from "./NoAddress";
+import toast from "react-hot-toast";
 
 const Address = () => {
   const { username } = useAuthStore();
   const memberId = username;
-  // const memberId = import.meta.env.VITE_MEMBER_ID;
+
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingAddressId, setEditingAddressId] = useState(null);
@@ -47,9 +48,31 @@ const Address = () => {
   });
 
   const handleDelete = memberAddressId => {
-    if (window.confirm("정말로 이 주소를 삭제하시겠습니까?")) {
-      deleteMutation.mutate(memberAddressId);
-    }
+    toast(
+      t => (
+        <span>
+          배송지를 삭제하시겠습니까?
+          <button
+            className='btn ml-2 h-10 rounded bg-transparent px-2 py-1 text-black hover:bg-white'
+            onClick={() => {
+              deleteMutation.mutate(memberAddressId);
+              toast.dismiss(t.id);
+            }}>
+            확인
+          </button>
+          <button
+            className='btn ml-2 h-10 rounded bg-red-500 px-2 py-1 text-white hover:bg-red-500'
+            onClick={() => {
+              toast.dismiss(t.id);
+            }}>
+            취소
+          </button>
+        </span>
+      ),
+      {
+        duration: 2000,
+      }
+    );
   };
 
   const handleSetDefault = memberAddressId => {
@@ -110,7 +133,7 @@ const Address = () => {
       )}
       <button
         onClick={() => setIsRegisterModalOpen(true)}
-        className='btn mt-6 w-full bg-green-shine text-base text-white hover:bg-green-shine'>
+        className='btn mt-2 w-full bg-green-shine text-base text-white hover:bg-green-shine'>
         <FaPlus className='mr-2' /> 새 배송지 등록
       </button>
 

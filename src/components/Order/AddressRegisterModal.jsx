@@ -4,11 +4,19 @@ import { FaPlus, FaSearch } from "react-icons/fa";
 import DaumPostcode from "react-daum-postcode";
 import { addAddress } from "../../apis";
 import Modal from "../../pages/product/Modal";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 
-const AddressRegisterModal = ({ isOpen, onClose, memberId }) => {
+const AddressRegisterModal = ({ isOpen, onClose, memberId, onAddressAdded }) => {
   const queryClient = useQueryClient();
 
+  const [addressData, setAddressData] = useState({
+    addressName: "",
+    recipientName: "",
+    recipientPhoneNumber: "",
+    generalAddress: "",
+    detailAddress: "",
+    isDefaultAddress: false,
+  });
   const [addressName, setAddressName] = useState("");
   const [recipientName, setRecipientName] = useState("");
   const [recipientPhoneNumber, setRecipientPhoneNumber] = useState("");
@@ -19,7 +27,7 @@ const AddressRegisterModal = ({ isOpen, onClose, memberId }) => {
 
   const addAddressMutation = useMutation({
     mutationFn: addAddress,
-    onSuccess: () => {
+    onSuccess: data => {
       queryClient.invalidateQueries(["address", memberId]);
       toast.success("배송지 등록에 성공하였습니다.", {
         style: {
@@ -34,7 +42,16 @@ const AddressRegisterModal = ({ isOpen, onClose, memberId }) => {
         duration: 2000,
         position: "bottom-center",
       });
-      window.location.reload();
+      // window.location.reload();
+      console.log("New address data:", data); // 데이터 구조 확인을 위한 로그
+      if (data && data.memberAddressId) {
+        onAddressAdded(data);
+        onClose();
+      } else {
+        onClose();
+        // console.error("Invalid address data received:", data);
+        // toast.error("배송지 데이터 처리 중 오류가 발생했습니다.");
+      }
     },
     onError: () => {
       toast.error("배송지 등록에 실패하였습니다.", {
@@ -50,9 +67,9 @@ const AddressRegisterModal = ({ isOpen, onClose, memberId }) => {
         duration: 2000,
         position: "bottom-center",
       });
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
+      // setTimeout(() => {
+      //   window.location.reload();
+      // }, 1000);
     },
   });
 
@@ -149,7 +166,7 @@ const AddressRegisterModal = ({ isOpen, onClose, memberId }) => {
             <button
               type='button'
               onClick={() => setIsSearchOpen(true)}
-              className='bg-green-shine btn text-white'>
+              className='btn bg-green-shine text-white hover:bg-green-shine'>
               <FaSearch />
             </button>
           </div>
@@ -172,14 +189,21 @@ const AddressRegisterModal = ({ isOpen, onClose, memberId }) => {
               name='isDefaultAddress'
               checked={isDefaultAddress}
               onChange={e => setIsDefaultAddress(e.target.checked)}
-              className='checkbox-primary checkbox'
+              className='checkbox mr-3 border-gray-500 [--chkbg:#00835F] [--chkfg:white] checked:border-[#00835F]'
             />
+            {/* <input
+              type='checkbox'
+              name='isDefaultAddress'
+              checked={isDefaultAddress}
+              onChange={e => setIsDefaultAddress(e.target.checked)}
+              className='checkbox-primary checkbox'
+            /> */}
           </label>
         </div>
         <div className='mt-6'>
           <button
             type='submit'
-            className='bg-green-shine btn w-full text-base text-white hover:bg-[#00835F]'>
+            className='btn w-full bg-green-shine text-base text-white hover:bg-green-shine'>
             <FaPlus className='mr-2 text-base text-white' /> 등록
           </button>
         </div>
@@ -189,7 +213,6 @@ const AddressRegisterModal = ({ isOpen, onClose, memberId }) => {
           <DaumPostcode onComplete={handleComplete} />
         </Modal>
       )}
-      <Toaster />
     </Modal>
   );
 };

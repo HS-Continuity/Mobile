@@ -1,34 +1,45 @@
-import { useCallback, useEffect, useRef } from "react";
-import { IoIosRefresh } from "react-icons/io";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 import ProductItem from "./ProductItem";
 import ProductSkeleton from "../Skeletons/ProductSkeleton";
+import FetchAllSkeleton from "../Skeletons/FetchAllSkeleton";
+import FetchingNextSkeleton from "../Skeletons/FetchingNextSkeleton";
+import { fallbackProducts } from "./FallbackProduct";
+
+// 가짜 기본 데이터
 
 const ProductList = ({ useQueryHook, additionalProps = {}, gridCols = 1 }) => {
   const observerTarget = useRef(null);
+  const queryClient = useQueryClient();
+  const [isServiceDown, setIsServiceDown] = useState(false);
 
-  // 상품 데이터를 가져오는 쿼리 훅
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError, error } =
-    useQueryHook(additionalProps);
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQueryHook(additionalProps);
 
-  // Intersection Observer 콜백 함수
   const handleObserver = useCallback(
     entries => {
-      const [target] = entries; // 첫 번째 entry 가져오기
-      // 타겟이 화면에 보이고 다음 페이지가 존재하면 fetchNextPage 함수 호출
-      if (target.isIntersecting && hasNextPage) {
+      const [target] = entries;
+      if (target.isIntersecting && hasNextPage && !isServiceDown) {
         fetchNextPage();
       }
     },
-    [fetchNextPage, hasNextPage]
+    [fetchNextPage, hasNextPage, isServiceDown]
   );
 
-  // Intersection Observer 초기화
   useEffect(() => {
     const observer = new IntersectionObserver(handleObserver, {
       root: null,
       rootMargin: "20px",
-      threshold: 0.1, // 10% 이상 보일 때 콜백 실행
+      threshold: 0.1,
     });
 
     if (observerTarget.current) {
@@ -42,6 +53,12 @@ const ProductList = ({ useQueryHook, additionalProps = {}, gridCols = 1 }) => {
     };
   }, [handleObserver]);
 
+  const handleRefresh = useCallback(async () => {
+    setIsServiceDown(false);
+    await queryClient.invalidateQueries(useQueryHook.getKey(additionalProps));
+    refetch();
+  }, [queryClient, refetch, useQueryHook, additionalProps]);
+
   if (isLoading) {
     return (
       <div className='container mx-auto p-4'>
@@ -54,41 +71,44 @@ const ProductList = ({ useQueryHook, additionalProps = {}, gridCols = 1 }) => {
     );
   }
 
-  if (isError || error || !data || data.length === 0 || data?.pages[0]?.content?.length === 0) {
-    return (
-      <div className='container mx-auto p-4 text-center'>
-        <p className='text-lg font-semibold'>검색 결과가 없습니다.</p>
-      </div>
-    );
-  }
+  const products = data?.pages?.flatMap(page => page.content) || [];
 
-  const products = data?.pages.flatMap(page => page.content) || [];
+  // 서비스 다운 또는 에러 상태일 때 가짜 데이터 사용
+  const displayProducts =
+    isServiceDown || isError || products.length === 0 ? fallbackProducts : products;
 
   return (
     <div className='container mx-auto p-4'>
-      {/* 상품 목록 그리드 레이아웃 */}
-      <div className={`grid grid-cols-${gridCols} gap-4`}>
-        {products.map((product, index) => (
+      {(isServiceDown || isError) && (
+        <div className='py-4 text-center'>
+          <p className='text-gray-600'>일시적으로 최신 상품 정보를 불러올 수 없습니다.</p>
+          <p className='mt-1 text-sm text-gray-500'>
+            아래 표시된 상품은 이전에 인기 있었던 상품들입니다.
+          </p>
+          <p className='text-sm text-gray-500'>실시간 값과 차이가 있을 수 있습니다.</p>
+          <button
+            onClick={handleRefresh}
+            className='btn btn-sm mt-1 rounded bg-transparent transition-colors hover:bg-white'>
+            새로고침
+          </button>
+        </div>
+      )}
+
+      <div className={`grid grid-cols-${gridCols} gap-2`}>
+        {displayProducts.map((product, index) => (
           <ProductItem key={`${product.productId || "unknown"}-${index}`} product={product} />
         ))}
       </div>
 
-      {/* 다음 페이지 로딩 중 메시지 */}
-      {isFetchingNextPage && <div className='mt-4 text-center'>더 많은 상품 가져오는중..</div>}
-
-      {/* 모든 상품 로딩 완료 메시지 및 새로고침 버튼 */}
-      {!hasNextPage && products.length > 0 && (
-        <div className='mt-7 text-center'>
-          <p className='mb-2 text-gray-600'>모든 상품을 불러왔습니다.</p>
-          <IoIosRefresh
-            className='mx-auto cursor-pointer text-xl'
-            onClick={() => window.location.reload()}
-          />
-        </div>
+      {!isServiceDown && !isError && (
+        <>
+          {isFetchingNextPage && <FetchingNextSkeleton />}
+          {!hasNextPage && products.length > 0 && (
+            <FetchAllSkeleton name={"상품을"} refetch={handleRefresh} />
+          )}
+          {hasNextPage && <div ref={observerTarget} className='h-10' />}
+        </>
       )}
-
-      {/* Intersection Observer 타겟 요소 */}
-      {hasNextPage && <div ref={observerTarget} className='h-10' />}
     </div>
   );
 };

@@ -4,7 +4,7 @@ import { FaSearch } from "react-icons/fa";
 import DaumPostcode from "react-daum-postcode";
 import { updateAddress, fetchMemberAddressDetail } from "../../apis";
 import Modal from "../../pages/product/Modal";
-import { toast, Toaster } from "react-hot-toast";
+import { toast } from "react-hot-toast";
 
 const AddressEditModal = ({ isOpen, onClose, memberId, addressId }) => {
   const queryClient = useQueryClient();
@@ -55,7 +55,7 @@ const AddressEditModal = ({ isOpen, onClose, memberId, addressId }) => {
         duration: 2000,
         position: "bottom-center",
       });
-      window.location.reload();
+      onClose();
     },
     onError: () => {
       toast.error("배송지 등록에 실패하였습니다.", {
@@ -200,14 +200,21 @@ const AddressEditModal = ({ isOpen, onClose, memberId, addressId }) => {
               name='isDefaultAddress'
               checked={isDefaultAddress}
               onChange={e => setIsDefaultAddress(e.target.checked)}
-              className='checkbox-primary checkbox'
+              className='checkbox mr-3 border-gray-500 [--chkbg:#00835F] [--chkfg:white] checked:border-[#00835F]'
             />
+            {/* <input
+              type='checkbox'
+              name='isDefaultAddress'
+              checked={isDefaultAddress}
+              onChange={e => setIsDefaultAddress(e.target.checked)}
+              className='checkbox-primary checkbox'
+            /> */}
           </label>
         </div>
         <div className='mt-6'>
           <button
             type='submit'
-            className='btn w-full bg-[#00835F] text-base text-white hover:bg-[#00835F]'
+            className='btn w-full bg-green-shine text-base text-white hover:bg-green-shine'
             style={{
               backgroundImage:
                 "linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%)",
@@ -221,7 +228,6 @@ const AddressEditModal = ({ isOpen, onClose, memberId, addressId }) => {
           <DaumPostcode onComplete={handleComplete} />
         </Modal>
       )}
-      <Toaster />
     </Modal>
   );
 };

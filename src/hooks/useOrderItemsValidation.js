@@ -1,14 +1,14 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-const useOrderItemsValidation = orderItems => {
+const useOrderItemsValidation = groupedItems => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!orderItems.length > 0) {
+    if (!groupedItems || Object.keys(groupedItems).length === 0) {
       navigate("/cart");
     }
-  }, [orderItems, navigate]);
+  }, [groupedItems, navigate]);
 };
 
 export default useOrderItemsValidation;

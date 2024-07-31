@@ -20,30 +20,30 @@ const VirtualKeypad = ({ onKeyPress, maxLength, onClose, currentValue }) => {
   };
 
   return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50'>
-      <div className='w-80 rounded-lg bg-white p-4'>
+    <div className='main-container fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50'>
+      <div className='absolute bottom-0 h-[250px] w-full rounded-lg bg-white p-4'>
         <div className='grid grid-cols-4 gap-2'>
           {keys.slice(0, 9).map(key => (
             <button
               key={key}
               onClick={() => handleKeyPress(key)}
-              className='rounded-md bg-gray-50 p-4 text-xl font-semibold hover:bg-gray-100'>
+              className='rounded-md bg-gray-50 p-4 text-3xl font-semibold hover:bg-gray-100'>
               {key}
             </button>
           ))}
           <button
             onClick={() => handleKeyPress(keys[9])}
-            className='rounded-md bg-gray-50 p-4 text-xl font-semibold hover:bg-gray-100'>
+            className='rounded-md bg-gray-50 p-4 text-3xl font-semibold hover:bg-gray-100'>
             {keys[9]}
           </button>
           <button
             onClick={handleBackspace}
-            className='rounded-md bg-gray-50 p-4 text-xl font-semibold hover:bg-gray-100'>
-            <FaBackspace className='ml-[7px]' />
+            className='rounded-md bg-gray-50 p-4 text-3xl font-semibold hover:bg-gray-100'>
+            <FaBackspace className='ml-7' />
           </button>
           <button
             onClick={onClose}
-            className='col-span-1 rounded-md bg-blue-500 p-4 text-lg font-semibold text-white hover:bg-blue-600'>
+            className='col-span-1 rounded-md bg-blue-500 p-4 text-3xl font-semibold text-white hover:bg-blue-600'>
             확인
           </button>
         </div>

@@ -18,10 +18,12 @@ const ReviewBox = ({
 
   return (
     <div key={product_review_id} className='mb-4 rounded-lg border p-4'>
-      <div className='mb-2 flex items-center'>
-        <StarRating rating={review_score} />
-        <span className='ml-2 font-bold'>{member_id}</span>
-        <span className='ml-2 text-gray-500'>{new Date(create_date).toLocaleDateString()}</span>
+      <div className='mb-2 flex items-center justify-between'>
+        <div className='flex items-center'>
+          <StarRating rating={review_score} />
+          <span className='ml-2 font-bold'>{member_id}</span>
+        </div>
+        <span className='text-sm text-gray-500'>{new Date(create_date).toLocaleDateString()}</span>
       </div>
       <p className='text-sm text-gray-400'>{product_name}</p>
       {reviewImage && (

@@ -1,47 +1,11 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { FaPlus, FaTimes } from "react-icons/fa";
+import { FaPlus } from "react-icons/fa";
 import { fetchMemberAddresses, deleteAddress, setDefaultAddress } from "../../apis";
 import AddressRegisterModal from "../../components/Order/AddressRegisterModal";
 import AddressEditModal from "../../components/Order/AddressEditModal";
-
-const Modal = ({ isOpen, onClose, title, children }) => {
-  const [isAnimatingIn, setIsAnimatingIn] = useState(false);
-
-  React.useEffect(() => {
-    if (isOpen) {
-      setIsAnimatingIn(true);
-    }
-  }, [isOpen]);
-
-  const handleClose = () => {
-    setIsAnimatingIn(false);
-    setTimeout(() => {
-      onClose();
-    }, 300);
-  };
-
-  if (!isOpen && !isAnimatingIn) return null;
-
-  return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50'>
-      <div
-        className={`h-full w-full bg-white shadow-xl transition-all duration-300 ease-in-out sm:w-full md:w-full lg:w-[500px] xl:w-[500px] ${
-          isAnimatingIn ? "scale-100 opacity-100" : "scale-95 opacity-0"
-        }`}>
-        <div className='flex h-full flex-col'>
-          <div className='flex items-center justify-between border-b p-4'>
-            <h2 className='text-xl font-bold'>{title}</h2>
-            <button onClick={handleClose} className='text-gray-500 hover:text-gray-700'>
-              <FaTimes className='text-xl' />
-            </button>
-          </div>
-          <div className='noScrollbar flex-grow overflow-y-auto p-4'>{children}</div>
-        </div>
-      </div>
-    </div>
-  );
-};
+import toast from "react-hot-toast";
+import Modal from "../../pages/product/Modal";
 
 const AddressModal = ({ isOpen, onClose, memberId, onSelectAddress }) => {
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
@@ -79,10 +43,40 @@ const AddressModal = ({ isOpen, onClose, memberId, onSelectAddress }) => {
     },
   });
 
+  const handleAddressAdded = newAddress => {
+    queryClient.setQueryData(["addresses", memberId], oldData => {
+      return [...(oldData || []), newAddress];
+    });
+    setIsRegisterModalOpen(false);
+    setSelectedAddressId(newAddress.memberAddressId);
+  };
+
   const handleDelete = memberAddressId => {
-    if (window.confirm("정말로 이 주소를 삭제하시겠습니까?")) {
-      deleteMutation.mutate(memberAddressId);
-    }
+    toast(
+      t => (
+        <span>
+          배송지를 삭제하시겠습니까?
+          <button
+            className='btn ml-2 h-10 rounded bg-transparent px-2 py-1 text-black hover:bg-white'
+            onClick={() => {
+              deleteMutation.mutate(memberAddressId);
+              toast.dismiss(t.id);
+            }}>
+            확인
+          </button>
+          <button
+            className='btn ml-2 h-10 rounded bg-red-500 px-2 py-1 text-white hover:bg-red-500'
+            onClick={() => {
+              toast.dismiss(t.id);
+            }}>
+            취소
+          </button>
+        </span>
+      ),
+      {
+        duration: 2000,
+      }
+    );
   };
 
   const handleSetDefault = memberAddressId => {
@@ -131,7 +125,7 @@ const AddressModal = ({ isOpen, onClose, memberId, onSelectAddress }) => {
                     {address.addressName}
                   </label>
                   {address.isDefaultAddress === "ACTIVE" ? (
-                    <span className='bg-green-shine btn btn-xs ml-2 cursor-default text-xs font-light text-white hover:bg-[#00835F]'>
+                    <span className='btn btn-xs ml-2 cursor-default bg-green-shine text-xs font-light text-white hover:bg-[#00835F]'>
                       기본배송지
                     </span>
                   ) : (
@@ -164,12 +158,12 @@ const AddressModal = ({ isOpen, onClose, memberId, onSelectAddress }) => {
           ))}
         <button
           onClick={() => setIsRegisterModalOpen(true)}
-          className='bg-green-shine btn w-full text-base text-white hover:bg-[#00835F]'>
+          className='btn w-full bg-green-shine text-base text-white hover:bg-green-shine'>
           <FaPlus className='mr-2' /> 새 배송지 등록
         </button>
         <button
           onClick={handleSelectAddress}
-          className='btn mt-2 w-full bg-blue-500 text-base text-white hover:bg-blue-600'
+          className='btn mt-2 w-full bg-blue-500 bg-gradient-shine text-base text-white hover:bg-blue-600'
           disabled={!selectedAddressId}>
           선택하기
         </button>
@@ -178,6 +172,7 @@ const AddressModal = ({ isOpen, onClose, memberId, onSelectAddress }) => {
           isOpen={isRegisterModalOpen}
           onClose={() => setIsRegisterModalOpen(false)}
           memberId={memberId}
+          onAddressAdded={handleAddressAdded}
         />
 
         <AddressEditModal

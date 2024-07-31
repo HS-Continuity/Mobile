@@ -1,35 +1,24 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { FaChevronLeft } from "react-icons/fa";
 import { useSubscriptionSetupStore } from "../../stores/useSubscriptionSetupStore";
 import useOrderItemsValidation from "../../hooks/useOrderItemsValidation";
 
 const SubscriptionSetup = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { orderItems, totalProductPrice, totalDeliveryFee } = location.state || { orderItems: [] };
+  const { groupedItems, totalProductPrice, totalDeliveryFee } = location.state || {
+    groupedItems: {},
+    totalProductPrice: 0,
+    totalDeliveryFee: 0,
+  };
 
   const { subscriptionDetails, setSubscriptionDetails } = useSubscriptionSetupStore();
   const [deliveryDates, setDeliveryDates] = useState({ start: null, end: null });
 
-  useOrderItemsValidation(orderItems);
+  useOrderItemsValidation(groupedItems);
 
-  const handleFrequencyChange = frequency => {
-    if (frequency === "매일") {
-      setSubscriptionDetails({
-        ...subscriptionDetails,
-        frequency,
-        selectedDays: ["월", "화", "수", "목", "금"],
-      });
-    } else if (subscriptionDetails.frequency === "매일") {
-      setSubscriptionDetails({
-        ...subscriptionDetails,
-        frequency,
-        selectedDays: [],
-      });
-    } else {
-      setSubscriptionDetails({ ...subscriptionDetails, frequency });
-    }
+  const handleFrequencyChange = deliveryCycle => {
+    setSubscriptionDetails({ ...subscriptionDetails, deliveryCycle });
   };
 
   const handleDurationChange = duration => {
@@ -38,17 +27,20 @@ const SubscriptionSetup = () => {
 
   const handleDayToggle = day => {
     let updatedDays;
-    if (subscriptionDetails.selectedDays.includes(day)) {
-      updatedDays = subscriptionDetails.selectedDays.filter(d => d !== day);
+    if (day === "매일") {
+      updatedDays =
+        subscriptionDetails.deliveryDayOfWeeks.length === 5 ? [] : ["월", "화", "수", "목", "금"];
     } else {
-      updatedDays = [...subscriptionDetails.selectedDays, day];
+      if (subscriptionDetails.deliveryDayOfWeeks.includes(day)) {
+        updatedDays = subscriptionDetails.deliveryDayOfWeeks.filter(d => d !== day);
+      } else {
+        updatedDays = [...subscriptionDetails.deliveryDayOfWeeks, day];
+      }
     }
 
-    const isEveryDaySelected = updatedDays.length === 5;
     setSubscriptionDetails({
       ...subscriptionDetails,
-      selectedDays: updatedDays,
-      frequency: isEveryDaySelected ? "매일" : subscriptionDetails.frequency,
+      deliveryDayOfWeeks: updatedDays,
     });
   };
 
@@ -60,6 +52,7 @@ const SubscriptionSetup = () => {
   };
 
   const getEndDate = (startDate, duration) => {
+    if (!duration) return null;
     const endDate = new Date(startDate);
     const months = parseInt(duration.replace(/[^0-9]/g, ""));
     endDate.setMonth(endDate.getMonth() + months);
@@ -71,26 +64,32 @@ const SubscriptionSetup = () => {
     const startDate = getNextMonday();
     const endDate = getEndDate(startDate, subscriptionDetails.duration);
     setDeliveryDates({ start: startDate, end: endDate });
-  }, [subscriptionDetails.duration]);
+    setSubscriptionDetails({
+      ...subscriptionDetails,
+      startDate: formatDate(startDate),
+      endDate: endDate ? formatDate(endDate) : null,
+    });
+  }, [subscriptionDetails.duration, setSubscriptionDetails]);
 
   const formatDate = date => {
     return date
       ? date
           .toLocaleDateString("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit" })
-          .replace(/\. /g, ".")
+          .replace(/\. /g, "-")
+          .replace(/\.$/, "")
       : "";
   };
 
-  const isFrequencySelected = !!subscriptionDetails.frequency;
+  const isFrequencySelected = !!subscriptionDetails.deliveryCycle;
   const isDurationSelected = !!subscriptionDetails.duration;
-  const isDaysSelected = subscriptionDetails.selectedDays.length > 0;
+  const isDaysSelected = subscriptionDetails.deliveryDayOfWeeks.length > 0;
 
   const isAllSelected = isFrequencySelected && isDurationSelected && isDaysSelected;
 
   const handleSubmit = () => {
     if (isAllSelected) {
       navigate("/subscription-order", {
-        state: { orderItems, totalProductPrice, totalDeliveryFee },
+        state: { groupedItems, totalProductPrice, totalDeliveryFee },
       });
     }
   };
@@ -104,10 +103,10 @@ const SubscriptionSetup = () => {
               배송 주기 {!isFrequencySelected && <span className='text-red-500'>*</span>}
             </h2>
             <div className='flex flex-wrap gap-2'>
-              {["1주", "2주", "3주", "4주", "매일"].map(option => (
+              {["1주", "2주", "3주", "4주"].map(option => (
                 <button
                   key={option}
-                  className={`btn border border-gray-400 ${subscriptionDetails.frequency === option ? "bg-green-shine text-white hover:bg-[#00835F]" : "hover:bg-green-shine bg-white hover:text-white"}`}
+                  className={`btn border border-gray-400 ${subscriptionDetails.deliveryCycle === option ? "bg-green-shine text-white hover:bg-[#00835F]" : "bg-white hover:bg-green-shine hover:text-white"}`}
                   onClick={() => handleFrequencyChange(option)}>
                   {option}
                 </button>
@@ -123,7 +122,7 @@ const SubscriptionSetup = () => {
               {["1개월", "2개월", "3개월", "4개월", "5개월", "6개월"].map(option => (
                 <button
                   key={option}
-                  className={`btn border border-gray-400 ${subscriptionDetails.duration === option ? "bg-green-shine text-white hover:bg-[#00835F]" : "hover:bg-green-shine bg-white hover:text-white"}`}
+                  className={`btn border border-gray-400 ${subscriptionDetails.duration === option ? "bg-green-shine text-white hover:bg-[#00835F]" : "bg-white hover:bg-green-shine hover:text-white"}`}
                   onClick={() => handleDurationChange(option)}>
                   {option}
                 </button>
@@ -136,10 +135,18 @@ const SubscriptionSetup = () => {
               배송요일 {!isDaysSelected && <span className='text-red-500'>*</span>}
             </h2>
             <div className='flex flex-wrap gap-2'>
-              {["월", "화", "수", "목", "금"].map(day => (
+              {["월", "화", "수", "목", "금", "매일"].map(day => (
                 <button
                   key={day}
-                  className={`btn border border-gray-400 ${subscriptionDetails.selectedDays.includes(day) ? "bg-green-shine text-white hover:bg-[#00835F]" : "hover:bg-green-shine bg-white hover:text-white"}`}
+                  className={`btn border border-gray-400 ${
+                    day === "매일"
+                      ? subscriptionDetails.deliveryDayOfWeeks.length === 5
+                        ? "bg-green-shine text-white hover:bg-[#00835F]"
+                        : "bg-white hover:bg-green-shine hover:text-white"
+                      : subscriptionDetails.deliveryDayOfWeeks.includes(day)
+                        ? "bg-green-shine text-white hover:bg-[#00835F]"
+                        : "bg-white hover:bg-green-shine hover:text-white"
+                  }`}
                   onClick={() => handleDayToggle(day)}>
                   {day}
                 </button>
@@ -147,13 +154,11 @@ const SubscriptionSetup = () => {
             </div>
           </div>
 
-          <div className='mb-4 rounded bg-white p-4 shadow'>
+          <div className='mt-4 rounded bg-white'>
             <h2 className='mb-2 font-bold'>배송 기간</h2>
             <p>
-              {formatDate(deliveryDates.start)} ~
-              {formatDate(deliveryDates.end) === "Invalid Date"
-                ? ""
-                : formatDate(deliveryDates.end)}
+              {formatDate(deliveryDates.start)} ~{"\u00A0"}
+              {deliveryDates.end ? formatDate(deliveryDates.end) : ""}
             </p>
           </div>
         </div>

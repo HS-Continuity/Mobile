@@ -121,11 +121,21 @@ export const useGeneralProductsQuery = () =>
     getNextPageParam: lastPage => (lastPage.last ? undefined : lastPage.number + 1),
   });
 
+// [GET] 친환경 상품 전체 조회
+export const fetchEcolItems = ({ pageParam = 0 }) =>
+  apiGet("/shopping/product/search", {
+    isCertification: "ACTIVE",
+    startPage: pageParam,
     pageSize: 10,
-    sort,
-    direction,
   });
-};
+
+// [GET] 친환경 상품 전체 무한 스크롤 조회
+export const useEcoProductsQuery = () =>
+  useInfiniteQuery({
+    queryKey: ["ecoproducts"],
+    queryFn: fetchEcolItems,
+    getNextPageParam: lastPage => (lastPage.last ? undefined : lastPage.number + 1),
+  });
 
 // [GET] 타임세일 상품 전체 조회
 export const fetchTimeSaleItems = ({ pageParam = 0 }) =>
@@ -149,8 +159,17 @@ export const useSearchProductsQuery = keyword =>
     queryKey: ["searchKeywords", keyword],
     queryFn: ({ pageParam = 0 }) => fetchSearchItems({ keyword, pageParam }),
     getNextPageParam: lastPage => (lastPage.last ? undefined : lastPage.number + 1),
+    retry: 1,
   });
 
+// [GET] 상품 상세 이미지 조회
+export const fetchProductDetailImage = productId => apiGet(`/product-image/${productId}`);
+
+// [GET] 친환경 상품 인증서 이미지 조회
+export const fetchEcoProductImage = productId =>
+  apiGet(`/product-image/certification/${productId}`);
+// [GET] 상품 내용 상세 조회
+export const fetchProductDetail = productId => apiGet(`/shopping/product/${productId}`);
 // [GET] 인기 검색어 조회
 export const fetchPopularKeyword = () => apiGet("/shopping/product/ranking");
 

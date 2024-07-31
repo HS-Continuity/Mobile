@@ -389,6 +389,38 @@ export const postOrder = async orderData => {
   }
 };
 
+// [POST] 정기 주문 생성
+export const postSubscriptionOrder = async orderData => {
+  try {
+    const response = await axios.post(
+      `http://localhost:8040/api/regular-order`,
+      {
+        customerId: orderData.customerId,
+        memberId: orderData.memberId,
+        memberCouponId: orderData.memberCouponId,
+        orderMemo: orderData.orderMemo,
+        paymentCardId: orderData.paymentCardId,
+        productOrderList: orderData.productOrderList,
+        deliveryPeriod: orderData.deliveryPeriod,
+        recipient: orderData.recipient,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return {
+      success: response.data.resultCode === "200",
+      data: response.data,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response ? error.response.data : error.message,
+    };
+  }
 };
 
 // [GET] 일반 주문 목록 조회
@@ -420,41 +452,33 @@ export const useOrderListQuery = ({ memberId, startDate, endDate }) =>
       fetchMemberOrderList({ memberId, startDate, endDate, pageParam }),
     getNextPageParam: lastPage => (lastPage.result.last ? undefined : lastPage.result.number + 1),
   });
+
+// [GET] 정기 주문 목록 조회
+export const fetchMemberSubscriptionList = async ({ startDate, endDate, pageParam = 0 }) => {
+  const size = 10;
+  const response = await axios.get(
+    `http://localhost:8040/api/regular-order/list?&startDate=${startDate}&endDate=${endDate}&page=${pageParam}&size=${size}`
+  );
   return response.data;
 };
 
-// [POST] 회원 주소지 추가
-export const addAddress = async ({ memberId, general_address, detail_address }) => {
-  const newAddress = {
-    member_id: memberId,
-    general_address,
-    detail_address,
-    is_default_address: false,
-  };
-
-  const response = await axios.post(`${API_BASE_URL}/address`, newAddress);
-  return response.data;
-};
-
-// [PUT] 회원 주소지 수정
-export const updateAddress = async ({
-  id,
-  general_address,
-  detail_address,
-  is_default_address,
-}) => {
-  const response = await axios.put(`${API_BASE_URL}/address/${id}`, {
-    general_address,
-    detail_address,
-    is_default_address,
+// [GET] 정기 주문 목록 조회 무한 스크롤링
+export const useSubscriptionOrderListQuery = ({ startDate, endDate }) =>
+  useInfiniteQuery({
+    queryKey: ["subscriptionorderlist"],
+    queryFn: ({ pageParam = 0 }) => fetchMemberSubscriptionList({ startDate, endDate, pageParam }),
+    getNextPageParam: (lastPage, allPages) => {
+      const nextPage = lastPage.result.number + 1;
+      return nextPage < lastPage.result.totalPages ? nextPage : undefined;
+    },
   });
-  return response.data;
-};
 
-// [DELETE] 회원 주소지 삭제
-export const deleteAddress = async id => {
-  const response = await axios.delete(`${API_BASE_URL}/address/${id}`);
-  return response.data;
+// [GET] 정기 주문 상세 조회
+export const fetchMemberSubscriptionDetail = async regularOrderId => {
+  const response = await axios.get(
+    `http://localhost:8040/api/regular-order/${regularOrderId}/detail?`
+  );
+  return response.data.result;
 };
 
 // [PATCH] 주문 취소
@@ -485,28 +509,22 @@ export const patchOrderStatus = async (orderId, productId, orderStatusCode) => {
   }
 };
 
+// [PUT] 정기주문 회차 미루기
+export const putSubscriptionOrderPostpone = async regularOrderId => {
+  const response = await axios.put(
+    `http://localhost:8040/api/regular-order/${regularOrderId}/postpone`
+  );
+  return response;
 };
 
-// [POST] 회원 카드 추가
-export const addMemberCard = async ({ memberId, ...cardData }) => {
-  const response = await axios.post(`${API_BASE_URL}/card`, {
-    member_id: memberId,
-    ...cardData,
-  });
-  return response.data;
+// [PUT] 정기주문 취소하기
+export const putSubscriptionOrderCancel = async regularOrderId => {
+  const response = await axios.put(
+    `http://localhost:8040/api/regular-order/cancel?regularOrderId=${regularOrderId}`
+  );
+  return response;
 };
 
-// [PUT] 회원 카드 수정
-export const updateMemberCard = async ({ memberId, id, ...cardData }) => {
-  if (!id) {
-    throw new Error("Card ID is required for updating");
-  }
-  const response = await axios.put(`${API_BASE_URL}/card/${id}`, {
-    member_id: memberId,
-    ...cardData,
-  });
-  return response.data;
-};
 
 // [DELETE] 회원 카드 삭제
 export const deleteMemberCard = async ({ memberId, cardId }) => {

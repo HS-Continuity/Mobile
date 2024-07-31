@@ -175,6 +175,27 @@ export const fetchEcoProductImage = productId =>
 // [GET] 상품 내용 상세 조회
 export const fetchProductDetail = productId => apiGet(`/shopping/product/${productId}`);
 
+// [GET] 상품별 리뷰 조회
+export const fetchLatestProductReviews = productId =>
+  apiGet(`/product-review/${productId}`, { pageSize: 3 });
+
+// [GET] 상품 리뷰 전체 조회
+export const fetchProductReviews = (productId, startPage = 0, sortOption = "latest") => {
+  const sortParams = {
+    lowRating: { sort: "reviewScore", direction: "asc" },
+    highRating: { sort: "reviewScore", direction: "desc" },
+    latest: { sort: "createDate", direction: "desc" },
+  };
+  const { sort, direction } = sortParams[sortOption] || sortParams.latest;
+
+  return apiGet(`/product-review/${productId}`, {
+    startPage,
+    pageSize: 10,
+    sort,
+    direction,
+  });
+};
+
 // [GET] 인기 검색어 조회
 export const fetchPopularKeyword = () => apiGet("/shopping/product/ranking");
 

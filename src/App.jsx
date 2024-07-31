@@ -1,4 +1,4 @@
-import { Route, Routes, useLocation } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import "./App.css";
 import Main from "./components/Layouts/Main";
@@ -17,7 +17,6 @@ import SearchResult from "./pages/search/SearchResult";
 import LoginLayout from "./components/Login/LoginLayout";
 import Login from "./pages/login/";
 import SignUp from "./pages/signup/";
-import DetailCategory from "./pages/DetailCategory";
 import ProductDetail from "./pages/product/";
 import ProductReviewAll from "./pages/review/";
 import Shop from "./pages/shop/";
@@ -30,14 +29,24 @@ import OrderFail from "./pages/order/OrderFail";
 import ReviewApply from "./pages/review/ReviewApply";
 import RefundApply from "./pages/orderManage/RefundApply";
 import SubscriptionOrderHistory from "./pages/subscriptionOrderManage/";
-import SubscriptionOrderManage from "./pages/subscriptionOrderManage/SubscriptionOrderManage";
 import ProductLayout from "./components/Product/ProductLayout";
 import ProtectedRoute from "./components/Login/ProtectedRoute";
-// import useAuthStore from "./stores/useAuthStore";
+import General from "./pages/general";
+import Eco from "./pages/eco";
+import OrderDetail from "./pages/orderManage/OrderDetail";
+import SubscriptionOrderDetail from "./pages/subscriptionOrderManage/SubscriptionOrderDetail";
+import TimeSaleDetail from "./pages/timeSale/timeSaleDetail";
+import useAuthStore from "./stores/useAuthStore";
+import { Toaster } from "react-hot-toast";
 
 function App() {
   const location = useLocation();
-  // const { refreshToken, setupInterceptors } = useAuthStore();
+  const { initializeAuth, setupInterceptors } = useAuthStore();
+
+  useEffect(() => {
+    setupInterceptors();
+    initializeAuth();
+  }, []);
 
   // 실제 모바일 화면 vh 맞추기
   function setScreenSize() {
@@ -58,14 +67,6 @@ function App() {
     };
   }, []);
 
-  // useEffect(() => {
-  //   const initializeAuth = async () => {
-  //     await refreshToken();
-  //     setupInterceptors();
-  //   };
-  //   initializeAuth();
-  // }, [refreshToken, setupInterceptors]);
-
   return (
     <>
       <div className='min-h-[calc(var(--vh,1vh)*100)] min-h-screen bg-gray-50'>
@@ -79,8 +80,10 @@ function App() {
             <Route path='/' element={<Home key={location.pathname} />} />
             <Route path='/search' element={<Search key={location.pathname} />} />
             <Route path='/search-result' element={<SearchResult key={location.pathname} />} />
+            <Route path='/general' element={<General key={location.pathname} />} />
+            <Route path='/eco' element={<Eco key={location.pathname} />} />
             <Route path='/timesale' element={<Timesale key={location.pathname} />} />
-            <Route path='/detailcategory' element={<DetailCategory key={location.pathname} />} />
+            {/* <Route path='/detailcategory' element={<DetailCategory key={location.pathname} />} /> */}
             <Route path='/shop/:customerId' element={<Shop key={location.pathname} />} />
           </Route>
 
@@ -89,6 +92,10 @@ function App() {
             <Route
               path='/product/review/:productId'
               element={<ProductReviewAll key={location.pathname} />}
+            />
+            <Route
+              path='/timesale/:timesaleId'
+              element={<TimeSaleDetail key={location.pathname} />}
             />
           </Route>
 
@@ -171,6 +178,15 @@ function App() {
               }
             />
             <Route
+              path='/order-history/:orderDetailId'
+              element={
+                <ProtectedRoute>
+                  <OrderDetail key={location.pathname} />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
               path='/payment'
               element={
                 <ProtectedRoute>
@@ -179,7 +195,7 @@ function App() {
               }
             />
             <Route
-              path='/reviewapply'
+              path='/reviewapply/:productId'
               element={
                 <ProtectedRoute>
                   <ReviewApply key={location.pathname} />
@@ -203,15 +219,19 @@ function App() {
               }
             />
             <Route
-              path='/subscription-manage'
+              path='/subscription-history/:regularOrderId'
               element={
                 <ProtectedRoute>
-                  <SubscriptionOrderManage key={location.pathname} />
+                  <SubscriptionOrderDetail key={location.pathname} />
                 </ProtectedRoute>
               }
             />
           </Route>
+
+          {/* 허용되지 않은 URL */}
+          <Route path='*' element={<Navigate to='/' replace />} />
         </Routes>
+        <Toaster position='bottom-center' />
       </div>
     </>
   );

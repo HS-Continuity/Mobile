@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   addMemberCard,
-  createSubscriptionOrder,
+  //createSubscriptionOrder,
   deleteMemberCard,
   fetchMemberAddresses,
   fetchMemberCard,
@@ -59,12 +59,12 @@ const SubscriptionOrder = () => {
   const couponDiscount = selectedCoupon ? selectedCoupon.discount_amount : 0;
   const finalPrice = totalProductPrice - couponDiscount;
 
-  const createOrderMutation = useMutation({
-    mutationFn: createSubscriptionOrder,
-    onSuccess: data => {
-      navigate("/order-complete", { state: { orderId: data.id } });
-    },
-  });
+  // const createOrderMutation = useMutation({
+  //   mutationFn: createSubscriptionOrder,
+  //   onSuccess: data => {
+  //     navigate("/order-complete", { state: { orderId: data.id } });
+  //   },
+  // });
 
   // QUERIES
   // [GET] 회원 쿠폰 조회 쿼리

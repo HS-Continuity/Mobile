@@ -8,6 +8,10 @@ import {
   memberApiPost,
   memberApiPut,
   memberApiDelete,
+  orderApiDelete,
+  orderApiGet,
+  orderApiPost,
+  orderApiPut,
 } from "./apiUtils";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
@@ -62,22 +66,80 @@ export const useCustomerProductsQuery = customerId =>
 const fetchProducts = ({ pageParam = 0 }) =>
   apiGet("/shopping/product/search", { startPage: pageParam, pageSize: 10 });
 
+// [GET] 상품 전체 무한 스크롤 조회
+export const useProductsQuery = () =>
+  useInfiniteQuery({
+    queryKey: ["allproducts"],
+    queryFn: fetchProducts,
+    getNextPageParam: lastPage => (lastPage.last ? undefined : lastPage.number + 1),
+  });
+
+// [GET] 일반 상품 전체 조회
+export const fetchGeneralItems = ({ pageParam = 0 }) =>
+  apiGet("/shopping/product/search", {
+    isCertification: "INACTIVE",
+    startPage: pageParam,
+    pageSize: 10,
+  });
+
+// [GET] 일반 상품 전체 무한 스크롤 조회
+export const useGeneralProductsQuery = () =>
+  useInfiniteQuery({
+    queryKey: ["generalproducts"],
+    queryFn: fetchGeneralItems,
+    getNextPageParam: lastPage => (lastPage.last ? undefined : lastPage.number + 1),
+  });
+
+// [GET] 친환경 상품 전체 조회
+export const fetchEcolItems = ({ pageParam = 0 }) =>
+  apiGet("/shopping/product/search", {
+    isCertification: "ACTIVE",
+    startPage: pageParam,
+    pageSize: 10,
+  });
+
+// [GET] 친환경 상품 전체 무한 스크롤 조회
+export const useEcoProductsQuery = () =>
+  useInfiniteQuery({
+    queryKey: ["ecoproducts"],
+    queryFn: fetchEcolItems,
+    getNextPageParam: lastPage => (lastPage.last ? undefined : lastPage.number + 1),
+  });
+
+// [GET] 타임세일 상품 전체 조회
+export const fetchTimeSaleItems = ({ pageParam = 0 }) =>
+  apiGet("/time-sale/product/list", { startPage: pageParam, pageSize: 10 });
+
+// [GET] 타임세일 상품 전체 무한 스크롤 조회
+export const useTimeSaleProductsQuery = () =>
+  useInfiniteQuery({
+    queryKey: ["timesaleproducts"],
+    queryFn: fetchTimeSaleItems,
+    getNextPageParam: lastPage => (lastPage.last ? undefined : lastPage.number + 1),
+  });
+
+// [GET] 타임세일 상품 전체 조회
+export const fetchTimeSaleItemDetail = timesaleId => apiGet(`/time-sale/${timesaleId}/product`);
+
+// [GET] 검색 상품 조회
+export const fetchSearchItems = ({ keyword, pageParam = 0 }) =>
+  apiGet("/shopping/product/search", { keyword, startPage: pageParam, pageSize: 10 });
+
+// [GET] 검색 상품 전체 무한 스크롤 조회
+export const useSearchProductsQuery = keyword =>
+  useInfiniteQuery({
+    queryKey: ["searchKeywords", keyword],
+    queryFn: ({ pageParam = 0 }) => fetchSearchItems({ keyword, pageParam }),
+    getNextPageParam: lastPage => (lastPage.last ? undefined : lastPage.number + 1),
+    retry: 1,
+  });
+
 // [GET] 상품 상세 이미지 조회
 export const fetchProductDetailImage = productId => apiGet(`/product-image/${productId}`);
 
 // [GET] 친환경 상품 인증서 이미지 조회
 export const fetchEcoProductImage = productId =>
   apiGet(`/product-image/certification/${productId}`);
-
-// [GET] 상품 전체 무한 스크롤 조회
-export const useProductsQuery = () =>
-  useInfiniteQuery({
-    queryKey: ["products"],
-    queryFn: fetchProducts,
-    getNextPageParam: lastPage => (lastPage.last ? undefined : lastPage.number + 1),
-    retry: false,
-    throwOnError: () => {},
-  });
 
 // [GET] 상품 내용 상세 조회
 export const fetchProductDetail = productId => apiGet(`/shopping/product/${productId}`);
@@ -103,32 +165,17 @@ export const fetchProductReviews = (productId, startPage = 0, sortOption = "late
   });
 };
 
-// [GET] 타임세일 상품 전체 조회
-export const fetchTimeSaleItems = ({ pageParam = 0 }) =>
-  apiGet("/time-sale/product/list", { startPage: pageParam, pageSize: 10 });
-
-// [GET] 타임세일 상품 전체 무한 스크롤 조회
-export const useTimeSaleProductsQuery = () =>
-  useInfiniteQuery({
-    queryKey: ["products"],
-    queryFn: fetchTimeSaleItems,
-    getNextPageParam: lastPage => (lastPage.last ? undefined : lastPage.number + 1),
-  });
-
-// [GET] 검색 상품 조회
-export const fetchSearchItems = ({ keyword, pageParam = 0 }) =>
-  apiGet("/shopping/product/search", { keyword, startPage: pageParam, pageSize: 10 });
-
-// [GET] 검색 상품 전체 무한 스크롤 조회
-export const useSearchProductsQuery = keyword =>
-  useInfiniteQuery({
-    queryKey: ["searchKeywords", keyword],
-    queryFn: ({ pageParam = 0 }) => fetchSearchItems({ keyword, pageParam }),
-    getNextPageParam: lastPage => (lastPage.last ? undefined : lastPage.number + 1),
-  });
-
 // [GET] 인기 검색어 조회
 export const fetchPopularKeyword = () => apiGet("/shopping/product/ranking");
+
+// [GET] 광고 상품 조회
+export const fetchAdvertisementProductList = async ({ pageParam = 0 }) => {
+  const pageSize = 5;
+  const response = await axios.get(
+    `http://localhost:8020/api/advertisement/product/list?startPage=${pageParam}&pageSize=${pageSize}`
+  );
+  return response;
+};
 
 // -------------------------[COUPON]-------------------------
 // [GET] 회원 쿠폰 조회
@@ -146,7 +193,7 @@ export const postLogin = memberData => {
   });
 };
 
-// Social Login
+// 소셜 로그인
 export const handleSocialLogin = provider => {
   window.location.href = `http://localhost:8010/oauth2/authorization/${provider}`;
 };
@@ -244,7 +291,7 @@ export const updateAddress = addressData => {
 export const fetchMemberCard = memberId => memberApiGet(`/member-payment/list`, { memberId });
 
 // [POST] 회원 카드 등록
-export const addMemberCard = cardData =>
+export const addMemberCard = cardData => {
   memberApiPost("/member-payment", {
     memberId: cardData.memberId,
     cardCompany: cardData.cardCompany,
@@ -256,6 +303,7 @@ export const addMemberCard = cardData =>
     isSimplePaymentAgreed: cardData.isSimplePaymentAgreed,
     isDefaultPaymentCard: cardData.isDefaultPaymentCard,
   });
+};
 
 // [DELETE] 회원 카드 삭제
 export const deleteMemberCard = memberPaymentCardId =>
@@ -268,158 +316,204 @@ export const putDefaultCard = (memberPaymentCardId, memberId) => {
   memberApiPut(`/member-payment/${memberPaymentCardId}?memberId=${memberId}`);
 };
 
-// =================================================================
-const API_BASE_URL = "http://localhost:3001";
-const DB_URL = "http://localhost:8020/api";
-const config = {
-  headers: {
-    "Content-Type": "application/json",
-    credentials: "true",
-  },
+// -------------------------[ORDER]-------------------------
+
+// [POST] 일반 주문 생성
+export const postOrder = async orderData => {
+  console.log(orderData);
+  try {
+    const response = await axios.post(`http://localhost:8040/api/order`, {
+      customerId: orderData.customerId,
+      memberCouponId: orderData.memberCouponId,
+      storeName: orderData.storeName,
+      productOrderList: {
+        productOrderList: orderData.productOrderList.productOrderList.map(item => ({
+          productId: item.productId,
+          name: item.name,
+          originPrice: item.originPrice,
+          discountAmount: item.discountAmount,
+          finalPrice: item.finalPrice,
+          quantity: item.quantity,
+          status: item.status,
+        })),
+      },
+      recipient: orderData.recipient,
+      originProductAmount: orderData.originProductAmount,
+      totalDiscountAmount: orderData.totalDiscountAmount,
+      paymentAmount: orderData.paymentAmount,
+      deliveryFee: orderData.deliveryFee,
+      orderMemo: orderData.orderMemo,
+      paymentCardId: orderData.paymentCardId,
+    });
+    return {
+      success: response.data.resultCode == "200",
+      data: response.data,
+    };
+  } catch (error) {
+    console.error("Order request failed:", error);
+    return {
+      success: false,
+      error: error.response ? error.response.data : error.message,
+    };
+  }
 };
 
-// -------------------------[MEMBER]-------------------------
-// [GET] 회원 정보 조회
-export const fetchMemberInfo = memberId => memberApiGet(`/member`, { memberId });
+// [POST] 정기 주문 생성
+export const postSubscriptionOrder = async orderData => {
+  try {
+    const response = await axios.post(
+      `http://localhost:8040/api/regular-order`,
+      {
+        customerId: orderData.customerId,
+        memberId: orderData.memberId,
+        memberCouponId: orderData.memberCouponId,
+        orderMemo: orderData.orderMemo,
+        paymentCardId: orderData.paymentCardId,
+        productOrderList: orderData.productOrderList,
+        deliveryPeriod: orderData.deliveryPeriod,
+        recipient: orderData.recipient,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
-// [GET] 회원 로그인
-export const postLogin = memberData => {
-  return axios.post("http://localhost:8010/api/auth/login", {
-    username: memberData.username,
-    password: memberData.password,
+    return {
+      success: response.data.resultCode === "200",
+      data: response.data,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response ? error.response.data : error.message,
+    };
+  }
+};
+
+// [GET] 일반 주문 목록 조회
+export const fetchMemberOrderList = async ({ memberId, startDate, endDate, pageParam = 0 }) => {
+  const size = 10;
+  const response = await axios.get(
+    `http://localhost:8040/api/order/member-service?memberId=${memberId}&startDate=${startDate}&endDate=${endDate}&page=${pageParam}&size=${size}`
+  );
+  console.log(response.data);
+  return response.data;
+};
+
+// [GET] 일반 주문 목록 조회 무한 스크롤링
+export const useOrderListQuery = ({ memberId, startDate, endDate }) =>
+  useInfiniteQuery({
+    queryKey: ["orderlist", memberId, startDate, endDate],
+    queryFn: ({ pageParam = 0 }) =>
+      fetchMemberOrderList({ memberId, startDate, endDate, pageParam }),
+    getNextPageParam: lastPage => (lastPage.result.last ? undefined : lastPage.result.number + 1),
   });
+
+// [GET] 정기 주문 목록 조회
+export const fetchMemberSubscriptionList = async ({ startDate, endDate, pageParam = 0 }) => {
+  const size = 10;
+  const response = await axios.get(
+    `http://localhost:8040/api/regular-order/list?&startDate=${startDate}&endDate=${endDate}&page=${pageParam}&size=${size}`
+  );
+  return response.data;
 };
 
-// [GET] 회원 쿠폰 조회
-export const fetchMemberCoupon = async memberId => {
-  const response = await axios.get(`${API_BASE_URL}/coupon`, {
-    params: {
-      member_id: memberId,
+// [GET] 정기 주문 목록 조회 무한 스크롤링
+export const useSubscriptionOrderListQuery = ({ startDate, endDate }) =>
+  useInfiniteQuery({
+    queryKey: ["subscriptionorderlist"],
+    queryFn: ({ pageParam = 0 }) => fetchMemberSubscriptionList({ startDate, endDate, pageParam }),
+    getNextPageParam: (lastPage, allPages) => {
+      const nextPage = lastPage.result.number + 1;
+      return nextPage < lastPage.result.totalPages ? nextPage : undefined;
     },
   });
-  return response.data;
-// Social Login
-export const handleSocialLogin = provider => {
-  window.location.href = `http://localhost:8010/oauth2/authorization/${provider}`;
+
+// [GET] 정기 주문 상세 조회
+export const fetchMemberSubscriptionDetail = async regularOrderId => {
+  const response = await axios.get(
+    `http://localhost:8040/api/regular-order/${regularOrderId}/detail?`
+  );
+  return response.data.result;
 };
 
-// [GET] 회원 정보 조회
-export const fetchMemberInfo = async memberId => {
-  const response = await axios.get(`${API_BASE_URL}/member`, {
-    params: { member_id: memberId },
-  });
-  return response.data;
+// [PATCH] 주문 취소
+export const patchOrderStatus = async (orderId, productId, orderStatusCode) => {
+  console.log(orderId.orderStatusCode);
+  try {
+    const response = await axios.patch(
+      `http://localhost:8040/api/order/product/status`,
+      {
+        orderId: orderId.orderId,
+        productId: orderId.productId,
+        orderStatusCode: orderId.orderStatusCode,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    console.log("Response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error in patchOrderStatus:",
+      error.response ? error.response.data : error.message
+    );
+    throw error;
+  }
 };
 
-// [GET] 회원 주소 정보 조회
-export const fetchMemberAddresses = async memberId => {
-  const response = await axios.get(`${API_BASE_URL}/address`, {
-    params: { member_id: memberId },
-  });
-  return response.data;
+// [PUT] 정기주문 회차 미루기
+export const putSubscriptionOrderPostpone = async regularOrderId => {
+  const response = await axios.put(
+    `http://localhost:8040/api/regular-order/${regularOrderId}/postpone`
+  );
+  return response;
 };
 
-// [POST] 회원 주소지 추가
-export const addAddress = async ({ memberId, general_address, detail_address }) => {
-  const newAddress = {
-    member_id: memberId,
-    general_address,
-    detail_address,
-    is_default_address: false,
-  };
-
-  const response = await axios.post(`${API_BASE_URL}/address`, newAddress);
-  return response.data;
+// [PUT] 정기주문 취소하기
+export const putSubscriptionOrderCancel = async regularOrderId => {
+  const response = await axios.put(
+    `http://localhost:8040/api/regular-order/cancel?regularOrderId=${regularOrderId}`
+  );
+  return response;
 };
 
-// [PUT] 회원 주소지 수정
-export const updateAddress = async ({
-  id,
-  general_address,
-  detail_address,
-  is_default_address,
-}) => {
-  const response = await axios.put(`${API_BASE_URL}/address/${id}`, {
-    general_address,
-    detail_address,
-    is_default_address,
-  });
-  return response.data;
-};
+// [POST] 상품 리뷰 등록
+export const postProductReview = async reviewData => {
+  console.log(reviewData);
 
-// [DELETE] 회원 주소지 삭제
-export const deleteAddress = async id => {
-  const response = await axios.delete(`${API_BASE_URL}/address/${id}`);
-  return response.data;
-};
+  const formData = new FormData();
 
-// [PATCH] 회원 대표 주소지 설정
-export const setDefaultAddress = async ({ memberId, addressId }) => {
-  const allAddresses = await fetchMemberAddresses(memberId);
-  for (let address of allAddresses) {
-    if (address.is_default_address) {
-      await axios.patch(`${API_BASE_URL}/address/${address.id}`, {
-        is_default_address: false,
-      });
-    }
+  // JSON 데이터 추가
+  formData.append(
+    "ofRegisterProductReview",
+    JSON.stringify({
+      productId: reviewData.productId,
+      memberId: reviewData.memberId,
+      createDate: reviewData.createDate,
+      reviewContent: reviewData.reviewContent,
+      reviewScore: reviewData.reviewScore,
+    })
+  );
+
+  // 이미지 파일들 추가
+  if (reviewData.reviewImages && reviewData.reviewImages.length > 0) {
+    reviewData.reviewImages.forEach((image, index) => {
+      formData.append(`reviewImage${index + 1}`, image);
+    });
   }
 
-  const response = await axios.patch(`${API_BASE_URL}/address/${addressId}`, {
-    is_default_address: true,
-  });
-  return response.data;
-};
-
-// [GET] 회원별 카드 정보 조회
-export const fetchMemberCard = async memberId => {
-  const response = await axios.get(`${API_BASE_URL}/card`, {
-    params: {
-      member_id: memberId,
+  console.log(formData);
+  const response = await axios.post(`http://localhost:8020/api/product-review`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
     },
   });
 
-  return response.data;
-};
-
-// [POST] 회원 카드 추가
-export const addMemberCard = async ({ memberId, ...cardData }) => {
-  const response = await axios.post(`${API_BASE_URL}/card`, {
-    member_id: memberId,
-    ...cardData,
-  });
-  return response.data;
-};
-
-// [PUT] 회원 카드 수정
-export const updateMemberCard = async ({ memberId, id, ...cardData }) => {
-  if (!id) {
-    throw new Error("Card ID is required for updating");
-  }
-  const response = await axios.put(`${API_BASE_URL}/card/${id}`, {
-    member_id: memberId,
-    ...cardData,
-  });
-  return response.data;
-};
-
-// [DELETE] 회원 카드 삭제
-export const deleteMemberCard = async ({ memberId, cardId }) => {
-  const response = await axios.delete(`${API_BASE_URL}/card/${cardId}`);
-  return response.data;
-};
-
-// [UPDATE] 회원 정보 수정
-export const updateUser = async ({ id, userData }) => {
-  const response = await axios.put(`${API_BASE_URL}/member/${id}`, userData);
-  return response.data;
-};
-
-// [GET] 회원 주문 조회
-export const fetchOrders = async memberId => {
-  const response = await axios.get("http://localhost:3001/order", {
-    params: {
-      member_id: memberId,
-    },
-  });
-  return response.data;
+  return response;
 };

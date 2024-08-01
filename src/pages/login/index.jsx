@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import kakaoLogo from "../../assets/images/kakao_icon.png";
 import googleLogo from "../../assets/images/google_icon.png";
@@ -11,6 +11,7 @@ import useAuthStore from "../../stores/useAuthStore";
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [showPassword, setShowPassword] = useState(false);
   const [loginData, setLoginData] = useState({ username: "", password: "" });
   const [errors, setErrors] = useState({ username: "", password: "" });
@@ -29,9 +30,14 @@ const Login = () => {
     mutationFn: login,
     onSuccess: data => {
       if (data) {
-        // login 함수가 true를 반환했을 때만 성공으로 처리
         toast.success("로그인 성공!");
-        navigate(-1);
+        const { from } = location.state || { from: { pathname: "/" } };
+        console.log(from);
+        if (from.pathname === "/signup") {
+          navigate("/");
+        } else {
+          navigate(from);
+        }
       } else {
         toast.error("로그인에 실패했습니다.");
       }

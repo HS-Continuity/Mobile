@@ -257,17 +257,23 @@ export const fetchMessageVerify = phoneCode =>
 
 // [POST] 현재 비밀번호 검증
 export const verifyPassword = async (memberId, currentPassword) => {
-  const response = await axios.post(`/api/member/verify-password`, { memberId, currentPassword });
+  const response = await axios.post(
+    `http://localhost:8010/memberservice/api/member/verify-password`,
+    { memberId, currentPassword }
+  );
   return response.data.result;
 };
 
 // [POST] 새 비밀번호로 변경
 export const changePassword = async ({ memberId, currentPassword, newPassword }) => {
-  const response = await axios.post(`/api/member/change-password`, {
-    memberId,
-    currentPassword,
-    newPassword,
-  });
+  const response = await axios.post(
+    `http://localhost:8010/memberservice/api/member/change-password`,
+    {
+      memberId,
+      currentPassword,
+      newPassword,
+    }
+  );
   return response.data;
 };
 
@@ -353,7 +359,7 @@ export const putDefaultCard = (memberPaymentCardId, memberId) => {
 export const postOrder = async orderData => {
   console.log(orderData);
   try {
-    const response = await axios.post(`http://localhost:8040/api/order`, {
+    const response = await axios.post(`http://localhost:8040/orderservice/api/order`, {
       customerId: orderData.customerId,
       memberCouponId: orderData.memberCouponId,
       storeName: orderData.storeName,
@@ -393,7 +399,7 @@ export const postOrder = async orderData => {
 export const postSubscriptionOrder = async orderData => {
   try {
     const response = await axios.post(
-      `http://localhost:8040/api/regular-order`,
+      `http://localhost:8040/orderservice/api/regular-order`,
       {
         customerId: orderData.customerId,
         memberId: orderData.memberId,
@@ -427,7 +433,7 @@ export const postSubscriptionOrder = async orderData => {
 export const fetchMemberOrderList = async ({ memberId, startDate, endDate, pageParam = 0 }) => {
   const size = 10;
   const response = await axios.get(
-    `http://localhost:8040/api/order/member-service?memberId=${memberId}&startDate=${startDate}&endDate=${endDate}&page=${pageParam}&size=${size}`
+    `http://localhost:8040/orderservice/api/order/member-service?memberId=${memberId}&startDate=${startDate}&endDate=${endDate}&page=${pageParam}&size=${size}`
   );
   console.log(response.data);
   return response.data;
@@ -437,7 +443,7 @@ export const fetchMemberOrderList = async ({ memberId, startDate, endDate, pageP
 export const fetchMemberOrderDetail = async orderDetailId => {
   console.log(orderDetailId);
   const response = await axios.get(
-    `http://localhost:8040/api/order/member-service/${orderDetailId}`
+    `http://localhost:8040/orderservice/api/order/member-service/${orderDetailId}`
   );
   console.log(response);
   return response;
@@ -457,7 +463,7 @@ export const useOrderListQuery = ({ memberId, startDate, endDate }) =>
 export const fetchMemberSubscriptionList = async ({ startDate, endDate, pageParam = 0 }) => {
   const size = 10;
   const response = await axios.get(
-    `http://localhost:8040/api/regular-order/list?&startDate=${startDate}&endDate=${endDate}&page=${pageParam}&size=${size}`
+    `http://localhost:8040/orderservice/api/regular-order/list?&startDate=${startDate}&endDate=${endDate}&page=${pageParam}&size=${size}`
   );
   return response.data;
 };
@@ -476,7 +482,7 @@ export const useSubscriptionOrderListQuery = ({ startDate, endDate }) =>
 // [GET] 정기 주문 상세 조회
 export const fetchMemberSubscriptionDetail = async regularOrderId => {
   const response = await axios.get(
-    `http://localhost:8040/api/regular-order/${regularOrderId}/detail?`
+    `http://localhost:8040/orderservice/api/regular-order/${regularOrderId}/detail?`
   );
   return response.data.result;
 };
@@ -486,7 +492,7 @@ export const patchOrderStatus = async (orderId, productId, orderStatusCode) => {
   console.log(orderId.orderStatusCode);
   try {
     const response = await axios.patch(
-      `http://localhost:8040/api/order/product/status`,
+      `http://localhost:8040/orderservice/api/order/product/status`,
       {
         orderId: orderId.orderId,
         productId: orderId.productId,
@@ -512,7 +518,7 @@ export const patchOrderStatus = async (orderId, productId, orderStatusCode) => {
 // [PUT] 정기주문 회차 미루기
 export const putSubscriptionOrderPostpone = async regularOrderId => {
   const response = await axios.put(
-    `http://localhost:8040/api/regular-order/${regularOrderId}/postpone`
+    `http://localhost:8040/orderservice/api/regular-order/${regularOrderId}/postpone`
   );
   return response;
 };
@@ -520,7 +526,7 @@ export const putSubscriptionOrderPostpone = async regularOrderId => {
 // [PUT] 정기주문 취소하기
 export const putSubscriptionOrderCancel = async regularOrderId => {
   const response = await axios.put(
-    `http://localhost:8040/api/regular-order/cancel?regularOrderId=${regularOrderId}`
+    `http://localhost:8040/orderservice/api/regular-order/cancel?regularOrderId=${regularOrderId}`
   );
   return response;
 };

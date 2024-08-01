@@ -22,7 +22,7 @@ const useAuthStore = create((set, get) => ({
 
     try {
       const response = await axios.get(
-        "http://localhost:8010/access-token",
+        "http://localhost:8010/memberservice/access-token",
         { timeout: 5000 },
         { withCredentials: true }
       );
@@ -63,13 +63,17 @@ const useAuthStore = create((set, get) => ({
 
   login: async loginData => {
     try {
-      const response = await axios.post("http://localhost:8010/api/auth/login", loginData, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        withCredentials: true,
-        timeout: 5000,
-      });
+      const response = await axios.post(
+        "http://localhost:8010/memberservice/api/auth/login",
+        loginData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+          timeout: 5000,
+        }
+      );
 
       const authHeader = response.headers["authorization"];
       if (authHeader && authHeader.startsWith("Bearer ")) {
@@ -93,7 +97,7 @@ const useAuthStore = create((set, get) => ({
   logout: async () => {
     try {
       await axios.post(
-        "http://localhost:8010/api/auth/logout",
+        "http://localhost:8010/memberservice/api/auth/logout",
         {},
         {
           withCredentials: true,

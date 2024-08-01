@@ -15,6 +15,7 @@ import { GoTrash } from "react-icons/go";
 import useAuthStore from "../../stores/useAuthStore";
 import { FaLeaf } from "react-icons/fa";
 import EmptyCart from "./EmptyCart";
+import toast from "react-hot-toast";
 
 const Cart = () => {
   const { username } = useAuthStore();
@@ -104,9 +105,31 @@ const Cart = () => {
   };
 
   const handleDeleteItem = cartProductId => {
-    if (window.confirm("정말 삭제하시겠습니까?")) {
-      deleteItemMutation.mutate(cartProductId);
-    }
+    toast(
+      t => (
+        <span>
+          상품을 삭제하시겠습니까?
+          <button
+            className='btn ml-2 h-10 rounded bg-transparent px-2 py-1 text-black hover:bg-white'
+            onClick={() => {
+              deleteItemMutation.mutate(cartProductId);
+              toast.dismiss(t.id);
+            }}>
+            확인
+          </button>
+          <button
+            className='btn ml-2 h-10 rounded bg-red-500 px-2 py-1 text-white hover:bg-red-500'
+            onClick={() => {
+              toast.dismiss(t.id);
+            }}>
+            취소
+          </button>
+        </span>
+      ),
+      {
+        duration: 2000,
+      }
+    );
   };
 
   const groupedItems = cartItems?.reduce((acc, item) => {

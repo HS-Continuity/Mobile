@@ -34,7 +34,7 @@ const ProductSlider = () => {
           <div key={index} className='relative'>
             <img src={src} alt={`image${index + 1}`} style={{ width: "100%", height: "auto" }} />
             <div className='absolute bottom-0 left-0 w-full p-4'>
-              <p className='text-5xl font-extrabold text-white'>정승수</p>
+              {/* <p className='text-5xl font-extrabold text-white'>정승수</p> */}
             </div>
           </div>
         ))}

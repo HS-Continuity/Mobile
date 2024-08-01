@@ -136,7 +136,7 @@ const SubscriptionOrder = () => {
     isLoading: cardsLoading,
     isError: cardsError,
   } = useQuery({
-    queryKey: ["card", memberId],
+    queryKey: ["cards", memberId],
     queryFn: () => fetchMemberCard(memberId),
   });
 
@@ -166,7 +166,7 @@ const SubscriptionOrder = () => {
       .map(char => {
         if (/\d/.test(char)) {
           digitCount++;
-          if (digitCount >= 7 && digitCount <= 12) {
+          if (digitCount >= 5 && digitCount <= 12) {
             return "*";
           }
         }
@@ -179,13 +179,14 @@ const SubscriptionOrder = () => {
     const [expirationYear, expirationMonth] = expirationDate.split("-").map(Number);
     const today = new Date();
     const currentYear = today.getFullYear();
-    const currentMonth = today.getMonth() + 1;
+    const currentMonth = today.getMonth() + 1; // getMonth()는 0부터 시작하므로 1을 더해줍니다.
+
+    // 년도가 현재보다 크거나, 년도가 같고 월이 현재 이상이면 만료되지 않은 것
     return (
       expirationYear < currentYear ||
       (expirationYear === currentYear && expirationMonth < currentMonth)
     );
   };
-
   // EVENT HANDLERS
   // 카드 추가 핸들러
   const handleAddCard = cardData => {
@@ -193,10 +194,32 @@ const SubscriptionOrder = () => {
   };
 
   // 카드 삭제 핸들러
-  const handleDeleteCard = cardId => {
-    if (window.confirm("정말 이 카드를 삭제하시겠습니까?")) {
-      deleteCardMutation.mutate({ memberId: memberId, cardId });
-    }
+  const handleDeleteCard = memberPaymentCardId => {
+    toast(
+      t => (
+        <span>
+          결제 수단을 삭제하시겠습니까?
+          <button
+            className='btn ml-2 h-10 rounded bg-transparent px-2 py-1 text-black hover:bg-white'
+            onClick={() => {
+              deleteCardMutation.mutate(memberPaymentCardId);
+              toast.dismiss(t.id);
+            }}>
+            확인
+          </button>
+          <button
+            className='btn ml-2 h-10 rounded bg-red-500 px-2 py-1 text-white hover:bg-red-500'
+            onClick={() => {
+              toast.dismiss(t.id);
+            }}>
+            취소
+          </button>
+        </span>
+      ),
+      {
+        duration: 2000,
+      }
+    );
   };
 
   // 이전 카드 선택
@@ -258,7 +281,9 @@ const SubscriptionOrder = () => {
   useEffect(() => {
     if (cards && cards.length > 0) {
       const defaultCardIndex = cards.findIndex(card => card.isDefaultPaymentCard === "ACTIVE");
-      setSelectedCardIndex(defaultCardIndex !== -1 ? defaultCardIndex + 1 : 0);
+      setSelectedCardIndex(defaultCardIndex !== -1 ? defaultCardIndex + 1 : 1);
+    } else {
+      setSelectedCardIndex(0);
     }
   }, [cards]);
 
@@ -267,10 +292,10 @@ const SubscriptionOrder = () => {
       cards &&
       cards.length > 0 &&
       selectedCardIndex !== null &&
-      selectedCardIndex > 0 &&
+      selectedCardIndex > 0 && // 카드가 선택되었는지 확인
       cards[selectedCardIndex - 1] &&
       !isCardExpired(cards[selectedCardIndex - 1].cardExpiration);
-    const isValidAddress = selectedAddress !== null;
+    const isValidAddress = selectedAddress !== null; // 배송지가 선택되었는지 확인
 
     setIsPaymentEnabled(isValidAddress && isValidCard && consentPayment);
   }, [selectedAddress, cards, selectedCardIndex, consentPayment]);

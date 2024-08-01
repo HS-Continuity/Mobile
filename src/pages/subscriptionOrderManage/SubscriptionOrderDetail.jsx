@@ -85,24 +85,26 @@ const SubscriptionOrderDetail = () => {
   const handlePostpone = () => {
     toast(
       t => (
-        <span>
-          이번 정기주문 회차를 연기하시겠습니까?
-          <button
-            className='btn ml-2 h-10 rounded bg-transparent px-2 py-1 text-black hover:bg-white'
-            onClick={() => {
-              postponeMutation.mutate(regularOrderId);
-              toast.dismiss(t.id);
-            }}>
-            확인
-          </button>
-          <button
-            className='btn ml-2 h-10 rounded bg-red-500 px-2 py-1 text-white hover:bg-red-500'
-            onClick={() => {
-              toast.dismiss(t.id);
-            }}>
-            취소
-          </button>
-        </span>
+        <div className='flex flex-col items-start'>
+          <span>이번 정기주문 회차를 연기하시겠습니까?</span>
+          <div className='mt-2 flex'>
+            <button
+              className='btn mr-2 h-10 rounded bg-transparent px-2 py-1 text-black hover:bg-white'
+              onClick={() => {
+                postponeMutation.mutate(regularOrderId);
+                toast.dismiss(t.id);
+              }}>
+              확인
+            </button>
+            <button
+              className='btn h-10 rounded bg-red-500 px-2 py-1 text-white hover:bg-red-500'
+              onClick={() => {
+                toast.dismiss(t.id);
+              }}>
+              취소
+            </button>
+          </div>
+        </div>
       ),
       {
         duration: 2000,

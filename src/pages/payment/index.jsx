@@ -101,7 +101,7 @@ const Payment = () => {
     if (!cardNumber) return "";
     const parts = cardNumber.split("-");
     if (parts.length !== 4) return cardNumber;
-    return `${parts[0]}-${parts[1].slice(0, 2)}**-****-${parts[3]}`;
+    return `${parts[0]}-****-****-${parts[3]}`;
   };
 
   if (isLoading) return <div className='flex h-screen items-center justify-center'>로딩 중...</div>;

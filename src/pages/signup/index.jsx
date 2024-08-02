@@ -6,7 +6,7 @@ import { LuCake, LuLock, LuUser2 } from "react-icons/lu";
 import { SlEnvolope } from "react-icons/sl";
 import { PiGenderNeuterLight } from "react-icons/pi";
 import { MdSmartphone } from "react-icons/md";
-import { fetchMessageVerify, postMember, postMessage } from "../../apis";
+import { fetchMessageVerify, postMember, postMessage, verifyMemberId } from "../../apis";
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -39,31 +39,43 @@ const SignUp = () => {
   const [isVerified, setIsVerified] = useState(false);
   const [verificationFailed, setVerificationFailed] = useState(false);
   const [reAuthCooldown, setReAuthCooldown] = useState(0);
+  const [isIdAvailable, setIsIdAvailable] = useState(false);
 
   const handleChange = e => {
     const { name, value, type } = e.target;
+    let updatedValue = value;
+
     if (name === "memberPhoneNumber") {
-      const formattedNumber = formatPhoneNumber(value);
-      setFormData(prev => ({
-        ...prev,
-        [name]: formattedNumber,
-      }));
-      const validationResult = validateField(name, formattedNumber);
-      setErrors(prev => ({ ...prev, [name]: validationResult.error }));
+      updatedValue = formatPhoneNumber(value);
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === "radio" ? value : updatedValue,
+    }));
+
+    const validationResult = validateField(name, updatedValue);
+    setErrors(prev => ({ ...prev, [name]: validationResult.error }));
+
+    if (name === "memberPhoneNumber") {
       setIsPhoneValid(validationResult.isValid);
     } else if (name === "memberId") {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value,
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: type === "radio" ? value : value,
-      }));
-      const validationResult = validateField(name, value);
-      setErrors(prev => ({ ...prev, [name]: validationResult.error }));
+      setIsVerified(false);
     }
+  };
+
+  const getInputClassName = fieldName => {
+    const baseClass = "input input-bordered h-12 w-full pl-10 focus:outline-none focus:ring-0";
+    const errorClass = errors[fieldName]
+      ? "border-red-500 focus:border-red-500"
+      : "focus:border-black";
+    const roundedClass =
+      fieldName === "memberId" || fieldName === "memberName"
+        ? "rounded-b-none"
+        : fieldName === "memberEmail" || fieldName === "memberPhoneNumber"
+          ? "rounded-t-none"
+          : "rounded-none";
+    return `${baseClass} ${errorClass} ${roundedClass}`;
   };
 
   const formatPhoneNumber = value => {
@@ -110,7 +122,9 @@ const SignUp = () => {
 
   const isFormValid = () => {
     return (
-      Object.keys(formData).every(key => formData[key] && !errors[key] && isChecked) && isVerified
+      Object.keys(formData).every(key => formData[key] && !errors[key] && isChecked) &&
+      isVerified &&
+      isIdAvailable
     );
   };
 
@@ -123,13 +137,19 @@ const SignUp = () => {
 
   const sendVerificationCodeMutation = useMutation({
     mutationFn: postMessage,
-    onSuccess: () => {
+    onSuccess: data => {
+      console.log(data);
       setIsCodeSent(true);
       setTimeLeft(150);
       toast.success("인증번호가 발송되었습니다.");
     },
-    onError: () => {
-      toast.error("인증번호 발송에 실패했습니다.");
+    onError: error => {
+      console.log(error.response.status);
+      if (error.response.status == 409) {
+        toast.error("이미 가입된 전화번호 입니다.");
+      } else {
+        toast.error("인증번호 발송에 실패했습니다.");
+      }
     },
   });
 
@@ -204,6 +224,30 @@ const SignUp = () => {
     },
   });
 
+  const checkIdMutation = useMutation({
+    mutationFn: verifyMemberId,
+    onSuccess: data => {
+      if (data) {
+        toast.error("이미 사용 중인 아이디입니다.");
+        setIsIdAvailable(false);
+      } else {
+        toast.success("사용 가능한 아이디입니다.");
+        setIsIdAvailable(true);
+      }
+    },
+    onError: () => {
+      toast.error("아이디 중복 검사 중 오류가 발생했습니다.");
+    },
+  });
+
+  const handleIdCheck = () => {
+    if (formData.memberId) {
+      checkIdMutation.mutate(formData.memberId);
+    } else {
+      toast.error("아이디를 입력해주세요.");
+    }
+  };
+
   const handleSubmit = e => {
     e.preventDefault();
     if (!isVerified) {
@@ -232,8 +276,15 @@ const SignUp = () => {
             value={formData.memberId}
             onChange={handleChange}
             placeholder='아이디'
-            className='input input-bordered h-12 w-full rounded-b-none pl-10 focus:border-black focus:outline-none focus:ring-0'
+            className={getInputClassName("memberId")}
           />
+          <button
+            type='button'
+            onClick={handleIdCheck}
+            className='btn absolute right-0 top-0 w-16 rounded-b-none rounded-s-none bg-green-shine text-white hover:bg-green-shine'
+            disabled={checkIdMutation.isPending}>
+            {checkIdMutation.isPending ? "검사 중..." : "중복 검사"}
+          </button>
         </div>
         <div className='relative'>
           <LuLock className='absolute left-3 top-1/2 -translate-y-1/2 transform text-gray-400' />
@@ -243,7 +294,7 @@ const SignUp = () => {
             value={formData.memberPassword}
             onChange={handleChange}
             placeholder='비밀번호'
-            className='input input-bordered h-12 w-full rounded-none pl-10 focus:border-black focus:outline-none focus:ring-0'
+            className={getInputClassName("memberPassword")}
           />
         </div>
         <div className='relative'>
@@ -254,10 +305,11 @@ const SignUp = () => {
             value={formData.memberEmail}
             onChange={handleChange}
             placeholder='이메일'
-            className='input input-bordered h-12 w-full rounded-t-none pl-10 focus:border-black focus:outline-none focus:ring-0'
+            className={getInputClassName("memberEmail")}
           />
         </div>
         {errors.memberId && <p className='mt-1 text-xs text-red-500'>{errors.memberId}</p>}
+
         {errors.memberPassword && (
           <p className='mt-1 text-xs text-red-500'>{errors.memberPassword}</p>
         )}
@@ -272,7 +324,7 @@ const SignUp = () => {
             value={formData.memberName}
             onChange={handleChange}
             placeholder='이름'
-            className='input input-bordered h-12 w-full rounded-b-none pl-10 focus:border-black focus:outline-none focus:ring-0'
+            className={getInputClassName("memberName")}
           />
         </div>
         <div className='relative'>
@@ -283,7 +335,7 @@ const SignUp = () => {
             value={formData.memberBirthday}
             onChange={handleChange}
             placeholder='생년월일 8자리'
-            className='input input-bordered h-12 w-full rounded-none pl-10 focus:border-black focus:outline-none focus:ring-0'
+            className={getInputClassName("memberBirthday")}
           />
         </div>
         <div className='border-l-1 relative border-[1px]'>
@@ -324,7 +376,7 @@ const SignUp = () => {
             value={formData.memberPhoneNumber}
             onChange={handleChange}
             placeholder='전화번호'
-            className='input input-bordered h-12 w-full rounded-t-none pl-10 focus:border-black focus:outline-none focus:ring-0'
+            className={getInputClassName("memberPhoneNumber")}
             disabled={isVerified}
           />
           {isPhoneValid && !isVerified && (
@@ -382,7 +434,7 @@ const SignUp = () => {
         <div className='flex items-center space-x-2 rounded-lg bg-white p-4'>
           <input
             type='checkbox'
-            className='checkbox'
+            className='checkbox mr-3 border-gray-500 [--chkbg:#00835F] [--chkfg:white] checked:border-[#00835F]'
             checked={isChecked}
             onChange={() => setIsChecked(!isChecked)}
           />

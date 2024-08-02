@@ -113,7 +113,7 @@ const Payment = () => {
   return (
     <div className='container mx-auto p-4'>
       <h1 className='mb-6 text-xl font-semibold'>
-        {cards && cards.length > 0 ? `등록 카드 ${cards.length}개` : "등록된 카드"}
+        {cards && cards.length > 0 ? `등록 카드 ${cards.length} / 3` : "등록된 카드"}
       </h1>
       {cards && cards.length > 0 ? (
         <div className='space-y-4'>

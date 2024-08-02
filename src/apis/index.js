@@ -244,11 +244,20 @@ export const postMember = memberData => {
 };
 
 // [POST] 핸드폰으로 문자 전송
-export const postMessage = memberPhoneInfo => {
-  memberApiPost(`/sms/verification-code`, {
-    phoneNumber: memberPhoneInfo.phoneNumber,
-    userName: memberPhoneInfo.userName,
-  });
+export const postMessage = async memberPhoneInfo => {
+  // memberApiPost(`/sms/verification-code`, {
+  //   phoneNumber: memberPhoneInfo.phoneNumber,
+  //   userName: memberPhoneInfo.userName,
+  // });
+  const response = await axios.post(
+    `http://localhost:8010/memberservice/api/sms/verification-code`,
+    {
+      phoneNumber: memberPhoneInfo.phoneNumber,
+      userName: memberPhoneInfo.userName,
+    }
+  );
+  console.log(response);
+  return response;
 };
 
 // [GET] 문자 인증 검증
@@ -276,6 +285,9 @@ export const changePassword = async ({ memberId, currentPassword, newPassword })
   );
   return response.data;
 };
+
+// [GET] 아이디 중복 검사
+export const verifyMemberId = memberId => memberApiGet(`/member/check-id`, { memberId });
 
 // -------------------------[ADDRESS]-------------------------
 // [GET] 회원 배송지 조회

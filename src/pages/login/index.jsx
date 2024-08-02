@@ -19,12 +19,12 @@ const Login = () => {
 
   const login = useAuthStore(state => state.login);
 
-  const socialLogins = [
-    { name: "kakao", icon: kakaoLogo },
-    { name: "google", icon: googleLogo },
-    // { name: 'apple', icon: appleLogo },
-    // { name: 'naver', icon: naverLogo },
-  ];
+  // const socialLogins = [
+  //   { name: "kakao", icon: kakaoLogo },
+  //   { name: "google", icon: googleLogo },
+  // { name: 'apple', icon: appleLogo },
+  // { name: 'naver', icon: naverLogo },
+  // ];
 
   const loginMutation = useMutation({
     mutationFn: login,
@@ -142,12 +142,12 @@ const Login = () => {
           </button>
         </form>
 
-        <div className='mt-4 flex justify-center space-x-4 text-sm text-[#00835F]'>
+        <div className='mt-2 flex justify-center space-x-4 text-sm text-[#00835F]'>
           <Link to='/signup'>회원가입</Link>
         </div>
 
         {/* 간편 로그인 */}
-        <div className='mt-8 p-4'>
+        {/* <div className='mt-8 p-4'>
           <h2 className='mb-4 text-center text-gray-500'>간편 로그인</h2>
           <div className='flex justify-center space-x-4'>
             {socialLogins.map(social => (
@@ -162,8 +162,8 @@ const Login = () => {
                 />
               </button>
             ))}
-          </div>
-        </div>
+          </div> */}
+        {/* </div> */}
       </div>
     </div>
   );

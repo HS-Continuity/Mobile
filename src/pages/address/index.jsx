@@ -89,7 +89,10 @@ const Address = () => {
     return <div className='alert alert-error'>주소 정보를 불러오는 중 오류가 발생했습니다.</div>;
 
   return (
-    <div className='container mx-auto p-4'>
+    <div className='container mx-auto p-4 pb-20'>
+      {/* <h1 className='mb-6 text-xl font-semibold'>
+        {addresses && addresses.length > 0 ? `등록 배송지 ${addresses.length} / 3` : "등록된 카드"}
+      </h1> */}
       {addresses && addresses.length > 0 ? (
         addresses.map(address => (
           <div key={address.memberAddressId} className='mb-4 rounded-lg border p-4'>

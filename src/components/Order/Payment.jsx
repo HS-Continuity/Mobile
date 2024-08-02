@@ -16,7 +16,6 @@ const Payment = ({
   getCardColor,
   maskDigits,
   memberId,
-  refetch,
 }) => {
   const [localDefaultCard, setLocalDefaultCard] = useState(
     () => cards.find(card => card.isDefaultPaymentCard === "ACTIVE")?.memberPaymentCardId
@@ -188,7 +187,6 @@ const Payment = ({
         isOpen={isCardRegistrationModalOpen}
         onClose={() => setIsCardRegistrationModalOpen(false)}
         onSubmit={handleAddCard}
-        refetch={refetch}
       />
     </div>
   );

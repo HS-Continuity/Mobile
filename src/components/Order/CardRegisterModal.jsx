@@ -4,7 +4,7 @@ import Modal from "../../pages/product/Modal";
 import toast from "react-hot-toast";
 import useAuthStore from "../../stores/useAuthStore";
 
-const CardRegisterModal = ({ isOpen, onClose, onSubmit, refetch }) => {
+const CardRegisterModal = ({ isOpen, onClose, onSubmit }) => {
   // const memberId = import.meta.env.VITE_MEMBER_ID;
   const { username } = useAuthStore();
   const memberId = username;
@@ -226,8 +226,8 @@ const CardRegisterModal = ({ isOpen, onClose, onSubmit, refetch }) => {
         duration: 2000,
         position: "bottom-center",
       });
-      refetch();
       onClose();
+      window.location.reload();
     } catch (error) {
       toast.error("카드 등록에 실패했습니다. 다시 시도해 주세요.");
       console.error("카드 등록 오류:", error);

@@ -7,6 +7,7 @@ import Bento from "../../assets/icon/bento.png";
 import Milk from "../../assets/icon/milk.png";
 import Mate from "../../assets/icon/mate.png";
 import Seed from "../../assets/icon/seed.png";
+import Egg from "../../assets/icon/egg.png";
 
 export const categories = [
   {
@@ -28,9 +29,15 @@ export const categories = [
     subCategories: ["백미", "현미", "찹쌀"],
   },
   {
-    name: "정육/계란",
+    name: "정육",
     icon: Meat,
     emoji: "🥩🥚",
+    subCategories: ["소고기", "돼지고기", "닭고기"],
+  },
+  {
+    name: "계란",
+    icon: Egg,
+    emoji: "🥚",
     subCategories: ["소고기", "돼지고기", "닭고기"],
   },
   {

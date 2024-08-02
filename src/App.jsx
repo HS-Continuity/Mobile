@@ -38,6 +38,7 @@ import SubscriptionOrderDetail from "./pages/subscriptionOrderManage/Subscriptio
 import TimeSaleDetail from "./pages/timeSale/timeSaleDetail";
 import useAuthStore from "./stores/useAuthStore";
 import { Toaster } from "react-hot-toast";
+import NotFound from "./pages/error/NotFound";
 
 function App() {
   const location = useLocation();
@@ -229,7 +230,7 @@ function App() {
           </Route>
 
           {/* 허용되지 않은 URL */}
-          <Route path='*' element={<Navigate to='/' replace />} />
+          <Route path='*' element={<NotFound />} />
         </Routes>
         <Toaster position='bottom-center' />
       </div>

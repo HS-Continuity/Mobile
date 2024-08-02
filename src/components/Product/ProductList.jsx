@@ -96,7 +96,11 @@ const ProductList = ({ useQueryHook, additionalProps = {}, gridCols = 1 }) => {
 
       <div className={`grid grid-cols-${gridCols} gap-2`}>
         {displayProducts.map((product, index) => (
-          <ProductItem key={`${product.productId || "unknown"}-${index}`} product={product} />
+          <ProductItem
+            key={`${product.productId || "unknown"}-${index}`}
+            product={product}
+            isServiceDown={isServiceDown || isError}
+          />
         ))}
       </div>
 

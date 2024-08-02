@@ -104,7 +104,6 @@ const Order = () => {
     data: cards,
     isLoading: cardsLoading,
     isError: cardsError,
-    refetch,
   } = useQuery({
     queryKey: ["cards", memberId],
     queryFn: () => fetchMemberCard(memberId),
@@ -221,7 +220,7 @@ const Order = () => {
       .map(char => {
         if (/\d/.test(char)) {
           digitCount++;
-          if (digitCount >= 7 && digitCount <= 12) {
+          if (digitCount >= 5 && digitCount <= 12) {
             return "*";
           }
         }
@@ -241,7 +240,7 @@ const Order = () => {
     toast(
       t => (
         <span>
-          배송지를 삭제하시겠습니까?
+          결제 수단을 삭제하시겠습니까?
           <button
             className='btn ml-2 h-10 rounded bg-transparent px-2 py-1 text-black hover:bg-white'
             onClick={() => {
@@ -429,7 +428,6 @@ const Order = () => {
           getCardColor={getCardColor}
           maskDigits={maskDigits}
           queryClient={queryClient}
-          refetch={refetch}
         />
 
         {/* 결제 동의 */}

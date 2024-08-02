@@ -352,7 +352,10 @@ const SignUp = () => {
                 className='grow'
               />
             </label>
-            <button type='button' onClick={handleVerify} className='btn btn-outline btn-info mt-2'>
+            <button
+              type='button'
+              onClick={handleVerify}
+              className='btn mt-2 border border-gray-300 bg-transparent hover:bg-transparent'>
               인증번호 확인
             </button>
           </div>
@@ -388,7 +391,7 @@ const SignUp = () => {
 
         <button
           type='submit'
-          className='btn w-full bg-green-shine hover:bg-green-shine'
+          className='btn w-full bg-green-shine text-white hover:bg-green-shine'
           disabled={registerMutation.isPending || !isFormValid()}>
           {registerMutation.isPending ? "처리 중..." : "회원가입"}
         </button>

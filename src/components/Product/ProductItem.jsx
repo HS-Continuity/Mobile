@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import StarRating from "./StarRating";
 import { useState } from "react";
 import { FaLeaf } from "react-icons/fa";
@@ -12,23 +12,23 @@ const ProductItem = ({ product, isServiceDown }) => {
     setImgError(true);
   };
 
-  // 상품 컨테이너 컴포넌트
-  const ProductContainer = isServiceDown ? "div" : Link;
-
   // 샵 네비게이터 핸들러
   const handleShopNavigator = e => {
-    if (isServiceDown) {
-      e.preventDefault();
+    if (!isServiceDown) {
+      e.stopPropagation();
+      navigate(`/shop/${product.customerId}`);
     }
-    e.stopPropagation();
-    navigate(`/shop/${product.customerId}`);
+  };
+
+  // 상품 상세 페이지 네비게이터 핸들러
+  const handleProductNavigator = () => {
+    if (!isServiceDown) {
+      navigate(`/product/${product.productId}`);
+    }
   };
 
   return (
-    // 상품 상세 페이지 링크
-    <ProductContainer
-      to={isServiceDown ? undefined : `/product/${product.productId}`}
-      className='mb-2 bg-base-100'>
+    <div className='mb-2 cursor-pointer bg-base-100' onClick={handleProductNavigator}>
       <figure className='relative'>
         {/* 상품 이미지 */}
         {!imgError ? (
@@ -77,7 +77,7 @@ const ProductItem = ({ product, isServiceDown }) => {
         {/* 판매자 이름 및 상품명 */}
         <div className='mt-2 flex'>
           <h1
-            onClick={isServiceDown ? undefined : handleShopNavigator}
+            onClick={handleShopNavigator}
             className={`card-title mb-1 text-base font-extrabold text-green-700 ${isServiceDown ? "" : "cursor-pointer"}`}>
             {product.storeName}
           </h1>
@@ -108,7 +108,7 @@ const ProductItem = ({ product, isServiceDown }) => {
           </div>
         </div>
       </div>
-    </ProductContainer>
+    </div>
   );
 };
 

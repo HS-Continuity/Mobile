@@ -120,13 +120,20 @@ const ReviewApply = () => {
             placeholder='상품에 대한 평가를 작성해주세요.'></textarea>
         </div>
 
-        <div>
-          <div className='flex items-center justify-start gap-4'>
-            <label className='btn btn-sm bg-transparent hover:bg-transparent'>
-              <FiUpload className='mr-2 inline-block' />
-              이미지 (선택)
-              <input type='file' className='hidden' onChange={handleImageUpload} accept='image/*' />
-            </label>
+        <div className='my-3'>
+          <div className='flex items-center justify-center'>
+            {!image && (
+              <label className='btn btn-sm bg-transparent hover:bg-transparent'>
+                <FiUpload className='mr-2 inline-block' />
+                이미지 (선택)
+                <input
+                  type='file'
+                  className='hidden'
+                  onChange={handleImageUpload}
+                  accept='image/*'
+                />
+              </label>
+            )}
             {image && (
               <div className='relative'>
                 <img

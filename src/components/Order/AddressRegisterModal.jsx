@@ -9,14 +9,6 @@ import toast from "react-hot-toast";
 const AddressRegisterModal = ({ isOpen, onClose, memberId, onAddressAdded }) => {
   const queryClient = useQueryClient();
 
-  const [addressData, setAddressData] = useState({
-    addressName: "",
-    recipientName: "",
-    recipientPhoneNumber: "",
-    generalAddress: "",
-    detailAddress: "",
-    isDefaultAddress: false,
-  });
   const [addressName, setAddressName] = useState("");
   const [recipientName, setRecipientName] = useState("");
   const [recipientPhoneNumber, setRecipientPhoneNumber] = useState("");
@@ -42,15 +34,12 @@ const AddressRegisterModal = ({ isOpen, onClose, memberId, onAddressAdded }) => 
         duration: 2000,
         position: "bottom-center",
       });
-      // window.location.reload();
-      console.log("New address data:", data); // 데이터 구조 확인을 위한 로그
+
       if (data && data.memberAddressId) {
         onAddressAdded(data);
         onClose();
       } else {
         onClose();
-        // console.error("Invalid address data received:", data);
-        // toast.error("배송지 데이터 처리 중 오류가 발생했습니다.");
       }
     },
     onError: () => {
@@ -67,9 +56,6 @@ const AddressRegisterModal = ({ isOpen, onClose, memberId, onAddressAdded }) => 
         duration: 2000,
         position: "bottom-center",
       });
-      // setTimeout(() => {
-      //   window.location.reload();
-      // }, 1000);
     },
   });
 
@@ -191,13 +177,6 @@ const AddressRegisterModal = ({ isOpen, onClose, memberId, onAddressAdded }) => 
               onChange={e => setIsDefaultAddress(e.target.checked)}
               className='checkbox mr-3 border-gray-500 [--chkbg:#00835F] [--chkfg:white] checked:border-[#00835F]'
             />
-            {/* <input
-              type='checkbox'
-              name='isDefaultAddress'
-              checked={isDefaultAddress}
-              onChange={e => setIsDefaultAddress(e.target.checked)}
-              className='checkbox-primary checkbox'
-            /> */}
           </label>
         </div>
         <div className='mt-6'>

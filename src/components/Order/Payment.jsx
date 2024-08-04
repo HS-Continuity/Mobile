@@ -3,6 +3,7 @@ import { FaChevronLeft, FaChevronRight, FaPlus, FaStar } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
 import CardRegisterModal from "./CardRegisterModal";
 import { putDefaultCard } from "../../apis";
+import maskDigits from "./MaskDigits";
 
 const Payment = ({
   cards,
@@ -14,7 +15,6 @@ const Payment = ({
   setIsCardRegistrationModalOpen,
   handleAddCard,
   getCardColor,
-  maskDigits,
   memberId,
 }) => {
   const [localDefaultCard, setLocalDefaultCard] = useState(
@@ -38,7 +38,6 @@ const Payment = ({
     putDefaultCard(memberPaymentCardId, memberId);
   };
 
-  const selectedCard = cards && selectedCardIndex !== null ? cards[selectedCardIndex - 1] : null;
   const canRegisterCard = cards.length < 3;
   const hasCards = cards.length > 0;
 

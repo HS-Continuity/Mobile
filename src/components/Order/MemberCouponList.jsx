@@ -1,5 +1,3 @@
-import React from "react";
-
 const MemberCouponList = ({ coupons, selectedCoupon, handleCouponChange }) => {
   return (
     <div className='rounded-lg border bg-white p-4'>

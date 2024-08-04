@@ -19,8 +19,9 @@ const CategoryMenu = ({ isOpen, onClose }) => {
 
   const renderCategories = () => {
     let gridItems = [];
-    for (let i = 0; i < categories.length; i += 3) {
-      const rowCategories = categories.slice(i, i + 3);
+    // 마지막 카테고리를 제외하기 위해 length - 1을 사용합니다.
+    for (let i = 0; i < categories.length - 1; i += 3) {
+      const rowCategories = categories.slice(i, Math.min(i + 3, categories.length - 1));
       gridItems.push(
         <React.Fragment key={i}>
           {rowCategories.map((category, index) => (

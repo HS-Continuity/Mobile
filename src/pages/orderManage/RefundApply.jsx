@@ -5,7 +5,6 @@ const RefundApply = () => {
 
   const handleSubmit = e => {
     e.preventDefault();
-    // 여기에 환불 신청 제출 로직을 추가
     console.log({ refundReason });
   };
 

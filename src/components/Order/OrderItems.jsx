@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { BsHouse } from "react-icons/bs";
 import { FaLeaf } from "react-icons/fa";
 

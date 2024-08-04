@@ -13,7 +13,7 @@ import useAuthStore from "../../stores/useAuthStore";
 const BottomNav = () => {
   const { username, isAuthenticated } = useAuthStore();
   const memberId = username;
-  // const memberId = import.meta.env.VITE_MEMBER_ID;
+
   const cartTypeId = null;
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [activeItem, setActiveItem] = useState("");

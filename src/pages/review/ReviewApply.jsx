@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { FaStar, FaStarHalfAlt } from "react-icons/fa";
 import { FiUpload, FiX } from "react-icons/fi";
@@ -20,12 +20,12 @@ const ReviewApply = () => {
   const reviewMutation = useMutation({
     mutationFn: postProductReview,
     onSuccess: () => {
-      toast.success("리뷰가 성공적으로 등록되었습니다.");
+      toast.success("상품평이 성공적으로 등록되었습니다.");
       navigate(`/product/${productId}`);
     },
     onError: error => {
-      console.error("리뷰 등록 중 오류 발생:", error);
-      toast.error("리뷰 등록 중 오류가 발생했습니다. 다시 시도해 주세요.");
+      console.error("상품평 등록 중 오류 발생:", error);
+      toast.error("상품평 등록 중 오류가 발생했습니다. 다시 시도해 주세요.");
     },
   });
 

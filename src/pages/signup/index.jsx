@@ -145,7 +145,7 @@ const SignUp = () => {
     },
     onError: error => {
       console.log(error.response.status);
-      if (error.response.status == 409) {
+      if (error.response.status == 409 || error.response.status == 401) {
         toast.error("이미 가입된 전화번호 입니다.");
       } else {
         toast.error("인증번호 발송에 실패했습니다.");
@@ -236,7 +236,7 @@ const SignUp = () => {
       }
     },
     onError: () => {
-      toast.error("아이디 중복 검사 중 오류가 발생했습니다.");
+      toast.error("이미 사용 중인 아이디입니다.");
     },
   });
 

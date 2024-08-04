@@ -1,7 +1,7 @@
 const CouponSkeleton = () => {
   return (
     <div className='container mx-auto p-4'>
-      <div className='mb-4 h-8 w-48 rounded bg-gray-200'></div>
+      <div className='mb-4 h-8 w-48 rounded border bg-white'></div>
       {[...Array(1)].map((_, index) => (
         <div key={index} className='card mb-4 animate-pulse bg-gray-100 shadow-md'>
           <div className='card-body'>

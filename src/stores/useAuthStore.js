@@ -77,7 +77,7 @@ const useAuthStore = create((set, get) => ({
   login: async loginData => {
     try {
       const response = await axios.post(
-        "http://localhost:8010/memberservice/api/auth/login",
+        "https://api.yeonieum.com/memberservice/api/auth/login",
         loginData,
         {
           headers: {

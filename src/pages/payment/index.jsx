@@ -7,7 +7,10 @@ import useCardColorStore from "../../stores/useCardColorStore";
 import { FiTrash2 } from "react-icons/fi";
 import useAuthStore from "../../stores/useAuthStore";
 import NoCard from "./NoCard";
-import toast from "react-hot-toast";
+import PaymentSkeleton from "../../components/Skeletons/PaymentSkeleton";
+import { PaymentError } from "../../components/Errors/ErrorDisplay";
+import { showCustomToast } from "../../components/Toast/ToastDisplay";
+import maskDigits from "../../components/Order/MaskDigits";
 
 const Payment = () => {
   const { username } = useAuthStore();
@@ -60,7 +63,7 @@ const Payment = () => {
         await addCardMutation.mutateAsync({ memberId: memberId, ...cardData });
         setIsRegisterModalOpen(false);
       } catch (error) {
-        console.error("카드 추가 오류:", error);
+        console.error("결제수단을 3개 이상 추가할 수 없습니다.");
       }
     }
   };
@@ -70,43 +73,15 @@ const Payment = () => {
   };
 
   const handleDeleteCard = memberPaymentCardId => {
-    toast(
-      t => (
-        <span>
-          카드를 삭제하시겠습니까?
-          <button
-            className='btn ml-2 h-10 rounded bg-transparent px-2 py-1 text-black hover:bg-white'
-            onClick={() => {
-              deleteCardMutation.mutate(memberPaymentCardId, memberId);
-              toast.dismiss(t.id);
-            }}>
-            확인
-          </button>
-          <button
-            className='btn ml-2 h-10 rounded bg-red-500 px-2 py-1 text-white hover:bg-red-500'
-            onClick={() => {
-              toast.dismiss(t.id);
-            }}>
-            취소
-          </button>
-        </span>
-      ),
-      {
-        duration: 2000,
-      }
-    );
+    showCustomToast({
+      message: "카드를 삭제하시겠습니까?",
+      onConfirm: () => deleteCardMutation.mutate(memberPaymentCardId, memberId),
+      onCancel: () => {},
+    });
   };
 
-  const maskCardNumber = cardNumber => {
-    if (!cardNumber) return "";
-    const parts = cardNumber.split("-");
-    if (parts.length !== 4) return cardNumber;
-    return `${parts[0]}-****-****-${parts[3]}`;
-  };
-
-  if (isLoading) return <div className='flex h-screen items-center justify-center'>로딩 중...</div>;
-  if (isError)
-    return <div className='alert alert-error'>카드 정보를 불러오는 중 오류가 발생했습니다.</div>;
+  if (isLoading) return <PaymentSkeleton />;
+  if (isError) return <PaymentError />;
 
   const canAddCard = cards && cards.length < 3;
 
@@ -131,7 +106,7 @@ const Payment = () => {
                     </div>
                     <div>
                       <h2 className='card-title text-lg'>{card.cardCompany}</h2>
-                      <p className='text-sm text-gray-600'>{maskCardNumber(card.cardNumber)}</p>
+                      <p className='text-sm text-gray-600'>{maskDigits(card.cardNumber)}</p>
                     </div>
                   </div>
                   <div className='flex items-center space-x-2'>

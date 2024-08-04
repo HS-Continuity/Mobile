@@ -123,7 +123,6 @@ const CardRegisterModal = ({ isOpen, onClose, onSubmit }) => {
           error = "생년월일은 YYYYMMDD 형식이어야 합니다. (예: 19900101)";
         }
         break;
-      // 다른 필드에 대한 유효성 검사 추가 가능
     }
     return error;
   };
@@ -210,8 +209,7 @@ const CardRegisterModal = ({ isOpen, onClose, onSubmit }) => {
       memberId: memberId,
     };
     try {
-      const response = await onSubmit(formattedData);
-      console.log(response);
+      await onSubmit(formattedData);
 
       toast.success("카드가 성공적으로 등록되었습니다!", {
         style: {
@@ -227,7 +225,6 @@ const CardRegisterModal = ({ isOpen, onClose, onSubmit }) => {
         position: "bottom-center",
       });
       onClose();
-      window.location.reload();
     } catch (error) {
       toast.error("카드 등록에 실패했습니다. 다시 시도해 주세요.");
       console.error("카드 등록 오류:", error);
@@ -408,14 +405,6 @@ const CardRegisterModal = ({ isOpen, onClose, onSubmit }) => {
                 onChange={handleChange}
                 className='checkbox mr-3 border-gray-500 [--chkbg:#00835F] [--chkfg:white] checked:border-[#00835F]'
               />
-              {/* <input
-                type='checkbox'
-                name='isSimplePaymentAgreed'
-                checked={cardData.isSimplePaymentAgreed}
-                onChange={handleChange}
-                className='mr-2'
-                required
-              /> */}
               <span className='text-sm'>간편결제 동의 (필수)</span>
             </label>
           </div>
@@ -428,13 +417,6 @@ const CardRegisterModal = ({ isOpen, onClose, onSubmit }) => {
                 onChange={handleChange}
                 className='checkbox mr-3 border-gray-500 [--chkbg:#00835F] [--chkfg:white] checked:border-[#00835F]'
               />
-              {/* <input
-                type='checkbox'
-                name='isDefaultPaymentCard'
-                checked={cardData.isDefaultPaymentCard}
-                onChange={handleChange}
-                className='mr-2'
-              /> */}
               <span className='text-sm'>대표카드로 설정</span>
             </label>
           </div>

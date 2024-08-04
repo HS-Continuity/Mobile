@@ -22,7 +22,7 @@ const AddressEditModal = ({ isOpen, onClose, memberId, addressId }) => {
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["addressDetails", addressId],
+    queryKey: ["addresses", addressId],
     queryFn: () => fetchMemberAddressDetail(addressId),
     enabled: !!addressId,
   });
@@ -202,13 +202,6 @@ const AddressEditModal = ({ isOpen, onClose, memberId, addressId }) => {
               onChange={e => setIsDefaultAddress(e.target.checked)}
               className='checkbox mr-3 border-gray-500 [--chkbg:#00835F] [--chkfg:white] checked:border-[#00835F]'
             />
-            {/* <input
-              type='checkbox'
-              name='isDefaultAddress'
-              checked={isDefaultAddress}
-              onChange={e => setIsDefaultAddress(e.target.checked)}
-              className='checkbox-primary checkbox'
-            /> */}
           </label>
         </div>
         <div className='mt-6'>

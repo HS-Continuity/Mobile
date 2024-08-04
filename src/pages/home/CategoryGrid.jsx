@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import CategorySkeleton from "../../components/Skeletons/CategorySkeleton";
 import { categories } from "../../components/Layouts/CategoryData";
+import CategorySkeleton from "../../components/Skeletons/CategorySkeleton";
 
 const CategoryGrid = () => {
   const [expandedCategory, setExpandedCategory] = useState(null);
@@ -41,6 +41,10 @@ const CategoryGrid = () => {
     }
     return rows;
   };
+
+  // if (isLoading) {
+  //   return <CategorySkeleton />;
+  // }
 
   return <div className='noScrollbar flex-grow overflow-y-auto p-4'>{renderCategories()}</div>;
 };

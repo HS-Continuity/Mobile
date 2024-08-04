@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import useAuthStore from "../../stores/useAuthStore";
 import CouponSkeleton from "../../components/Skeletons/CouponSkeleton";
 import NoCoupon from "./NoCoupon";
+import { CouponError } from "../../components/Errors/ErrorDisplay";
 
 const Coupon = () => {
   const { username } = useAuthStore();
@@ -34,7 +35,7 @@ const Coupon = () => {
   };
 
   if (isLoading) return <CouponSkeleton />;
-  if (isError) return <div className='text-center text-red-500'>오류가 발생했습니다.</div>;
+  if (isError) return <CouponError />;
   if (!coupons || coupons.length === 0) return <NoCoupon />;
 
   return (

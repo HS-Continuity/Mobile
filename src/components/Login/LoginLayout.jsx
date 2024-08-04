@@ -7,7 +7,6 @@ const LoginLayout = () => {
   const mainRef = useRef(null);
 
   useEffect(() => {
-    // 라우트 변경 시 스크롤을 최상단으로 이동
     if (mainRef.current) {
       mainRef.current.scrollTop = 0;
     }

@@ -4,8 +4,8 @@ import { FaPlus } from "react-icons/fa";
 import { fetchMemberAddresses, deleteAddress, setDefaultAddress } from "../../apis";
 import AddressRegisterModal from "../../components/Order/AddressRegisterModal";
 import AddressEditModal from "../../components/Order/AddressEditModal";
-import toast from "react-hot-toast";
 import Modal from "../../pages/product/Modal";
+import { showCustomToast } from "../Toast/ToastDisplay";
 
 const AddressModal = ({ isOpen, onClose, memberId, onSelectAddress }) => {
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
@@ -52,31 +52,11 @@ const AddressModal = ({ isOpen, onClose, memberId, onSelectAddress }) => {
   };
 
   const handleDelete = memberAddressId => {
-    toast(
-      t => (
-        <span>
-          배송지를 삭제하시겠습니까?
-          <button
-            className='btn ml-2 h-10 rounded bg-transparent px-2 py-1 text-black hover:bg-white'
-            onClick={() => {
-              deleteMutation.mutate(memberAddressId);
-              toast.dismiss(t.id);
-            }}>
-            확인
-          </button>
-          <button
-            className='btn ml-2 h-10 rounded bg-red-500 px-2 py-1 text-white hover:bg-red-500'
-            onClick={() => {
-              toast.dismiss(t.id);
-            }}>
-            취소
-          </button>
-        </span>
-      ),
-      {
-        duration: 2000,
-      }
-    );
+    showCustomToast({
+      message: "배송지를 삭제하시겠습니까?",
+      onConfirm: () => deleteMutation.mutate(memberAddressId),
+      onCancel: () => {},
+    });
   };
 
   const handleSetDefault = memberAddressId => {

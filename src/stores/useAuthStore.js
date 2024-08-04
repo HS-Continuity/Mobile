@@ -21,7 +21,7 @@ const useAuthStore = create((set, get) => ({
     set({ initializeAttempts: initializeAttempts + 1 });
 
     // 리프레시 토큰 존재 여부 확인
-    const refreshToken = document.cookie.includes("refreshToken");
+    const refreshToken = document.cookie.includes("REFRESH_TOKEN");
     if (!refreshToken) {
       console.log("No refresh token found, skipping initialization");
       set({
@@ -35,7 +35,7 @@ const useAuthStore = create((set, get) => ({
 
     try {
       const response = await axios.get(
-        "http://localhost:8010/memberservice/access-token",
+        "https://api.yeonieum.com/memberservice/access-token",
         { timeout: 5000 },
         { withCredentials: true }
       );

@@ -21,17 +21,17 @@ const useAuthStore = create((set, get) => ({
     set({ initializeAttempts: initializeAttempts + 1 });
 
     // 리프레시 토큰 존재 여부 확인
-    const refreshToken = document.cookie.includes("REFRESH_TOKEN");
-    if (!refreshToken) {
-      console.log("No refresh token found, skipping initialization");
-      set({
-        accessToken: null,
-        username: null,
-        isAuthenticated: false,
-        isInitializing: false,
-      });
-      return false;
-    }
+    // const refreshToken = document.cookie.includes("REFRESH_TOKEN");
+    // if (!refreshToken) {
+    //   console.log("No refresh token found, skipping initialization");
+    //   set({
+    //     accessToken: null,
+    //     username: null,
+    //     isAuthenticated: false,
+    //     isInitializing: false,
+    //   });
+    //   return false;
+    // }
 
     try {
       const response = await axios.get(
@@ -60,7 +60,7 @@ const useAuthStore = create((set, get) => ({
       console.error("Failed to refresh token:", error);
       if (error.code === "ECONNREFUSED") {
         console.log("Server is not responding. Retrying in 5 seconds...");
-        setTimeout(() => get().initializeAuth(), 5000);
+        //setTimeout(() => get().initializeAuth(), 5000);
       } else {
         set({
           accessToken: null,

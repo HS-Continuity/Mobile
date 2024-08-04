@@ -36,7 +36,7 @@ const ProductItem = ({ product, isServiceDown }) => {
             <img
               src={product.productImage}
               alt={product.productName}
-              className={`h-52 w-full object-cover ${product.soldOut ? "grayscale" : ""}`}
+              className={`h-60 w-full object-cover ${product.soldOut ? "grayscale" : ""}`}
               onError={handleImageError}
             />
             {product.soldOut && (
@@ -46,7 +46,7 @@ const ProductItem = ({ product, isServiceDown }) => {
             )}
           </div>
         ) : (
-          <div className='flex h-52 w-full items-center justify-center bg-gradient-to-br from-green-100 to-green-200 p-4'>
+          <div className='flex h-60 w-full items-center justify-center bg-gradient-to-br from-green-100 to-green-200 p-4'>
             <div className='text-center'>
               <FaLeaf className='mx-auto mb-2 text-4xl text-green-500' />
               <h3 className='break-words text-2xl font-semibold text-green-700'>

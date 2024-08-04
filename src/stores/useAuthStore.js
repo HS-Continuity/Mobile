@@ -20,6 +20,19 @@ const useAuthStore = create((set, get) => ({
 
     set({ initializeAttempts: initializeAttempts + 1 });
 
+    // 리프레시 토큰 존재 여부 확인
+    const refreshToken = document.cookie.includes("refreshToken");
+    if (!refreshToken) {
+      console.log("No refresh token found, skipping initialization");
+      set({
+        accessToken: null,
+        username: null,
+        isAuthenticated: false,
+        isInitializing: false,
+      });
+      return false;
+    }
+
     try {
       const response = await axios.get(
         "http://localhost:8010/memberservice/access-token",
@@ -28,7 +41,7 @@ const useAuthStore = create((set, get) => ({
       );
 
       const authHeader = response.headers["authorization"];
-      if (authHeader && authHeader.startsWith("Bearer ")) {
+      if (authHeader && authHeader.startsWith("Bearer")) {
         const token = authHeader.substring(7);
         const payload = JSON.parse(base64.decode(token.split(".")[1]));
         const username = payload.username;
@@ -76,7 +89,7 @@ const useAuthStore = create((set, get) => ({
       );
 
       const authHeader = response.headers["authorization"];
-      if (authHeader && authHeader.startsWith("Bearer ")) {
+      if (authHeader && authHeader.startsWith("Bearer")) {
         const token = authHeader.substring(7);
         const payload = JSON.parse(base64.decode(token.split(".")[1]));
         const username = payload.username;

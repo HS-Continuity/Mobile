@@ -13,7 +13,12 @@ import {
   orderApiPost,
   orderApiPut,
 } from "./apiUtils";
+
 import { useInfiniteQuery } from "@tanstack/react-query";
+
+const DB_URL = import.meta.env.VITE_DB_URL;
+const MEMBER_DB_URL = import.meta.env.VITE_MEMBER_DB_URL;
+const ORDER_DB_URL = import.meta.env.VITE_ORDER_DB_URL;
 
 // -------------------------[CART]-------------------------
 // [GET] 장바구니 아이템 조회
@@ -203,7 +208,7 @@ export const fetchPopularKeyword = () => apiGet("/shopping/product/ranking");
 export const fetchAdvertisementProductList = async ({ pageParam = 0 }) => {
   const pageSize = 5;
   const response = await axios.get(
-    `http://localhost:8020/api/advertisement/product/list?startPage=${pageParam}&pageSize=${pageSize}`
+    `${DB_URL}/advertisement/product/list?startPage=${pageParam}&pageSize=${pageSize}`
   );
   return response;
 };
@@ -222,6 +227,14 @@ export const postLogin = memberData => {
     username: memberData.username,
     password: memberData.password,
   });
+  // return memberApiPost(
+  //   "/auth/login",
+  //   {
+  //     username: memberData.username,
+  //     password: memberData.password,
+  //   },
+  //   true
+  // );
 };
 
 // 소셜 로그인
@@ -245,19 +258,14 @@ export const postMember = memberData => {
 
 // [POST] 핸드폰으로 문자 전송
 export const postMessage = async memberPhoneInfo => {
-  // memberApiPost(`/sms/verification-code`, {
-  //   phoneNumber: memberPhoneInfo.phoneNumber,
-  //   userName: memberPhoneInfo.userName,
-  // });
-  const response = await axios.post(
-    `http://localhost:8010/memberservice/api/sms/verification-code`,
+  return memberApiPost(
+    `/sms/verification-code`,
     {
       phoneNumber: memberPhoneInfo.phoneNumber,
       userName: memberPhoneInfo.userName,
-    }
+    },
+    true
   );
-  console.log(response);
-  return response;
 };
 
 // [GET] 문자 인증 검증
@@ -266,23 +274,21 @@ export const fetchMessageVerify = phoneCode =>
 
 // [POST] 현재 비밀번호 검증
 export const verifyPassword = async (memberId, currentPassword) => {
-  const response = await axios.post(
-    `http://localhost:8010/memberservice/api/member/verify-password`,
-    { memberId, currentPassword }
+  const response = await memberApiPost(
+    "/member/verify-password",
+    { memberId, currentPassword },
+    true
   );
   return response.data.result;
 };
 
 // [POST] 새 비밀번호로 변경
 export const changePassword = async ({ memberId, currentPassword, newPassword }) => {
-  const response = await axios.post(
-    `http://localhost:8010/memberservice/api/member/change-password`,
-    {
-      memberId,
-      currentPassword,
-      newPassword,
-    }
-  );
+  const response = await axios.post(`${MEMBER_DB_URL}/member/change-password`, {
+    memberId,
+    currentPassword,
+    newPassword,
+  });
   return response.data;
 };
 
@@ -341,7 +347,8 @@ export const fetchMemberCard = memberId => memberApiGet(`/member-payment/list`, 
 
 // [POST] 회원 카드 등록
 export const addMemberCard = cardData => {
-  memberApiPost("/member-payment", {
+  console.log(cardData);
+  return memberApiPost("/member-payment", {
     memberId: cardData.memberId,
     cardCompany: cardData.cardCompany,
     cardNumber: cardData.cardNumber,
@@ -371,7 +378,7 @@ export const putDefaultCard = (memberPaymentCardId, memberId) => {
 export const postOrder = async orderData => {
   console.log(orderData);
   try {
-    const response = await axios.post(`http://localhost:8040/orderservice/api/order`, {
+    const response = await axios.post(`${ORDER_DB_URL}/order`, {
       customerId: orderData.customerId,
       memberCouponId: orderData.memberCouponId,
       storeName: orderData.storeName,
@@ -410,8 +417,8 @@ export const postOrder = async orderData => {
 // [POST] 정기 주문 생성
 export const postSubscriptionOrder = async orderData => {
   try {
-    const response = await axios.post(
-      `http://localhost:8040/orderservice/api/regular-order`,
+    const response = await orderApiPost(
+      "/regular-order",
       {
         customerId: orderData.customerId,
         memberId: orderData.memberId,
@@ -422,11 +429,7 @@ export const postSubscriptionOrder = async orderData => {
         deliveryPeriod: orderData.deliveryPeriod,
         recipient: orderData.recipient,
       },
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
+      true
     );
 
     return {
@@ -445,7 +448,7 @@ export const postSubscriptionOrder = async orderData => {
 export const fetchMemberOrderList = async ({ memberId, startDate, endDate, pageParam = 0 }) => {
   const size = 10;
   const response = await axios.get(
-    `http://localhost:8040/orderservice/api/order/member-service?memberId=${memberId}&startDate=${startDate}&endDate=${endDate}&page=${pageParam}&size=${size}`
+    `${ORDER_DB_URL}/order/member-service?memberId=${memberId}&startDate=${startDate}&endDate=${endDate}&page=${pageParam}&size=${size}`
   );
   console.log(response.data);
   return response.data;
@@ -453,13 +456,12 @@ export const fetchMemberOrderList = async ({ memberId, startDate, endDate, pageP
 
 // [GET] 일반 주문 상세 조회
 export const fetchMemberOrderDetail = async orderDetailId => {
-  console.log(orderDetailId);
-  const response = await axios.get(
-    `http://localhost:8040/orderservice/api/order/member-service/${orderDetailId}`
-  );
-  console.log(response);
-  return response;
-  // orderApiGet(`/order/member-service/${orderDetailId}`);
+  return orderApiGet(`/order/member-service/${orderDetailId}`, null, true);
+  // console.log(orderDetailId);
+  // const response = await axios.get(
+  //   `http://localhost:8040/orderservice/api/order/member-service/${orderDetailId}`
+  // );
+  // return response;
 };
 
 // [GET] 일반 주문 목록 조회 무한 스크롤링
@@ -475,7 +477,7 @@ export const useOrderListQuery = ({ memberId, startDate, endDate }) =>
 export const fetchMemberSubscriptionList = async ({ startDate, endDate, pageParam = 0 }) => {
   const size = 10;
   const response = await axios.get(
-    `http://localhost:8040/orderservice/api/regular-order/list?&startDate=${startDate}&endDate=${endDate}&page=${pageParam}&size=${size}`
+    `${ORDER_DB_URL}/regular-order/list?&startDate=${startDate}&endDate=${endDate}&page=${pageParam}&size=${size}`
   );
   return response.data;
 };
@@ -493,18 +495,16 @@ export const useSubscriptionOrderListQuery = ({ startDate, endDate }) =>
 
 // [GET] 정기 주문 상세 조회
 export const fetchMemberSubscriptionDetail = async regularOrderId => {
-  const response = await axios.get(
-    `http://localhost:8040/orderservice/api/regular-order/${regularOrderId}/detail?`
-  );
+  const response = await axios.get(`${ORDER_DB_URL}/regular-order/${regularOrderId}/detail`);
   return response.data.result;
 };
 
 // [PATCH] 주문 취소
-export const patchOrderStatus = async (orderId, productId, orderStatusCode) => {
-  console.log(orderId.orderStatusCode);
+// export const patchOrderStatus = async (orderId, productId, orderStatusCode) => {
+export const patchOrderStatus = async orderId => {
   try {
     const response = await axios.patch(
-      `http://localhost:8040/orderservice/api/order/product/status`,
+      `${ORDER_DB_URL}/order/product/status`,
       {
         orderId: orderId.orderId,
         productId: orderId.productId,
@@ -516,7 +516,6 @@ export const patchOrderStatus = async (orderId, productId, orderStatusCode) => {
         },
       }
     );
-    console.log("Response:", response.data);
     return response.data;
   } catch (error) {
     console.error(
@@ -529,18 +528,12 @@ export const patchOrderStatus = async (orderId, productId, orderStatusCode) => {
 
 // [PUT] 정기주문 회차 미루기
 export const putSubscriptionOrderPostpone = async regularOrderId => {
-  const response = await axios.put(
-    `http://localhost:8040/orderservice/api/regular-order/${regularOrderId}/postpone`
-  );
-  return response;
+  return orderApiPut(`/regular-order/${regularOrderId}/postpone`, true);
 };
 
 // [PUT] 정기주문 취소하기
 export const putSubscriptionOrderCancel = async regularOrderId => {
-  const response = await axios.put(
-    `http://localhost:8040/orderservice/api/regular-order/cancel?regularOrderId=${regularOrderId}`
-  );
-  return response;
+  return orderApiPut(`/regular-order/cancel?regularOrderId=${regularOrderId}`, true);
 };
 
 // [POST] 상품 리뷰 등록
@@ -560,7 +553,7 @@ export const postProductReview = async reviewData => {
     formData.append("image", reviewData.image);
   }
 
-  const response = await axios.post(`http://localhost:8020/api/product-review`, formData, {
+  const response = await axios.post(`${DB_URL}/product-review`, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },

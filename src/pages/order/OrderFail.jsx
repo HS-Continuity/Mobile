@@ -1,4 +1,4 @@
-import { FaChevronLeft, FaExclamationTriangle } from "react-icons/fa";
+import { FaExclamationTriangle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "../../components/Layouts/BottomNav";
 
@@ -30,7 +30,7 @@ const OrderFail = () => {
           </div>
 
           <div className='flex space-x-4'>
-            <button className='btn btn-outline flex-1' onClick={() => navigate("/order")}>
+            <button className='btn btn-outline flex-1' onClick={() => navigate("/cart")}>
               다시 시도하기
             </button>
             <button className='btn btn-primary flex-1' onClick={() => navigate("/")}>

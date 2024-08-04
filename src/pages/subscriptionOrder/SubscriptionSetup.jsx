@@ -89,7 +89,18 @@ const SubscriptionSetup = () => {
   const handleSubmit = () => {
     if (isAllSelected) {
       navigate("/subscription-order", {
-        state: { groupedItems, totalProductPrice, totalDeliveryFee },
+        state: {
+          groupedItems,
+          totalProductPrice,
+          totalDeliveryFee,
+          subscriptionDetails: {
+            deliveryCycle: subscriptionDetails.deliveryCycle,
+            duration: subscriptionDetails.duration,
+            deliveryDayOfWeeks: subscriptionDetails.deliveryDayOfWeeks,
+            startDate: subscriptionDetails.startDate,
+            endDate: subscriptionDetails.endDate,
+          },
+        },
       });
     }
   };

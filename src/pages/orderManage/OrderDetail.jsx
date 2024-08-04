@@ -1,15 +1,18 @@
-import { useParams, useLocation, Link } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchMemberOrderDetail, patchOrderStatus } from "../../apis";
 import { BsHouse } from "react-icons/bs";
-import { MdChevronRight } from "react-icons/md";
+
 import getStatusText from "../../components/Order/GetStatusText";
 import getStatusStyle from "../../components/Order/GetStatusStyle";
+import OrderDetailSkeleton from "../../components/Skeletons/OrderDetailSkeleton";
+import { OrderDetailError } from "../../components/Errors/ErrorDisplay";
+import { showCustomToast } from "../../components/Toast/ToastDisplay";
+import { FaLeaf } from "react-icons/fa";
 
 const OrderDetail = () => {
   const { orderDetailId } = useParams();
-  const location = useLocation();
 
   const queryClient = useQueryClient();
 
@@ -23,8 +26,30 @@ const OrderDetail = () => {
   const cancelOrderMutation = useMutation({
     mutationFn: (orderId, productId, orderStatusCode) =>
       patchOrderStatus(orderId, productId, orderStatusCode),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["orderlist"] });
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries(["orderdetail", orderDetailId], oldData => {
+        if (!oldData) return oldData;
+
+        const updatedOrder = {
+          ...oldData,
+          data: {
+            result: {
+              ...oldData.data.result,
+              status: variables.orderStatusCode,
+              productOrderList: {
+                productOrderList: oldData.data.result.productOrderList.productOrderList.map(
+                  product =>
+                    product.productId === variables.productId
+                      ? { ...product, status: variables.orderStatusCode }
+                      : product
+                ),
+              },
+            },
+          },
+        };
+        return updatedOrder;
+      });
+      queryClient.invalidateQueries(["orderdetail", orderDetailId]);
       toast.success("주문이 성공적으로 취소되었습니다.");
     },
     onError: error => {
@@ -120,37 +145,24 @@ const OrderDetail = () => {
   };
 
   const handleCancelOrder = (orderDetailId, productId, orderStatusCode) => {
-    toast(
-      t => (
-        <span>
-          주문을 취소하시겠습니까?
-          <button
-            className='btn ml-2 h-10 rounded bg-transparent px-2 py-1 text-black hover:bg-white'
-            onClick={() => {
-              console.log(orderDetailId, productId);
-              cancelOrderMutation.mutate({
-                orderId: orderDetailId,
-                productId: productId,
-                orderStatusCode: orderStatusCode,
-              });
-              toast.dismiss(t.id);
-            }}>
-            확인
-          </button>
-          <button
-            className='btn ml-2 h-10 rounded bg-red-500 px-2 py-1 text-white hover:bg-red-500'
-            onClick={() => {
-              toast.dismiss(t.id);
-            }}>
-            취소
-          </button>
-        </span>
-      ),
-      {
-        duration: 2000,
-      }
-    );
+    showCustomToast({
+      message: "주문을 취소하시겠습니까?",
+      onConfirm: () =>
+        cancelOrderMutation.mutate({
+          orderId: orderDetailId,
+          productId: productId,
+          orderStatusCode: orderStatusCode,
+        }),
+      onCancel: () => {},
+    });
   };
+
+  if (isLoading) {
+    return <OrderDetailSkeleton />;
+  }
+  if (isError || error) {
+    return <OrderDetailError />;
+  }
 
   return (
     <div className='container mx-auto max-w-2xl p-4 pb-12'>
@@ -163,13 +175,10 @@ const OrderDetail = () => {
         </div>
 
         <div className='mt-2 flex items-center justify-between text-sm text-gray-500'>
-          {/* <Link to={`/shop/${order.customerId}`}> */}
           <div className='mt-[2px] flex'>
             <BsHouse className='mt-[2px] text-lg' />
             <h3 className='ml-2 mt-[2px]'>{order.storeName}</h3>
-            {/* <MdChevronRight className='ml-1 mt-[5px]' /> */}
           </div>
-          {/* </Link> */}
           <div
             className={`rounded bg-gradient-shine px-2 py-1 text-sm font-semibold ${getStatusStyle(order.status).bg} ${getStatusStyle(order.status).text}`}>
             {getStatusText(order.status)}
@@ -205,11 +214,23 @@ const OrderDetail = () => {
         {order.productOrderList.productOrderList.map((product, index) => (
           <div key={index} className='flex flex-col border-t border-gray-100 pt-4'>
             <div className='flex items-start'>
-              <img
-                src={order.image || "https://via.placeholder.com/80"}
-                alt={product.name || "상품 이미지"}
-                className='h-20 w-20 object-cover'
-              />
+              {order.image ? (
+                <img
+                  src={order.image}
+                  alt={product.name || "상품 이미지"}
+                  className='h-20 w-20 object-cover'
+                  onError={e => {
+                    e.target.style.display = "none";
+                    e.target.nextSibling.style.display = "flex";
+                  }}
+                />
+              ) : (
+                <div
+                  className='flex h-20 w-20 items-center justify-center bg-gradient-to-br from-green-100 to-green-200'
+                  style={{ display: order.image ? "none" : "flex" }}>
+                  <FaLeaf className='mx-auto mb-2 text-4xl text-green-500' />
+                </div>
+              )}
               <div className='ml-3 flex-grow'>
                 <p className='font-medium'>{product.name}</p>
                 <div className='text-sm'>

@@ -3,6 +3,7 @@ import AdvertisementProductItem from "./AdvertisementProductItem";
 import TimesaleListSkeleton from "../Skeletons/TimesaleListSkeleton";
 import { fetchAdvertisementProductList } from "../../apis";
 import { useQuery } from "@tanstack/react-query";
+import { AdvertisementError } from "../Errors/ErrorDisplay";
 
 function AdvertisementProductList() {
   const { data, isLoading, isError, error } = useQuery({
@@ -36,13 +37,8 @@ function AdvertisementProductList() {
     },
   };
 
-  if (isError || products.length === 0) {
-    return (
-      <div className='py-4 text-center'>
-        <p className='text-gray-600'>현재 추천 상품을 표시할 수 없습니다.</p>
-        <p className='text-sm text-gray-500'>곧 정상화될 예정이니 잠시 후 다시 확인해 주세요.</p>
-      </div>
-    );
+  if (isError || error === 0) {
+    return <AdvertisementError />;
   }
 
   return (

@@ -15,7 +15,8 @@ import { GoTrash } from "react-icons/go";
 import useAuthStore from "../../stores/useAuthStore";
 import { FaLeaf } from "react-icons/fa";
 import EmptyCart from "./EmptyCart";
-import toast from "react-hot-toast";
+import { showCustomToast } from "../../components/Toast/ToastDisplay";
+import { CartError } from "../../components/Errors/ErrorDisplay";
 
 const Cart = () => {
   const { username } = useAuthStore();
@@ -27,23 +28,39 @@ const Cart = () => {
   const [imgError, setImgError] = useState(false);
 
   // [GET] 장바구니 아이템 조회
-  const { data: cartItems, isLoading } = useQuery({
+  const {
+    data: cartItems,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["cart", memberId, activeTab],
     queryFn: () => fetchCartItems(memberId, activeTab),
   });
 
   // [GET] 장바구니 탭마다 상품 수량 조회
-  const { data: cartNormalItemsCount, isNormalCountLoading } = useQuery({
+  const {
+    data: cartNormalItemsCount,
+    isLoading: isNormalCountLoading,
+    isError: isNormalCountError,
+  } = useQuery({
     queryKey: ["normal", memberId, activeTab],
     queryFn: () => fetchCartItemsCount(memberId, 1),
   });
-  const { data: cartRegularItemsCount, isRegularCountLoading } = useQuery({
+  const {
+    data: cartRegularItemsCount,
+    isLoading: isRegularCountLoading,
+    isError: isRegularCountError,
+  } = useQuery({
     queryKey: ["regular", memberId, activeTab],
     queryFn: () => fetchCartItemsCount(memberId, 2),
   });
 
   // [GET] 판매자별 배송비 조회
-  const { data: deliveryFees, isDeliveryFeeLoading } = useQuery({
+  const {
+    data: deliveryFees,
+    isLoading: isDeliveryFeeLoading,
+    isError: isDeliveryFeeError,
+  } = useQuery({
     queryKey: ["fee", cartItems],
     queryFn: async () => {
       if (!cartItems) return {};
@@ -105,31 +122,11 @@ const Cart = () => {
   };
 
   const handleDeleteItem = cartProductId => {
-    toast(
-      t => (
-        <span>
-          상품을 삭제하시겠습니까?
-          <button
-            className='btn ml-2 h-10 rounded bg-transparent px-2 py-1 text-black hover:bg-white'
-            onClick={() => {
-              deleteItemMutation.mutate(cartProductId);
-              toast.dismiss(t.id);
-            }}>
-            확인
-          </button>
-          <button
-            className='btn ml-2 h-10 rounded bg-red-500 px-2 py-1 text-white hover:bg-red-500'
-            onClick={() => {
-              toast.dismiss(t.id);
-            }}>
-            취소
-          </button>
-        </span>
-      ),
-      {
-        duration: 2000,
-      }
-    );
+    showCustomToast({
+      message: "배송지를 삭제하시겠습니까?",
+      onConfirm: () => deleteItemMutation.mutate(cartProductId),
+      onCancel: () => {},
+    });
   };
 
   const groupedItems = cartItems?.reduce((acc, item) => {
@@ -265,6 +262,22 @@ const Cart = () => {
     });
   };
 
+  if (isNormalCountLoading || isRegularCountLoading) {
+    return (
+      <div>
+        <CartSkeleton />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return <CartError />;
+  }
+
+  if (isNormalCountError || isRegularCountError || isDeliveryFeeError) {
+    return <span>오류</span>;
+  }
+
   return (
     <div className='noScrollbar flex flex-col bg-gray-50 pb-12'>
       {/* 배송 탭 */}
@@ -272,12 +285,12 @@ const Cart = () => {
         <button
           className={`flex-1 py-2 font-bold ${activeTab === 1 ? "border-b-2 border-emerald-600 text-[#00835F]" : ""}`}
           onClick={() => setActiveTab(1)}>
-          일반 ({cartNormalItemsCount})
+          {isNormalCountError ? `일반 (오류)` : `일반 (${cartNormalItemsCount})`}
         </button>
         <button
           className={`flex-1 py-2 font-bold ${activeTab === 2 ? "border-b-2 border-emerald-600 text-[#00835F]" : ""}`}
           onClick={() => setActiveTab(2)}>
-          정기배송 ({cartRegularItemsCount})
+          {isRegularCountError ? `정기배송 (오류)` : `정기배송 (${cartRegularItemsCount})`}
         </button>
       </div>
 
@@ -300,12 +313,6 @@ const Cart = () => {
                     onChange={e => handleAllCheck(e.target.checked)}
                     className='checkbox mr-3 border-gray-500 [--chkbg:#00835F] [--chkfg:white] checked:border-[#00835F]'
                   />
-                  {/* <input
-                    type='checkbox'
-                    className='checkbox-primary checkbox mr-2'
-                    checked={isAllChecked}
-                    onChange={e => handleAllCheck(e.target.checked)}
-                  /> */}
                   <span>전체 선택</span>
                 </label>
               )}
@@ -323,12 +330,6 @@ const Cart = () => {
                       onChange={() => handleCheckboxChange(item.cartProductId)}
                       className='checkbox mr-3 border-gray-500 [--chkbg:#00835F] [--chkfg:white] checked:border-[#00835F]'
                     />
-                    {/* <input
-                      type='checkbox'
-                      className='checkbox-primary checkbox mr-2 mt-1'
-                      checked={checkedItems[item.cartProductId] === true}
-                      onChange={() => handleCheckboxChange(item.cartProductId)}
-                    /> */}
                     <Link to={`/product/${item.productId}`} className='mr-4'>
                       {!imgError ? (
                         <img

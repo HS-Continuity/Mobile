@@ -1,6 +1,7 @@
 import { FiChevronUp } from "react-icons/fi";
 import { useNavigate, useLocation } from "react-router-dom";
 import BottomNav from "../../components/Layouts/BottomNav";
+import maskDigits from "../../components/Order/MaskDigits";
 
 const OrderSuccess = () => {
   const navigate = useNavigate();
@@ -23,23 +24,6 @@ const OrderSuccess = () => {
   } = orderData;
 
   const formatPrice = price => price.toLocaleString() + "원";
-
-  // 카드 번호 마스킹 함수
-  const maskDigits = inputStr => {
-    let digitCount = 0;
-    return inputStr
-      .split("")
-      .map(char => {
-        if (/\d/.test(char)) {
-          digitCount++;
-          if (digitCount >= 7 && digitCount <= 12) {
-            return "*";
-          }
-        }
-        return char;
-      })
-      .join("");
-  };
 
   return (
     <>

@@ -6,10 +6,13 @@ import {
   putSubscriptionOrderPostpone,
 } from "../../apis";
 import { BsHouse } from "react-icons/bs";
-import { MdChevronRight } from "react-icons/md";
 import toast from "react-hot-toast";
 import getStatusText from "../../components/Order/GetStatusText";
 import getStatusStyle from "../../components/Order/GetStatusStyle";
+import { SubscriptionOrderDetailError } from "../../components/Errors/ErrorDisplay";
+import SubscriptionOrderDetilSkeleton from "../../components/Skeletons/SubscriptionOrderDetailSkeleton";
+import { showCustomToast } from "../../components/Toast/ToastDisplay";
+import { FaLeaf } from "react-icons/fa";
 
 const SubscriptionOrderDetail = () => {
   const { regularOrderId } = useParams();
@@ -29,7 +32,7 @@ const SubscriptionOrderDetail = () => {
       toast.success("정기주문이 연기되었습니다.");
     },
     onError: error => {
-      toast.error(`연기 실패: ${error.message}`);
+      toast.error(`마지막 회차는 연기 불가합니다.`);
     },
   });
 
@@ -40,24 +43,22 @@ const SubscriptionOrderDetail = () => {
       toast.success("정기주문이 취소되었습니다.");
     },
     onError: error => {
-      toast.error(`취소 실패: ${error.message}`);
+      toast.error(`마지막 회차는 취소 불가합니다.`);
     },
   });
 
   if (isLoading) {
-    return <div className='flex h-screen items-center justify-center'>Loading...</div>;
+    return <SubscriptionOrderDetilSkeleton />;
   }
 
-  if (isError) {
-    return (
-      <div className='flex h-screen items-center justify-center text-red-500'>
-        Error: {error.message}
-      </div>
-    );
+  if (isError || error) {
+    return <SubscriptionOrderDetailError />;
   }
 
   if (!data) {
-    return <div className='flex h-screen items-center justify-center'>No data available</div>;
+    return (
+      <div className='flex h-screen items-center justify-center'>정기주문 정보가 없습니다.</div>
+    );
   }
 
   const formatDate = dateString => {
@@ -83,61 +84,19 @@ const SubscriptionOrderDetail = () => {
   };
 
   const handlePostpone = () => {
-    toast(
-      t => (
-        <div className='flex flex-col items-start'>
-          <span>이번 정기주문 회차를 연기하시겠습니까?</span>
-          <div className='mt-2 flex'>
-            <button
-              className='btn mr-2 h-10 rounded bg-transparent px-2 py-1 text-black hover:bg-white'
-              onClick={() => {
-                postponeMutation.mutate(regularOrderId);
-                toast.dismiss(t.id);
-              }}>
-              확인
-            </button>
-            <button
-              className='btn h-10 rounded bg-red-500 px-2 py-1 text-white hover:bg-red-500'
-              onClick={() => {
-                toast.dismiss(t.id);
-              }}>
-              취소
-            </button>
-          </div>
-        </div>
-      ),
-      {
-        duration: 2000,
-      }
-    );
+    showCustomToast({
+      message: "이번 정기주문 회차를 연기하시겠습니까?",
+      onConfirm: () => postponeMutation.mutate(regularOrderId),
+      onCancel: () => {},
+    });
   };
 
   const handleDelete = () => {
-    toast(
-      t => (
-        <span>
-          정기 주문을 취소하시겠습니까?
-          <button
-            className='btn ml-2 h-10 rounded bg-transparent px-2 py-1 text-black hover:bg-white'
-            onClick={() => {
-              cancelMutation.mutate(regularOrderId);
-              toast.dismiss(t.id);
-            }}>
-            확인
-          </button>
-          <button
-            className='btn ml-2 h-10 rounded bg-red-500 px-2 py-1 text-white hover:bg-red-500'
-            onClick={() => {
-              toast.dismiss(t.id);
-            }}>
-            취소
-          </button>
-        </span>
-      ),
-      {
-        duration: 2000,
-      }
-    );
+    showCustomToast({
+      message: "정기 주문을 취소하시겠습니까?",
+      onConfirm: () => cancelMutation.mutate(regularOrderId),
+      onCancel: () => {},
+    });
   };
 
   return (
@@ -157,7 +116,6 @@ const SubscriptionOrderDetail = () => {
           <div className='mt-[2px] flex'>
             <BsHouse className='mt-[3px] text-lg' />
             <h3 className='ml-2 mt-[2px]'>{data.storeName}</h3>
-            <MdChevronRight className='ml-1 mt-[5px]' />
           </div>
         </div>
       </div>
@@ -191,11 +149,23 @@ const SubscriptionOrderDetail = () => {
           <div key={index} className='flex flex-col border-t border-gray-100 pt-4'>
             <div className='flex items-start'>
               <div className='font-normal text-gray-500'>{product.status}</div>
-              <img
-                src={product.productImage || "https://via.placeholder.com/80"}
-                alt={product.productName || "상품 이미지"}
-                className='h-20 w-20 object-cover'
-              />
+              {product.productImage ? (
+                <img
+                  src={product.productImage}
+                  alt={product.productName || "상품 이미지"}
+                  className='h-20 w-20 object-cover'
+                  onError={e => {
+                    e.target.style.display = "none";
+                    e.target.nextSibling.style.display = "flex";
+                  }}
+                />
+              ) : (
+                <div
+                  className='flex h-20 w-20 items-center justify-center bg-gradient-to-br from-green-100 to-green-200'
+                  style={{ display: product.productImage ? "none" : "flex" }}>
+                  <FaLeaf className='mx-auto mb-2 text-4xl text-green-500' />
+                </div>
+              )}
               <div className='ml-3 flex-grow'>
                 <p className='font-medium'>{product.productName}</p>
                 <div className='text-sm'>

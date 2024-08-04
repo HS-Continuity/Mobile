@@ -8,9 +8,10 @@ import RecentSearches from "../../components/Layouts/RecentSearches";
 import PopularKeywords from "../../components/Layouts/PopularKeywords";
 import { MdArrowBackIosNew } from "react-icons/md";
 import AdvertisementProductList from "../../components/Product/AdvertisementProductList";
+import { PopularKeywordsError } from "../../components/Errors/ErrorDisplay";
+import PopularKeywordsSkeleton from "../../components/Skeletons/PopularKeywordsSkeleton";
 
 const SearchPage = () => {
-  // 현재 URL에서 검색어 추출
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const initialKeyword = searchParams.get("keyword") || "";
@@ -21,11 +22,14 @@ const SearchPage = () => {
 
   const { recentSearches, addSearch, removeSearch, clearSearches } = useSearchStore();
 
-  // 인기 검색어 데이터 가져오기 (10분 마다 업데이트)
-  const { data: popularKeywords } = useQuery({
+  // 인기 검색어 데이터 가져오기 (10분 마다 업데이트 자동)
+  const {
+    data: popularKeywords,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["popularKeywords"],
     queryFn: fetchPopularKeyword,
-    // refetchInterval: 600000,
   });
 
   // 페이지 로드 시 검색 input에 자동 focus
@@ -93,12 +97,16 @@ const SearchPage = () => {
         />
 
         {/* 인기 검색어 */}
-        {popularKeywords && popularKeywords.length > 0 && (
+        {isLoading ? (
+          <PopularKeywordsSkeleton />
+        ) : isError ? (
+          <PopularKeywordsError />
+        ) : popularKeywords && popularKeywords.length > 0 ? (
           <PopularKeywords
             popularKeywords={popularKeywords}
             handleRecentSearchClick={handleRecentSearchClick}
           />
-        )}
+        ) : null}
       </div>
       <AdvertisementProductList />
     </div>

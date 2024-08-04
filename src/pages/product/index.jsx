@@ -21,6 +21,8 @@ import {
   postCartItem,
 } from "../../apis";
 import useAuthStore from "../../stores/useAuthStore";
+import ProductDetailSkeleton from "../../components/Skeletons/ProductDetailSkeleton";
+import { ProductDetailError } from "../../components/Errors/ErrorDisplay";
 
 const ProductDetail = () => {
   const { username, isAuthenticated } = useAuthStore();
@@ -49,8 +51,8 @@ const ProductDetail = () => {
   // 상품 이미지 가져오기
   const {
     data: images,
-    isImageLoading,
-    isImageError,
+    isLoading: isImageLoading,
+    isError: isImageError,
   } = useQuery({
     queryKey: ["images", productId],
     queryFn: () => fetchProductDetailImage(productId),
@@ -59,8 +61,8 @@ const ProductDetail = () => {
   // 친환경 인증 이미지 가져오기 (친환경 제품일 경우에만)
   const {
     data: ecoImages,
-    isEcoImageLoading,
-    isEcoImageError,
+    isLoading: isEcoImageLoading,
+    isError: isEcoImageError,
   } = useQuery({
     queryKey: ["ecoimages", productId],
     queryFn: () => fetchEcoProductImage(productId),
@@ -76,7 +78,6 @@ const ProductDetail = () => {
     mutationFn: postCartItem,
     onSuccess: () => {
       queryClient.invalidateQueries("cart");
-      // 성공 시 토스트 알림
       toast.success(
         <div>
           장바구니에 담겼습니다.
@@ -178,8 +179,8 @@ const ProductDetail = () => {
     }
   };
 
-  if (isLoading || isImageLoading || isEcoImageLoading) return <div>Loading...</div>;
-  if (isError || isImageError || isEcoImageError) return <div>Error loading product data</div>;
+  if (isLoading || isImageLoading || isEcoImageLoading) return <ProductDetailSkeleton />;
+  if (isError || isImageError || isEcoImageError) return <ProductDetailError />;
 
   return (
     <>
@@ -216,7 +217,7 @@ const ProductDetail = () => {
         )}
 
         <div className='mb-3 bg-white p-4'>
-          {/* 상품 상세 이미지, 리뷰 */}
+          {/* 상품 정보, 평점 */}
           <div className='mb-4 flex items-center justify-between'>
             <div className='flex'>
               <h1 className='mr-4 text-2xl font-bold'>{product.productName}</h1>
@@ -263,6 +264,9 @@ const ProductDetail = () => {
         {/* 상품 상세 이미지 */}
         <div className='mb-3 bg-white'>
           <div id='product-image'>
+            <div className='flex items-center'>
+              <h2 className='-mb-4 px-4 py-3 text-xl font-bold'>상품 이미지</h2>
+            </div>
             <DetailImage
               productImage={images}
               ecoImages={ecoImages}

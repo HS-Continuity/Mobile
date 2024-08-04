@@ -3,7 +3,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   addMemberCard,
-  // createSubscriptionOrder,
   deleteMemberCard,
   fetchMemberAddresses,
   fetchMemberCard,
@@ -28,6 +27,13 @@ import DeliveryMemo from "../../components/Order/DeliveryMemo";
 import SubscriptionInfo from "../../components/Order/SubscriptionInfo";
 import OrderSkeleton from "../../components/Skeletons/OrderSkeleton";
 import toast from "react-hot-toast";
+import { showCustomToast } from "../../components/Toast/ToastDisplay";
+import {
+  AddressError,
+  CouponError,
+  MypageError,
+  PaymentError,
+} from "../../components/Errors/ErrorDisplay";
 
 const SubscriptionOrder = () => {
   const queryClient = useQueryClient();
@@ -35,11 +41,13 @@ const SubscriptionOrder = () => {
   const navigate = useNavigate();
 
   // 주문 아이템
-  const { groupedItems, totalProductPrice, totalDeliveryFee } = location.state || {
-    groupedItems: {},
-    totalProductPrice: 0,
-    totalDeliveryFee: 0,
-  };
+  const { groupedItems, totalProductPrice, totalDeliveryFee, subscriptionDetails } =
+    location.state || {
+      groupedItems: {},
+      totalProductPrice: 0,
+      totalDeliveryFee: 0,
+      subscriptionDetails: {},
+    };
   // 쿠폰
   const [selectedCoupon, setSelectedCoupon] = useState(null);
   // 받는 사람
@@ -60,7 +68,7 @@ const SubscriptionOrder = () => {
   const [isPaymentEnabled, setIsPaymentEnabled] = useState(false);
   const [hasUserSelectedAddress, setHasUserSelectedAddress] = useState(false);
 
-  const { subscriptionDetails } = useSubscriptionSetupStore();
+  // const { subscriptionDetails } = useSubscriptionSetupStore();
 
   useOrderItemsValidation(groupedItems);
   useCheckSubscriptionDetails(subscriptionDetails);
@@ -74,14 +82,7 @@ const SubscriptionOrder = () => {
   const createOrderMutation = useMutation({
     mutationFn: postSubscriptionOrder,
     onSuccess: (data, variables) => {
-      // const orderDetailId = data?.data?.result?.orderDetailId;
       console.log(data.data.result.regularDeliveryApplicationId);
-      // if (!orderDetailId) {
-      //   console.error("Order detail ID not found in the response");
-      //   toast.error("주문 생성 중 오류가 발생했습니다.");
-      //   return;
-      // }
-
       const successData = {
         recipientName: selectedAddress.recipientName,
         recipientAddress: `${selectedAddress.generalAddress} ${selectedAddress.detailAddress}`,
@@ -158,23 +159,6 @@ const SubscriptionOrder = () => {
     },
   });
 
-  // 카드 번호 마스킹 함수
-  const maskDigits = inputStr => {
-    let digitCount = 0;
-    return inputStr
-      .split("")
-      .map(char => {
-        if (/\d/.test(char)) {
-          digitCount++;
-          if (digitCount >= 5 && digitCount <= 12) {
-            return "*";
-          }
-        }
-        return char;
-      })
-      .join("");
-  };
-
   const isCardExpired = expirationDate => {
     const [expirationYear, expirationMonth] = expirationDate.split("-").map(Number);
     const today = new Date();
@@ -195,31 +179,11 @@ const SubscriptionOrder = () => {
 
   // 카드 삭제 핸들러
   const handleDeleteCard = memberPaymentCardId => {
-    toast(
-      t => (
-        <span>
-          결제 수단을 삭제하시겠습니까?
-          <button
-            className='btn ml-2 h-10 rounded bg-transparent px-2 py-1 text-black hover:bg-white'
-            onClick={() => {
-              deleteCardMutation.mutate(memberPaymentCardId);
-              toast.dismiss(t.id);
-            }}>
-            확인
-          </button>
-          <button
-            className='btn ml-2 h-10 rounded bg-red-500 px-2 py-1 text-white hover:bg-red-500'
-            onClick={() => {
-              toast.dismiss(t.id);
-            }}>
-            취소
-          </button>
-        </span>
-      ),
-      {
-        duration: 2000,
-      }
-    );
+    showCustomToast({
+      message: "결제 수단을 삭제하시겠습니까?",
+      onConfirm: () => deleteCardMutation.mutate(memberPaymentCardId),
+      onCancel: () => {},
+    });
   };
 
   // 이전 카드 선택
@@ -292,18 +256,24 @@ const SubscriptionOrder = () => {
       cards &&
       cards.length > 0 &&
       selectedCardIndex !== null &&
-      selectedCardIndex > 0 && // 카드가 선택되었는지 확인
+      selectedCardIndex > 0 &&
       cards[selectedCardIndex - 1] &&
       !isCardExpired(cards[selectedCardIndex - 1].cardExpiration);
-    const isValidAddress = selectedAddress !== null; // 배송지가 선택되었는지 확인
+    const isValidAddress = selectedAddress !== null;
 
     setIsPaymentEnabled(isValidAddress && isValidCard && consentPayment);
   }, [selectedAddress, cards, selectedCardIndex, consentPayment]);
 
   if (couponsLoading || memberInfoLoading || addressesLoading || cardsLoading)
     return <OrderSkeleton />;
-  if (couponsError || memberInfoError || addressesError || cardsError)
-    return <div>Error loading data</div>;
+
+  if (couponsError) return <CouponError message={couponsError.message} />;
+
+  if (memberInfoError) return <MypageError message={memberInfoError.message} />;
+
+  if (addressesError) return <AddressError message={addressesError.message} />;
+
+  if (cardsError) return <PaymentError message={cardsError.message} />;
 
   const handlePlaceOrder = () => {
     if (!isPaymentEnabled) {
@@ -417,7 +387,6 @@ const SubscriptionOrder = () => {
           setIsCardRegistrationModalOpen={setIsCardRegistrationModalOpen}
           handleAddCard={handleAddCard}
           getCardColor={getCardColor}
-          maskDigits={maskDigits}
           queryClient={queryClient}
         />
 
@@ -431,12 +400,6 @@ const SubscriptionOrder = () => {
               className='checkbox mr-3 border-gray-500 [--chkbg:#00835F] [--chkfg:white] checked:border-[#00835F]'
             />
 
-            {/* <input
-              type='checkbox'
-              className='checkbox-primary checkbox mr-2'
-              onChange={handleConsentPayment}
-              checked={consentPayment}
-            /> */}
             <span className='text-sm'>위 내용을 확인하였으며 결제에 동의합니다.</span>
           </label>
         </div>

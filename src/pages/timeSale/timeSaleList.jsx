@@ -4,6 +4,7 @@ import ProductSkeleton from "../../components/Skeletons/ProductSkeleton";
 import TimeSaleItem from "./timeSaleItem";
 import FetchAllSkeleton from "../../components/Skeletons/FetchAllSkeleton";
 import FetchingNextSkeleton from "../../components/Skeletons/FetchingNextSkeleton";
+import { TimesaleEmptyError, TimesaleError } from "../../components/Errors/ErrorDisplay";
 
 const TimesaleList = ({ useQueryHook, additionalProps = {}, gridCols = 1 }) => {
   const observerTarget = useRef(null);
@@ -67,13 +68,12 @@ const TimesaleList = ({ useQueryHook, additionalProps = {}, gridCols = 1 }) => {
     );
   }
 
-  if (isError || !data || data.pages.length === 0) {
-    return (
-      <div className='container mx-auto p-4 text-center'>
-        <p className='text-lg font-semibold'>검색 결과가 없습니다.</p>
-        {error instanceof Error && <p>{error.message}</p>}
-      </div>
-    );
+  if (isError || error) {
+    return <TimesaleError />;
+  }
+
+  if (!data || data.pages.length === 0) {
+    return <TimesaleEmptyError />;
   }
 
   const products = data.pages.flatMap(page => page.content) || [];

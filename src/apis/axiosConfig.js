@@ -2,7 +2,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 
 const instance = axios.create({
-  baseURL: import.meta.env.VITE_DB_URL,
+  baseURL: import.meta.env.VITE_PRODUCT_DB_URL,
   headers: {
     "Content-Type": "application/json",
     withCredentials: true,

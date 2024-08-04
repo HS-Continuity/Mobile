@@ -16,7 +16,7 @@ import {
 
 import { useInfiniteQuery } from "@tanstack/react-query";
 
-const DB_URL = import.meta.env.VITE_DB_URL;
+const PRODUCT_DB_URL = import.meta.env.VITE_PRODUCT_DB_URL;
 const MEMBER_DB_URL = import.meta.env.VITE_MEMBER_DB_URL;
 const ORDER_DB_URL = import.meta.env.VITE_ORDER_DB_URL;
 
@@ -208,7 +208,7 @@ export const fetchPopularKeyword = () => apiGet("/shopping/product/ranking");
 export const fetchAdvertisementProductList = async ({ pageParam = 0 }) => {
   const pageSize = 5;
   const response = await axios.get(
-    `${DB_URL}/advertisement/product/list?startPage=${pageParam}&pageSize=${pageSize}`
+    `${PRODUCT_DB_URL}/advertisement/product/list?startPage=${pageParam}&pageSize=${pageSize}`
   );
   return response;
 };
@@ -553,7 +553,7 @@ export const postProductReview = async reviewData => {
     formData.append("image", reviewData.image);
   }
 
-  const response = await axios.post(`${DB_URL}/product-review`, formData, {
+  const response = await axios.post(`${PRODUCT_DB_URL}/product-review`, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },

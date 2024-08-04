@@ -3,7 +3,7 @@ import axios from "axios";
 const DB_URL = import.meta.env.VITE_DB_URL;
 const MEMBER_DB_URL = import.meta.env.VITE_MEMBER_DB_URL;
 const ORDER_DB_URL = import.meta.env.VITE_ORDER_DB_URL;
-const config = import.meta.env.VITE_CONFIG;
+const config = JSON.parse(import.meta.env.VITE_CONFIG);
 
 // 에러 처리 공통 함수
 const handleApiError = (error, customErrorMessage) => {

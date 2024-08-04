@@ -4,20 +4,38 @@ body {
 }
 
 body {
+  background-color: rgb(243 244 246);
   min-height: 100vh;
   min-height: calc(var(--vh, 1vh) * 100);
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
-main {
+.noScrollbar {
   -ms-overflow-style: none;
-  &::-webkit-scrollbar {
-    display: none;
-  }
+  scrollbar-width: none;
 }
 
-/* .nonescroll {
-  -ms-overflow-style: none;
-  &::-webkit-scrollbar {
-    display: none;
-  }
-} */
+.noScrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+body {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.text-shadow-lg {
+  text-shadow:
+    0 0 5px rgba(0, 0, 0, 0.3),
+    0 0 5px rgba(0, 0, 0, 0.3),
+    0 0 5px rgba(0, 0, 0, 0.3);
+  -webkit-text-stroke: 1px rgba(0, 0, 0, 0.2);
+}
+
+.text-shadow-md {
+  text-shadow:
+    0 0 5px rgba(0, 0, 0, 0.3),
+    0 0 5px rgba(0, 0, 0, 0.3);
+  -webkit-text-stroke: 0.5px rgba(0, 0, 0, 0.2);
+}

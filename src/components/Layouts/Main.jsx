@@ -1,13 +1,27 @@
+import { useEffect, useRef } from "react";
+import { Outlet, useLocation } from "react-router-dom";
 import TopHeader from "./TopHeader";
 import BottomNav from "./BottomNav";
-import { Outlet } from "react-router-dom";
 
 const Main = () => {
+  const location = useLocation();
+  const mainRef = useRef(null);
+
+  useEffect(() => {
+    if (mainRef.current) {
+      mainRef.current.scrollTop = 0;
+    }
+  }, [location.pathname]);
+
   return (
-    <div className='relative mx-auto min-h-screen w-full bg-gray-100 sm:max-w-full md:max-w-full lg:max-w-[500px] xl:max-w-[500px]'>
+    <div className='main-container relative mx-auto min-h-screen w-full bg-white'>
       <div className='flex h-screen flex-col'>
-        <TopHeader />
-        <main className='flex-grow overflow-y-auto p-4 pb-16'>
+        {location.pathname == "/search" || location.pathname == "/search-result" ? (
+          <></>
+        ) : (
+          <TopHeader />
+        )}
+        <main ref={mainRef} className='noScrollbar flex-grow overflow-y-auto pb-16'>
           <Outlet />
         </main>
         <BottomNav />

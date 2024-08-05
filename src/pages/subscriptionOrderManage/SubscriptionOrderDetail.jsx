@@ -13,10 +13,12 @@ import { SubscriptionOrderDetailError } from "../../components/Errors/ErrorDispl
 import SubscriptionOrderDetilSkeleton from "../../components/Skeletons/SubscriptionOrderDetailSkeleton";
 import { showCustomToast } from "../../components/Toast/ToastDisplay";
 import { FaLeaf } from "react-icons/fa";
+import { useState } from "react";
 
 const SubscriptionOrderDetail = () => {
   const { regularOrderId } = useParams();
   const queryClient = useQueryClient();
+  const [imageErrors, setImageErrors] = useState({});
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["subscriptionOrderDetail", regularOrderId],
@@ -99,6 +101,13 @@ const SubscriptionOrderDetail = () => {
     });
   };
 
+  const handleImageError = productId => {
+    setImageErrors(prev => ({
+      ...prev,
+      [productId]: true,
+    }));
+  };
+
   return (
     <div className='container mx-auto max-w-2xl p-4 pb-12'>
       <div className='mb-2 rounded-lg border p-4'>
@@ -149,20 +158,15 @@ const SubscriptionOrderDetail = () => {
           <div key={index} className='flex flex-col border-t border-gray-100 pt-4'>
             <div className='flex items-start'>
               <div className='font-normal text-gray-500'>{product.status}</div>
-              {product.productImage ? (
+              {!imageErrors[product.productId] ? (
                 <img
                   src={product.productImage}
                   alt={product.productName || "상품 이미지"}
                   className='h-20 w-20 object-cover'
-                  onError={e => {
-                    e.target.style.display = "none";
-                    e.target.nextSibling.style.display = "flex";
-                  }}
+                  onError={() => handleImageError(product.productId)}
                 />
               ) : (
-                <div
-                  className='flex h-20 w-20 items-center justify-center bg-gradient-to-br from-green-100 to-green-200'
-                  style={{ display: product.productImage ? "none" : "flex" }}>
+                <div className='flex h-20 w-20 items-center justify-center bg-gradient-to-br from-green-100 to-green-200'>
                   <FaLeaf className='mx-auto mb-2 text-4xl text-green-500' />
                 </div>
               )}

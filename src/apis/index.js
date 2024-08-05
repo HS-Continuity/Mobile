@@ -95,8 +95,8 @@ const fetchProducts = ({ pageParam = 0 }) =>
 // [GET] 상품 전체 무한 스크롤 조회
 export const useProductsQuery = () => {
   const isHighTraffic = isHighTrafficTime();
-  const staleTime = isHighTraffic ? 5 * 60 * 1000 : 30 * 60 * 1000; // 5분 또는 30분
-  const cacheTime = isHighTraffic ? 10 * 60 * 1000 : 60 * 60 * 1000; // 10분 또는 60분
+  const staleTime = isHighTraffic ? 30 * 60 * 1000 : 5 * 60 * 1000; // 5분 또는 30분
+  const cacheTime = isHighTraffic ? 60 * 60 * 1000 : 10 * 60 * 1000; // 10분 또는 60분
 
   return useInfiniteQuery({
     queryKey: ["allproducts"],

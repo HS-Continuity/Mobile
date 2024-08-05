@@ -7,10 +7,13 @@ const OrderHeader = () => {
   const navigate = useNavigate();
 
   const getHeaderText = () => {
+    const previousPath = location.state?.from;
+    console.log(previousPath);
+
     if (location.pathname === "/cart") {
       return "장바구니";
     } else if (location.pathname === "/order") {
-      return "일반 상품 주문";
+      return previousPath?.startsWith("/timesale") ? "타임세일 주문" : "일반 상품 주문";
     } else if (location.pathname === "/subscription-setup") {
       return "정기 배송 설정";
     } else if (location.pathname === "/subscription-order") {

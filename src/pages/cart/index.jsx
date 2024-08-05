@@ -25,7 +25,7 @@ const Cart = () => {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState(1);
   const [checkedItems, setCheckedItems] = useState({});
-  const [imgError, setImgError] = useState(false);
+  const [imageErrors, setImageErrors] = useState({});
 
   // [GET] 장바구니 아이템 조회
   const {
@@ -202,8 +202,11 @@ const Cart = () => {
   };
 
   // 이미지 에러 핸들러
-  const handleImageError = () => {
-    setImgError(true);
+  const handleImageError = cartProductId => {
+    setImageErrors(prev => ({
+      ...prev,
+      [cartProductId]: true,
+    }));
   };
 
   const handleOrder = () => {
@@ -235,6 +238,7 @@ const Cart = () => {
         finalPrice: item.productPrice,
         quantity: item.quantity,
         status: "PENDING",
+        productImage: item.productImage,
       });
       return acc;
     }, {});
@@ -331,12 +335,12 @@ const Cart = () => {
                       className='checkbox mr-3 border-gray-500 [--chkbg:#00835F] [--chkfg:white] checked:border-[#00835F]'
                     />
                     <Link to={`/product/${item.productId}`} className='mr-4'>
-                      {!imgError ? (
+                      {!imageErrors[item.cartProductId] ? (
                         <img
                           src={item.productImage}
                           alt={item.productName}
                           className='h-20 w-20 rounded object-cover'
-                          onError={handleImageError}
+                          onError={() => handleImageError(item.cartProductId)}
                         />
                       ) : (
                         <div className='flex h-20 w-20 items-center justify-center bg-gradient-to-br from-green-100 to-green-200'>

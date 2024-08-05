@@ -80,12 +80,14 @@ const TimeSaleDetail = () => {
               discountAmount: product.price - product.discountPrice,
               finalPrice: product.discountPrice,
               quantity: quantity,
+              productImage: product.productImage,
             },
           ],
         },
       },
       totalProductPrice: product.discountPrice,
       totalDeliveryFee: product.deliveryFee,
+      from: location.pathname,
     };
 
     navigate("/order", { state: orderData });

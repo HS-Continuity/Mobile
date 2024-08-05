@@ -214,9 +214,9 @@ const OrderDetail = () => {
         {order.productOrderList.productOrderList.map((product, index) => (
           <div key={index} className='flex flex-col border-t border-gray-100 pt-4'>
             <div className='flex items-start'>
-              {order.image ? (
+              {product.image ? (
                 <img
-                  src={order.image}
+                  src={product.image}
                   alt={product.name || "상품 이미지"}
                   className='h-20 w-20 object-cover'
                   onError={e => {

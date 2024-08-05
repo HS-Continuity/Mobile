@@ -35,9 +35,9 @@ const PopularKeywords = ({ popularKeywords, handleRecentSearchClick }) => {
           ))}
         </ul>
         <ul className='grid grid-cols-1 gap-2'>
-          {popularKeywords.slice(5, 9).map((search, index) => (
+          {popularKeywords.slice(5, 11).map((search, index) => (
             <li key={index + 4} className='flex items-center'>
-              <span className='mr-2 font-bold text-gray-500'>{index + 5}</span>
+              <span className='mr-2 font-bold text-gray-500'>{index + 6}</span>
               <button
                 onClick={e => (
                   e.preventDefault(),

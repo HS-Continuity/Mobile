@@ -3,7 +3,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import ProductSliderSkeleton from "../../components/Skeletons/ProductSliderSkeleton";
 import Kwon from "../../assets/images/kwon.png";
-import Kim from "../../assets/images/kim.png";
+import Kim from "../../assets/images/kim.jpg";
 import Ku from "../../assets/images/ku.jpg";
 import Jung from "../../assets/images/jung.png";
 import { Link } from "react-router-dom";

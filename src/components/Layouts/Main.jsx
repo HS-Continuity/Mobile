@@ -14,14 +14,16 @@ const Main = () => {
   }, [location.pathname]);
 
   return (
-    <div className='main-container relative mx-auto min-h-screen w-full bg-white'>
+    <div className='main-container relative mx-auto min-h-screen bg-white'>
       <div className='flex h-screen flex-col'>
         {location.pathname == "/search" || location.pathname == "/search-result" ? (
           <></>
         ) : (
           <TopHeader />
         )}
-        <main ref={mainRef} className='noScrollbar flex-grow overflow-y-auto pb-16'>
+        <main
+          ref={mainRef}
+          className='noScrollbar flex-grow overflow-y-auto overflow-x-hidden pb-16'>
           <Outlet />
         </main>
         <BottomNav />

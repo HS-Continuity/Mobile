@@ -373,11 +373,11 @@ const Order = () => {
         />
 
         {/* 회원 쿠폰 리스트 */}
-        <MemberCouponList
+        {/* <MemberCouponList
           coupons={coupons}
           selectedCoupon={selectedCoupon}
           handleCouponChange={handleCouponChange}
-        />
+        /> */}
 
         {/* 결제 금액 */}
         <OrderPrice

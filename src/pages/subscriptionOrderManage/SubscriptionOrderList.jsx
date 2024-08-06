@@ -16,8 +16,6 @@ const SubscriptionOrderList = ({ memberId, startDate, endDate }) => {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError, error } =
     useSubscriptionOrderListQuery({ startDate, endDate });
 
-  console.log(data);
-
   const handleObserver = useCallback(
     entries => {
       const [target] = entries;

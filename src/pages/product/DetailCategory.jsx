@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import CategoryProductList from "../../components/Product/CategoryProductList";
 import { useDetailCategoryProductsQuery } from "../../apis";
 import { useParams } from "react-router-dom";

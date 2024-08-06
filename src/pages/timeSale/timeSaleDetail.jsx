@@ -38,8 +38,6 @@ const TimeSaleDetail = () => {
     queryFn: () => fetchTimeSaleItemDetail(timesaleId),
   });
 
-  console.log(product);
-
   // 상품 이미지 가져오기
   const {
     data: images,

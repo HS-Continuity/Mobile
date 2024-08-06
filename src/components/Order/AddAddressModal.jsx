@@ -40,25 +40,6 @@ const AddAddressModal = ({ isOpen, onClose, memberId }) => {
       detailAddress,
       isDefaultAddress: isDefaultAddress,
     });
-    // try {
-    //   await onSubmit(formattedData);
-    //   toast.success("카드가 성공적으로 등록되었습니다!", {
-    //     style: {
-    //       border: "1px solid #00835F",
-    //       padding: "12px",
-    //       color: "black",
-    //     },
-    //     iconTheme: {
-    //       primary: "#00835F",
-    //       secondary: "#FFFAEE",
-    //     },
-    //     duration: 2000,
-    //     position: "bottom-center",
-    //   });
-    // } catch (error) {
-    //   toast.error("카드 등록에 실패했습니다. 다시 시도해 주세요.");
-    //   console.error("카드 등록 오류:", error);
-    // }
     window.location.reload();
   };
 

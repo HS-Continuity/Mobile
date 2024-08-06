@@ -100,9 +100,19 @@ const OrderList = ({ memberId, startDate, endDate }) => {
               </div>
             )}
             <div className='flex-grow'>
-              <div className='text-sm font-light'>{order.storeName || "판매자명"}</div>
+              <div className='text-sm font-light'>
+                {order.isAvailableProductInformation ? order.storeName || "판매자명" : ""}
+              </div>
               <div className='font-semibold'>
-                {order.mainProduct.name || "상품명 없음"}
+                {order.isAvailableProductInformation ? (
+                  order.mainProduct.name || "상품명 없음"
+                ) : (
+                  <p className='font-small text-red-600'>
+                    현재 상품 조회 서비스가 불가합니다.
+                    <br />
+                    [주문 상세조회 서비스 가능]
+                  </p>
+                )}
                 <span className='text-sm text-gray-500'>
                   {order.orderedProductCount > 1 && ` 외 ${order.orderedProductCount - 1}건`}
                 </span>

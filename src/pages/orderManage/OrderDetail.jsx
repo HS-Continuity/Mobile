@@ -22,6 +22,7 @@ const OrderDetail = () => {
   });
 
   const order = data?.data?.result;
+  console.log(order);
 
   const cancelOrderMutation = useMutation({
     mutationFn: (orderId, productId, orderStatusCode) =>
@@ -211,41 +212,44 @@ const OrderDetail = () => {
 
       <div className='mb-2 mt-2 space-y-4 rounded-lg border p-4'>
         <h2 className='text-lg font-semibold'>주문 상품</h2>
-        {order.productOrderList.productOrderList.map((product, index) => (
-          <div key={index} className='flex flex-col border-t border-gray-100 pt-4'>
-            <div className='flex items-start'>
-              {product.image ? (
-                <img
-                  src={product.image}
-                  alt={product.name || "상품 이미지"}
-                  className='h-20 w-20 object-cover'
-                  onError={e => {
-                    e.target.style.display = "none";
-                    e.target.nextSibling.style.display = "flex";
-                  }}
-                />
-              ) : (
-                <div
-                  className='flex h-20 w-20 items-center justify-center bg-gradient-to-br from-green-100 to-green-200'
-                  style={{ display: order.image ? "none" : "flex" }}>
-                  <FaLeaf className='mx-auto mb-2 text-4xl text-green-500' />
+        {order.availableProductInformation ? (
+          order.productOrderList.productOrderList.map((product, index) => (
+            <div key={index} className='flex flex-col border-t border-gray-100 pt-4'>
+              <div className='flex items-start'>
+                {product.image ? (
+                  <img
+                    src={product.image}
+                    alt={product.name || "상품 이미지"}
+                    className='h-20 w-20 object-cover'
+                    onError={e => {
+                      e.target.style.display = "none";
+                      e.target.nextSibling.style.display = "flex";
+                    }}
+                  />
+                ) : (
+                  <div
+                    className='flex h-20 w-20 items-center justify-center bg-gradient-to-br from-green-100 to-green-200'
+                    style={{ display: order.image ? "none" : "flex" }}>
+                    <FaLeaf className='mx-auto mb-2 text-4xl text-green-500' />
+                  </div>
+                )}
+                <div className='ml-3 flex-grow'>
+                  <p className='font-medium'>{product.name}</p>
+                  <div className='text-sm'>
+                    {formatPrice(product.finalPrice)} | {product.quantity}개
+                  </div>
                 </div>
-              )}
-              <div className='ml-3 flex-grow'>
-                <p className='font-medium'>{product.name}</p>
-                <div className='text-sm'>
-                  {formatPrice(product.finalPrice)} | {product.quantity}개
+                <div className='mt-3 flex gap-2'>
+                  {renderActionButtons(product.status, order.orderDetailId, product.productId)}
                 </div>
               </div>
-              <div className={`text-sm ${getStatusStyle(product.status).text}`}>
-                {getStatusText(product.status)}
-              </div>
             </div>
-            <div className='mt-3 flex gap-2'>
-              {renderActionButtons(product.status, order.orderDetailId, product.productId)}
-            </div>
+          ))
+        ) : (
+          <div className='flex flex-col border-t border-gray-100 pt-4'>
+            <p className='font-medium text-red-600'>현재 주문 상품 조회서비스가 이용 불가합니다.</p>
           </div>
-        ))}
+        )}
       </div>
 
       <div className='mb-8 rounded-lg border p-4 shadow-sm'>

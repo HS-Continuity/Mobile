@@ -10,10 +10,10 @@ import { Link } from "react-router-dom";
 
 const ProductSlider = () => {
   const slides = [
-    { image: Kwon, text: "권수현", shop: 1 },
-    { image: Kim, text: "김우재", shop: 2 },
-    { image: Ku, text: "구태호", shop: 3 },
-    { image: Jung, text: "정승수", shop: 4 },
+    { image: Kwon, text: "권수현", shop: 41 },
+    { image: Kim, text: "김우재", shop: 43 },
+    { image: Ku, text: "구태호", shop: 44 },
+    { image: Jung, text: "정승수", shop: 42 },
   ];
 
   const settings = {

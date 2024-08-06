@@ -26,6 +26,7 @@ const Cart = () => {
   const [activeTab, setActiveTab] = useState(1);
   const [checkedItems, setCheckedItems] = useState({});
   const [imageErrors, setImageErrors] = useState({});
+  const [selectedCartProductIds, setSelectedCartProductIds] = useState([]);
 
   // [GET] 장바구니 아이템 조회
   const {
@@ -88,6 +89,15 @@ const Cart = () => {
       setCheckedItems(initialCheckedState);
     }
   }, [cartItems]);
+
+  useEffect(() => {
+    if (cartItems) {
+      const selectedIds = cartItems
+        .filter(item => checkedItems[item.cartProductId])
+        .map(item => item.cartProductId);
+      setSelectedCartProductIds(selectedIds);
+    }
+  }, [checkedItems, cartItems]);
 
   // [PUT] 장바구니 상품 개수 증가
   const incrementMutation = useMutation({
@@ -222,7 +232,6 @@ const Cart = () => {
       return;
     }
 
-    // Group selected items by customerId
     const groupedItems = selectedItems.reduce((acc, item) => {
       if (!acc[item.customerId]) {
         acc[item.customerId] = {
@@ -257,11 +266,13 @@ const Cart = () => {
 
     const totalDeliveryFee = activeTab === 2 ? 0 : calculateTotalDeliveryFee(selectedItems);
 
+    console.log(selectedCartProductIds);
     navigate(activeTab === 2 ? "/subscription-setup" : "/order", {
       state: {
         groupedItems: groupedItems,
         totalProductPrice: totalProductPrice,
         totalDeliveryFee: totalDeliveryFee,
+        selectedCartProductIds: selectedCartProductIds,
       },
     });
   };

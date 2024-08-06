@@ -36,6 +36,10 @@ export const decrementCartItemQuantity = cartProductId =>
 // [DELETE] 장바구니 상품 삭제
 export const deleteCartItem = cartProductId => apiDelete(`/cart-product/${cartProductId}`);
 
+// [DELETE] 장바구니 상품 일괄 삭제
+export const deleteCartItems = ({ cartTypeId, cartIds }) =>
+  apiDelete(`/cart-product?cartTypeId=${cartTypeId}&cartId=${cartIds.join(",")}`);
+
 // [GET] 장바구니 탭마다 상품 수량 조회
 export const fetchCartItemsCount = (memberId, cartTypeId) =>
   apiGet("/cart-product/count", { memberId, cartTypeId });
@@ -154,7 +158,7 @@ export const useTimeSaleProductsQuery = () =>
     getNextPageParam: lastPage => (lastPage.last ? undefined : lastPage.number + 1),
   });
 
-// [GET] 타임세일 상품 전체 조회
+// [GET] 타임세일 상품 상세 조회
 export const fetchTimeSaleItemDetail = timesaleId => apiGet(`/time-sale/${timesaleId}/product`);
 
 // [GET] 검색 상품 조회
@@ -213,9 +217,65 @@ export const fetchAdvertisementProductList = async ({ pageParam = 0 }) => {
   return response;
 };
 
+// [GET] 카테고리 상품 조회
+export const fetchCategoryProduct = ({
+  categoryId,
+  pageParam = 0,
+  isCertification = "",
+  sort = "productPrice",
+  direction = "asc",
+}) =>
+  apiGet(`/shopping/product/category/${categoryId}`, {
+    startPage: pageParam,
+    pageSize: 10,
+    isCertification,
+    sort,
+    direction,
+  });
+
+// [GET] 카테고리 상품 무한 스크롤링
+export const useCategoryProductsQuery = (categoryId, isCertification, sort, direction) =>
+  useInfiniteQuery({
+    queryKey: ["categoryproducts", categoryId, isCertification, sort, direction],
+    queryFn: ({ pageParam = 0 }) =>
+      fetchCategoryProduct({ categoryId, pageParam, isCertification, sort, direction }),
+    getNextPageParam: lastPage => (lastPage.last ? undefined : lastPage.number + 1),
+  });
+
+// [GET] 상세 카테고리 상품
+export const fetchDetailCategoryProduct = ({
+  detailCategoryId,
+  pageParam = 0,
+  isCertification = "",
+  sort = "productPrice",
+  direction = "asc",
+}) =>
+  apiGet(`/shopping/product/detail-category/${detailCategoryId}`, {
+    startPage: pageParam,
+    pageSize: 10,
+    isCertification,
+    sort,
+    direction,
+  });
+
+// [GET] 상세 카테고리 상품 무한 스크롤링
+export const useDetailCategoryProductsQuery = (
+  detailCategoryId,
+  isCertification,
+  sort,
+  direction
+) =>
+  useInfiniteQuery({
+    queryKey: ["detailcategoryproducts", detailCategoryId, isCertification, sort, direction],
+    queryFn: ({ pageParam = 0 }) =>
+      fetchDetailCategoryProduct({ detailCategoryId, pageParam, isCertification, sort, direction }),
+    getNextPageParam: lastPage => (lastPage.last ? undefined : lastPage.number + 1),
+  });
+
 // -------------------------[COUPON]-------------------------
 // [GET] 회원 쿠폰 조회
-export const fetchMemberCoupon = memberId => memberApiGet(`/member-coupon/list`, { memberId });
+export const fetchMemberCoupon = memberId =>
+  memberApiGet(`/member-coupon/list`, { memberId, couponType: "REGULAR" });
 
 // -------------------------[MEMBER]-------------------------
 // [GET] 회원 정보 조회

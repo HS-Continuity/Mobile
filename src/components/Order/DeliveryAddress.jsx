@@ -1,4 +1,3 @@
-import React from "react";
 import { FaEdit } from "react-icons/fa";
 import AddressModal from "./AddressModal";
 

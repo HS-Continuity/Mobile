@@ -4,6 +4,10 @@ import { useSubscriptionOrderListQuery } from "../../apis";
 import { FaChevronRight, FaLeaf } from "react-icons/fa";
 import getStatusText from "../../components/Order/GetStatusText";
 import getStatusStyle from "../../components/Order/GetStatusStyle";
+import SubscriptionOrderListSkeleton from "../../components/Skeletons/SubscriptionOrderListSkeleton";
+import FetchAllSkeleton from "../../components/Skeletons/FetchAllSkeleton";
+import FetchingNextSkeleton from "../../components/Skeletons/FetchingNextSkeleton";
+import { SubscriptionOrderListError } from "../../components/Errors/ErrorDisplay";
 
 const SubscriptionOrderList = ({ memberId, startDate, endDate }) => {
   const observerTarget = useRef(null);
@@ -46,11 +50,8 @@ const SubscriptionOrderList = ({ memberId, startDate, endDate }) => {
     };
   }, [handleObserver]);
 
-  if (isLoading) return <div className='flex h-screen items-center justify-center'>Loading...</div>;
-  if (isError)
-    return (
-      <div className='flex h-screen items-center justify-center text-red-500'>{error.message}</div>
-    );
+  if (isLoading) return <SubscriptionOrderListSkeleton />;
+  if (isError || error) return <SubscriptionOrderListError />;
 
   const orders = data?.pages.flatMap(page => page.result.content) || [];
 
@@ -88,7 +89,9 @@ const SubscriptionOrderList = ({ memberId, startDate, endDate }) => {
             </div>
             <div className='flex items-center'>
               <div
-                className={`rounded bg-gradient-shine px-2 py-1 text-sm font-semibold ${getStatusStyle(order.status).bg} ${getStatusStyle(order.status).text}`}>
+                className={`rounded bg-gradient-shine px-2 py-1 text-sm font-semibold ${
+                  getStatusStyle(order.regularDeliveryStatus).bg
+                } ${getStatusStyle(order.regularDeliveryStatus).text}`}>
                 {getStatusText(order.regularDeliveryStatus)}
               </div>
             </div>
@@ -140,12 +143,8 @@ const SubscriptionOrderList = ({ memberId, startDate, endDate }) => {
           </div>
         </div>
       ))}
-      {isFetchingNextPage && (
-        <div className='mt-4 text-center'>더 많은 정기 주문 내역 가져오는 중...</div>
-      )}
-      {!hasNextPage && uniqueOrders.length > 0 && (
-        <div className='mt-4 text-center text-gray-500'>모든 정기 주문 내역을 불러왔습니다.</div>
-      )}
+      {isFetchingNextPage && <FetchingNextSkeleton message={"정기주문 내역"} />}
+      {!hasNextPage && uniqueOrders.length > 0 && <FetchAllSkeleton name={"정기주문 내역을"} />}
       {hasNextPage && <div ref={observerTarget} className='h-10' />}
     </div>
   );

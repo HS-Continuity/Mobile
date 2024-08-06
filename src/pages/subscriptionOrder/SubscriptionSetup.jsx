@@ -6,11 +6,12 @@ import useOrderItemsValidation from "../../hooks/useOrderItemsValidation";
 const SubscriptionSetup = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { groupedItems, totalProductPrice, totalDeliveryFee } = location.state || {
-    groupedItems: {},
-    totalProductPrice: 0,
-    totalDeliveryFee: 0,
-  };
+  const { groupedItems, totalProductPrice, totalDeliveryFee, selectedCartProductIds } =
+    location.state || {
+      groupedItems: {},
+      totalProductPrice: 0,
+      totalDeliveryFee: 0,
+    };
 
   const { subscriptionDetails, setSubscriptionDetails } = useSubscriptionSetupStore();
   const [deliveryDates, setDeliveryDates] = useState({ start: null, end: null });
@@ -89,7 +90,19 @@ const SubscriptionSetup = () => {
   const handleSubmit = () => {
     if (isAllSelected) {
       navigate("/subscription-order", {
-        state: { groupedItems, totalProductPrice, totalDeliveryFee },
+        state: {
+          groupedItems,
+          totalProductPrice,
+          totalDeliveryFee,
+          subscriptionDetails: {
+            deliveryCycle: subscriptionDetails.deliveryCycle,
+            duration: subscriptionDetails.duration,
+            deliveryDayOfWeeks: subscriptionDetails.deliveryDayOfWeeks,
+            startDate: subscriptionDetails.startDate,
+            endDate: subscriptionDetails.endDate,
+          },
+          selectedCartProductIds,
+        },
       });
     }
   };

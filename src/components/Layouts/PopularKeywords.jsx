@@ -6,7 +6,7 @@ const PopularKeywords = ({ popularKeywords, handleRecentSearchClick }) => {
       <h3 className='mb-2 font-bold'>인기 검색어</h3>
       <div className='grid grid-cols-2 gap-4'>
         <ul className='grid grid-cols-1 gap-2'>
-          {popularKeywords.slice(0, 4).map((search, index) => (
+          {popularKeywords.slice(0, 5).map((search, index) => (
             <li key={index} className='flex items-center'>
               <span className='mr-2 font-bold text-gray-500'>{index + 1}</span>
               <button
@@ -35,9 +35,9 @@ const PopularKeywords = ({ popularKeywords, handleRecentSearchClick }) => {
           ))}
         </ul>
         <ul className='grid grid-cols-1 gap-2'>
-          {popularKeywords.slice(4, 8).map((search, index) => (
+          {popularKeywords.slice(5, 11).map((search, index) => (
             <li key={index + 4} className='flex items-center'>
-              <span className='mr-2 font-bold text-gray-500'>{index + 5}</span>
+              <span className='mr-2 font-bold text-gray-500'>{index + 6}</span>
               <button
                 onClick={e => (
                   e.preventDefault(),

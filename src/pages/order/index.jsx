@@ -5,6 +5,8 @@ import useCardColorStore from "../../stores/useCardColorStore";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   addMemberCard,
+  deleteCartItem,
+  deleteCartItems,
   deleteMemberCard,
   fetchMemberAddresses,
   fetchMemberCard,
@@ -24,6 +26,13 @@ import ConsentPayment from "../../components/Order/ConsentPayment";
 import useAuthStore from "../../stores/useAuthStore";
 import OrderSkeleton from "../../components/Skeletons/OrderSkeleton";
 import toast from "react-hot-toast";
+import { showCustomToast } from "../../components/Toast/ToastDisplay";
+import {
+  AddressError,
+  CouponError,
+  MypageError,
+  PaymentError,
+} from "../../components/Errors/ErrorDisplay";
 
 const Order = () => {
   const navigate = useNavigate();
@@ -31,12 +40,14 @@ const Order = () => {
   const location = useLocation();
 
   // 주문 아이템
-  const { groupedItems, totalProductPrice, totalDeliveryFee } = location.state || {
-    groupedItems: [],
-  };
+  const { groupedItems, totalProductPrice, totalDeliveryFee, selectedCartProductIds } =
+    location.state || {
+      groupedItems: [],
+    };
   // 쿠폰
   const [selectedCoupon, setSelectedCoupon] = useState(null);
-  // 받는 사람
+
+  // 구매자 정보
   const [recipientName, setRecipientName] = useState("");
   const [recipientPhone, setRecipientPhone] = useState("");
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
@@ -127,13 +138,37 @@ const Order = () => {
     },
   });
 
+  // [DELETE] 장바구니 개별 삭제
+  const deleteCartItemMutation = useMutation({
+    mutationFn: deleteCartItem,
+    onSuccess: () => {
+      queryClient.invalidateQueries(["cart", memberId]);
+    },
+    onError: error => {
+      console.error("Failed to delete cart item:", error);
+    },
+  });
+
+  // [DELETE] 장바구니 상품 일괄 삭제
+  const deleteCartProductsMutation = useMutation({
+    mutationFn: deleteCartItems,
+    onSuccess: () => {
+      queryClient.invalidateQueries(["cart", memberId]);
+      // 성공 메시지 또는 추가 작업
+    },
+    onError: error => {
+      console.error("Failed to delete cart items:", error);
+      // 에러 처리
+    },
+  });
+
   // 주문 생성
   const createOrderMutation = useMutation({
     mutationFn: postOrder,
     onSuccess: (data, variables) => {
       // 응답 구조 확인 및 안전한 접근
       const orderDetailId = data?.data?.result?.orderDetailId;
-      console.log(orderDetailId);
+      console.log(data);
       if (!orderDetailId) {
         console.error("Order detail ID not found in the response");
         toast.error("주문 생성 중 오류가 발생했습니다.");
@@ -207,26 +242,24 @@ const Order = () => {
       paymentCardId: cards[selectedCardIndex - 1].memberPaymentCardId,
     }));
 
-    orderRequests.forEach(orderData => {
-      createOrderMutation.mutate(orderData);
-    });
-  };
+    // orderRequests.forEach(orderData => {
+    //   createOrderMutation.mutate(orderData);
+    // });
 
-  // 카드 번호 마스킹 함수
-  const maskDigits = inputStr => {
-    let digitCount = 0;
-    return inputStr
-      .split("")
-      .map(char => {
-        if (/\d/.test(char)) {
-          digitCount++;
-          if (digitCount >= 5 && digitCount <= 12) {
-            return "*";
-          }
+    // 주문 생성
+    Promise.all(orderRequests.map(orderData => createOrderMutation.mutateAsync(orderData)))
+      .then(() => {
+        // 주문 완료 후 장바구니 아이템 개별 삭제
+        if (selectedCartProductIds.length > 0) {
+          return Promise.all(
+            selectedCartProductIds.map(id => deleteCartItemMutation.mutateAsync(id))
+          );
         }
-        return char;
       })
-      .join("");
+      .then(() => {})
+      .catch(error => {
+        console.error("Error during order process:", error);
+      });
   };
 
   // EVENT HANDLERS
@@ -237,31 +270,11 @@ const Order = () => {
 
   // 카드 삭제 핸들러
   const handleDeleteCard = memberPaymentCardId => {
-    toast(
-      t => (
-        <span>
-          결제 수단을 삭제하시겠습니까?
-          <button
-            className='btn ml-2 h-10 rounded bg-transparent px-2 py-1 text-black hover:bg-white'
-            onClick={() => {
-              deleteCardMutation.mutate(memberPaymentCardId);
-              toast.dismiss(t.id);
-            }}>
-            확인
-          </button>
-          <button
-            className='btn ml-2 h-10 rounded bg-red-500 px-2 py-1 text-white hover:bg-red-500'
-            onClick={() => {
-              toast.dismiss(t.id);
-            }}>
-            취소
-          </button>
-        </span>
-      ),
-      {
-        duration: 2000,
-      }
-    );
+    showCustomToast({
+      message: "결제 수단을 삭제하시겠습니까?",
+      onConfirm: () => deleteCardMutation.mutate(memberPaymentCardId),
+      onCancel: () => {},
+    });
   };
 
   // 이전 카드 선택
@@ -326,9 +339,8 @@ const Order = () => {
     const [expirationYear, expirationMonth] = expirationDate.split("-").map(Number);
     const today = new Date();
     const currentYear = today.getFullYear();
-    const currentMonth = today.getMonth() + 1; // getMonth()는 0부터 시작하므로 1을 더해줍니다.
+    const currentMonth = today.getMonth() + 1;
 
-    // 년도가 현재보다 크거나, 년도가 같고 월이 현재 이상이면 만료되지 않은 것
     return (
       expirationYear < currentYear ||
       (expirationYear === currentYear && expirationMonth < currentMonth)
@@ -341,10 +353,10 @@ const Order = () => {
       cards &&
       cards.length > 0 &&
       selectedCardIndex !== null &&
-      selectedCardIndex > 0 && // 카드가 선택되었는지 확인
+      selectedCardIndex > 0 &&
       cards[selectedCardIndex - 1] &&
       !isCardExpired(cards[selectedCardIndex - 1].cardExpiration);
-    const isValidAddress = selectedAddress !== null; // 배송지가 선택되었는지 확인
+    const isValidAddress = selectedAddress !== null;
 
     console.log(isValidCard);
     console.log(isValidAddress);
@@ -372,10 +384,13 @@ const Order = () => {
 
   if (couponsLoading || memberInfoLoading || addressesLoading || cardsLoading)
     return <OrderSkeleton />;
-  if (couponsError || memberInfoError || addressesError || cardsError)
-    return <div>Error loading data</div>;
+  if (couponsError) return <CouponError message={couponsError.message} />;
 
-  // const defaultAddress = addresses.find(address => address.isDefaultAddress);
+  if (memberInfoError) return <MypageError message={memberInfoError.message} />;
+
+  if (addressesError) return <AddressError message={addressesError.message} />;
+
+  if (cardsError) return <PaymentError message={cardsError.message} />;
 
   return (
     <div className='flex flex-col bg-gray-50 pb-20'>
@@ -400,11 +415,11 @@ const Order = () => {
         />
 
         {/* 회원 쿠폰 리스트 */}
-        <MemberCouponList
+        {/* <MemberCouponList
           coupons={coupons}
           selectedCoupon={selectedCoupon}
           handleCouponChange={handleCouponChange}
-        />
+        /> */}
 
         {/* 결제 금액 */}
         <OrderPrice
@@ -426,7 +441,6 @@ const Order = () => {
           setIsCardRegistrationModalOpen={setIsCardRegistrationModalOpen}
           handleAddCard={handleAddCard}
           getCardColor={getCardColor}
-          maskDigits={maskDigits}
           queryClient={queryClient}
         />
 
@@ -439,12 +453,6 @@ const Order = () => {
               checked={consentPayment}
               className='checkbox mr-3 border-gray-500 [--chkbg:#00835F] [--chkfg:white] checked:border-[#00835F]'
             />
-            {/* <input
-              type='checkbox'
-              className='checkbox-primary checkbox mr-2'
-              onChange={handleConsentPayment}
-              checked={consentPayment}
-            /> */}
             <span className='text-sm'>위 내용을 확인하였으며 결제에 동의합니다.</span>
           </label>
         </div>

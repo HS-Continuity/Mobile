@@ -12,15 +12,19 @@ const CategoryMenu = ({ isOpen, onClose }) => {
     setExpandedCategory(categoryName === expandedCategory ? null : categoryName);
   };
 
-  const handleSubCategoryClick = (category, subCategory) => {
-    navigate(`/category/${category}/${subCategory}`);
+  const handleSubCategoryClick = subCategory => {
+    if (subCategory.id == 0) {
+      return "";
+    }
+    navigate(`/detailcategory/${subCategory.id}`);
     onClose();
   };
 
   const renderCategories = () => {
     let gridItems = [];
-    for (let i = 0; i < categories.length; i += 3) {
-      const rowCategories = categories.slice(i, i + 3);
+    // 마지막 카테고리를 제외하기 위해 length - 1
+    for (let i = 0; i < categories.length - 1; i += 3) {
+      const rowCategories = categories.slice(i, Math.min(i + 3, categories.length - 1));
       gridItems.push(
         <React.Fragment key={i}>
           {rowCategories.map((category, index) => (
@@ -48,10 +52,10 @@ const CategoryMenu = ({ isOpen, onClose }) => {
                   .find(cat => cat.name === expandedCategory)
                   .subCategories.map(subCategory => (
                     <div
-                      key={subCategory}
+                      key={subCategory.id}
                       className='cursor-pointer rounded-md bg-white px-3 py-3 text-center text-sm transition-all duration-300 ease-in-out hover:bg-gray-100'
-                      onClick={() => handleSubCategoryClick(expandedCategory, subCategory)}>
-                      {subCategory}
+                      onClick={() => handleSubCategoryClick(subCategory)}>
+                      {subCategory.name}
                     </div>
                   ))}
               </div>

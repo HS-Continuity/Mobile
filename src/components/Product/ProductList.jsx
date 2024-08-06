@@ -6,6 +6,7 @@ import ProductSkeleton from "../Skeletons/ProductSkeleton";
 import FetchAllSkeleton from "../Skeletons/FetchAllSkeleton";
 import FetchingNextSkeleton from "../Skeletons/FetchingNextSkeleton";
 import { fallbackProducts } from "./FallbackProduct";
+import { ProductError } from "../Errors/ErrorDisplay";
 
 // 가짜 기본 데이터
 
@@ -14,16 +15,8 @@ const ProductList = ({ useQueryHook, additionalProps = {}, gridCols = 1 }) => {
   const queryClient = useQueryClient();
   const [isServiceDown, setIsServiceDown] = useState(false);
 
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-    isError,
-    error,
-    refetch,
-  } = useQueryHook(additionalProps);
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError, refetch } =
+    useQueryHook(additionalProps);
 
   const handleObserver = useCallback(
     entries => {
@@ -80,18 +73,7 @@ const ProductList = ({ useQueryHook, additionalProps = {}, gridCols = 1 }) => {
   return (
     <div className='container mx-auto p-4'>
       {(isServiceDown || isError) && (
-        <div className='py-4 text-center'>
-          <p className='text-gray-600'>일시적으로 최신 상품 정보를 불러올 수 없습니다.</p>
-          <p className='mt-1 text-sm text-gray-500'>
-            아래 표시된 상품은 이전에 인기 있었던 상품들입니다.
-          </p>
-          <p className='text-sm text-gray-500'>실시간 값과 차이가 있을 수 있습니다.</p>
-          <button
-            onClick={handleRefresh}
-            className='btn btn-sm mt-1 rounded bg-transparent transition-colors hover:bg-white'>
-            새로고침
-          </button>
-        </div>
+        <ProductError isServiceDown={isServiceDown} isError={isError} />
       )}
 
       <div className={`grid grid-cols-${gridCols} gap-2`}>
@@ -106,7 +88,7 @@ const ProductList = ({ useQueryHook, additionalProps = {}, gridCols = 1 }) => {
 
       {!isServiceDown && !isError && (
         <>
-          {isFetchingNextPage && <FetchingNextSkeleton />}
+          {isFetchingNextPage && <FetchingNextSkeleton message={"상품"} />}
           {!hasNextPage && products.length > 0 && (
             <FetchAllSkeleton name={"상품을"} refetch={handleRefresh} />
           )}
@@ -116,5 +98,4 @@ const ProductList = ({ useQueryHook, additionalProps = {}, gridCols = 1 }) => {
     </div>
   );
 };
-
 export default ProductList;

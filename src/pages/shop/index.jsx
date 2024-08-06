@@ -2,30 +2,54 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCustomerInfo, useCustomerProductsQuery } from "../../apis";
 import ProductList from "../../components/Product/ProductList";
+import ShopSkeleton from "../../components/Skeletons/ShopSkeleton";
+import { ShopError } from "../../components/Errors/ErrorDisplay";
 
 const Shop = () => {
   const { customerId } = useParams();
 
-  const { data: sellerInfo, isLoading: isLoadingSellerInfo } = useQuery({
+  const {
+    data: sellerInfo,
+    isLoading: isLoadingSellerInfo,
+    isError: isErrorSellerInfo,
+  } = useQuery({
     queryKey: ["customers", customerId],
     queryFn: () => fetchCustomerInfo(customerId),
   });
 
   if (isLoadingSellerInfo) {
-    return (
-      <div className='flex h-screen items-center justify-center'>
-        <span className='loading loading-spinner loading-lg'></span>
-      </div>
-    );
+    return <ShopSkeleton />;
   }
+
+  if (isErrorSellerInfo) {
+    return <ShopError />;
+  }
+
+  // 이니셜을 생성하는 함수
 
   return (
     <div className='container mx-auto px-4 py-8'>
-      {/* 판매자 사진 */}
+      {/* 판매자 사진 또는 이니셜 */}
       <div className='mb-8'>
-        <div className='avatar'>
-          <div className='mx-auto h-40 w-40'>
-            <img src={sellerInfo.storeImage} alt={sellerInfo.customerName} />
+        <div className='mx-auto overflow-hidden'>
+          {sellerInfo.storeImage ? (
+            <img
+              src={sellerInfo.storeImage}
+              alt={sellerInfo.customerName}
+              className='h-48 w-full object-contain'
+              onError={e => {
+                e.target.onerror = null;
+                e.target.style.display = "none";
+                e.target.nextSibling.style.display = "flex";
+              }}
+            />
+          ) : null}
+          <div
+            className={`text-shadow-md flex h-full w-full items-center justify-center bg-gradient-shine text-3xl font-bold text-white ${
+              sellerInfo.storeImage ? "hidden" : ""
+            }`}
+            style={{ backgroundColor: "#" + Math.floor(Math.random() * 16777215).toString(16) }}>
+            {sellerInfo.customerName}
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { BsHouse } from "react-icons/bs";
 import { FaLeaf } from "react-icons/fa";
 
@@ -14,6 +14,8 @@ const OrderItems = ({ groupedItems }) => {
     }));
   };
 
+  console.log(groupedItems);
+
   return (
     <div className='w-full'>
       <div className='mb-2 mt-2 space-y-4 rounded-lg border bg-white p-4'>
@@ -27,7 +29,7 @@ const OrderItems = ({ groupedItems }) => {
             {group.items.map((item, index) => (
               <div key={index} className='flex flex-col border-t border-gray-100 pt-4'>
                 <div className='flex items-start'>
-                  {imageErrors ? (
+                  {imageErrors[`${customerId}-${index}`] ? (
                     <div className='flex h-20 w-20 items-center justify-center bg-gradient-to-br from-green-100 to-green-200'>
                       <FaLeaf className='mx-auto mb-2 text-4xl text-green-500' />
                     </div>

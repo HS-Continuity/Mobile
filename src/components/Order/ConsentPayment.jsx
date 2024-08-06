@@ -1,5 +1,3 @@
-import React from "react";
-
 const ConsentPayment = ({ consentPayment, finalPrice, handlePlaceOrder, isPaymentEnabled }) => {
   const handleOrderSubmit = e => {
     e.preventDefault();

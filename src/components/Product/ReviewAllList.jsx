@@ -4,8 +4,11 @@ import ReviewListSkeleton from "../Skeletons/ReviewListSkeleton";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { fetchProductReviews } from "../../apis";
 import { IoIosRefresh } from "react-icons/io";
+import { ReviewEmptyError, ReviewError } from "../Errors/ErrorDisplay";
+import { useParams } from "react-router-dom";
 
-const ReviewAllList = ({ productId, productName }) => {
+const ReviewAllList = ({ productName }) => {
+  const { productId } = useParams();
   const observerTarget = useRef(null);
   const [sortOption, setSortOption] = useState("latest");
 
@@ -61,15 +64,14 @@ const ReviewAllList = ({ productId, productName }) => {
       </div>
     );
 
-  if (isError) return <div className='text-red-500'>리뷰를 불러오지 못했습니다.</div>;
-  if (!data || data.pages[0].content.length === 0)
-    return <div className='text-gray-500'>리뷰가 없습니다.</div>;
+  if (isError) return <ReviewError />;
+  if (!data || data.pages[0].content.length === 0) return <ReviewEmptyError />;
 
   return (
     <div className='container mx-auto p-4'>
       <div className='mb-4 flex items-center justify-between'>
         <div className='flex items-center'>
-          <h2 className='ml-4 text-xl font-bold'>고객 리뷰</h2>
+          <h2 className='ml-4 text-xl font-bold'>고객 상품평</h2>
         </div>
         <select
           className='select rounded border border-gray-300 bg-white px-4 py-2 pr-8 leading-tight text-gray-700 focus:border-gray-500 focus:bg-white focus:outline-none'
@@ -105,14 +107,6 @@ const ReviewAllList = ({ productId, productName }) => {
           {hasNextPage && <div ref={observerTarget} className='h-10' />}
         </React.Fragment>
       ))}
-
-      {/* <div ref={ref} className='flex h-10 items-center justify-center text-gray-600'>
-        {isFetchingNextPage
-          ? "리뷰 로딩중..."
-          : hasNextPage
-            ? "더 불러오는 중..."
-            : "모든 리뷰를 불러왔습니다."}
-      </div> */}
     </div>
   );
 };

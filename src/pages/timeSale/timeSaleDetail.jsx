@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { FaChevronDown, FaLeaf, FaRegClock, FaShare } from "react-icons/fa";
 import { CiShoppingCart } from "react-icons/ci";
 import { BsHouse, BsLightningChargeFill } from "react-icons/bs";
@@ -14,16 +14,14 @@ import StarRating from "../../components/Product/StarRating";
 import Modal from "../product/Modal";
 
 import { fetchEcoProductImage, fetchTimeSaleItemDetail, fetchProductDetailImage } from "../../apis";
-import useAuthStore from "../../stores/useAuthStore";
 import ProductInfoModal, { MODAL_TYPES } from "../product/ProductInfoModal";
 import CountdownTimer from "../../components/Product/CountdownTimer";
+import { ProductDetailError, TimesaleEmptyError } from "../../components/Errors/ErrorDisplay";
+import ProductDetailSkeleton from "../../components/Skeletons/ProductDetailSkeleton";
 
 const TimeSaleDetail = () => {
-  const { username, isAuthenticated } = useAuthStore();
-  const memberId = username;
   const { timesaleId } = useParams();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
   const [isAddCartOpen, setIsAddCartOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
@@ -68,45 +66,12 @@ const TimeSaleDetail = () => {
     },
   });
 
-  // 장바구니 추가 mutation
-  // const addToCartMutation = useMutation({
-  //   mutationFn: postCartItem,
-  //   onSuccess: () => {
-  //     queryClient.invalidateQueries("cart");
-  //     toast.success(
-  //       <div>
-  //         장바구니에 담겼습니다.
-  //         <button
-  //           className='btn btn-sm ml-3 bg-green-shine text-white hover:bg-[#00835F]'
-  //           onClick={() => {
-  //             navigate("/cart");
-  //           }}>
-  //           장바구니 가기
-  //         </button>
-  //       </div>,
-  //       {
-  //         style: {
-  //           border: "1px solid #00835F",
-  //           padding: "12px",
-  //           color: "black",
-  //         },
-  //         iconTheme: {
-  //           primary: "#00835F",
-  //           secondary: "#FFFAEE",
-  //         },
-  //         duration: 2000,
-  //         position: "bottom-center",
-  //       }
-  //     );
-  //   },
-  // });
-
   // 구매하기
   const handlePurchase = () => {
     const orderData = {
       groupedItems: {
         [product.customerId]: {
-          storeName: "Store Name", // 실제 스토어 이름이 있다면 그것을 사용
+          storeName: product.storeName,
           items: [
             {
               productId: product.productId,
@@ -115,12 +80,14 @@ const TimeSaleDetail = () => {
               discountAmount: product.price - product.discountPrice,
               finalPrice: product.discountPrice,
               quantity: quantity,
+              productImage: product.productImage,
             },
           ],
         },
       },
       totalProductPrice: product.discountPrice,
       totalDeliveryFee: product.deliveryFee,
+      from: location.pathname,
     };
 
     navigate("/order", { state: orderData });
@@ -134,26 +101,6 @@ const TimeSaleDetail = () => {
   // 수량 증감 핸들러
   const handleIncrease = () => setQuantity(quantity + 1);
   const handleDecrease = () => quantity > 1 && setQuantity(quantity - 1);
-
-  // 장바구니 추가 함수
-  // const handleAddToCart = async () => {
-  //   if (!isAuthenticated) {
-  //     toast.error("로그인이 필요합니다.", {
-  //       duration: 1000,
-  //       position: "bottom-center",
-  //     });
-  //     navigate("/login");
-  //     return;
-  //   }
-
-  //   const cartItem = {
-  //     productId: Number(product.productId),
-  //     memberId: memberId,
-  //     cartTypeId: 1, // 타임세일은 단건구매만 가능하다고 가정
-  //     quantity: quantity,
-  //   };
-  //   addToCartMutation.mutate(cartItem);
-  // };
 
   // 공유 버튼 핸들러 (URL 복사)
   const handleShare = () => {
@@ -198,9 +145,9 @@ const TimeSaleDetail = () => {
     }
   };
 
-  if (isLoading || isImageLoading || isEcoImageLoading) return <div>Loading...</div>;
-  if (isError || isImageError || isEcoImageError) return <div>Error loading product data</div>;
-  if (!product) return <div>No data available</div>;
+  if (isLoading || isImageLoading || isEcoImageLoading) return <ProductDetailSkeleton />;
+  if (isError || isImageError || isEcoImageError) return <ProductDetailError />;
+  if (!product) return <TimesaleEmptyError />;
 
   return (
     <>

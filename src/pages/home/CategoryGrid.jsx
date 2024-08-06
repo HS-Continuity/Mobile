@@ -1,12 +1,14 @@
-import React, { useState } from "react";
-import CategorySkeleton from "../../components/Skeletons/CategorySkeleton";
+import React from "react";
+import { useNavigate } from "react-router-dom";
 import { categories } from "../../components/Layouts/CategoryData";
 
 const CategoryGrid = () => {
-  const [expandedCategory, setExpandedCategory] = useState(null);
+  const navigate = useNavigate();
 
-  const handleCategoryClick = categoryName => {
-    setExpandedCategory(categoryName === expandedCategory ? null : categoryName);
+  const handleCategoryClick = categoryId => {
+    if (categoryId <= 5) {
+      navigate(`/category/${categoryId}`);
+    }
   };
 
   const renderCategories = () => {
@@ -18,23 +20,36 @@ const CategoryGrid = () => {
       rows.push(
         <React.Fragment key={i}>
           <div className='mb-6 mt-3 grid grid-cols-5 gap-1'>
-            {rowCategories.map(category => (
-              <div
-                key={category.name}
-                className='group flex cursor-pointer flex-col items-center justify-center transition-all duration-300 ease-in-out hover:scale-105 hover:transform'
-                onClick={() => handleCategoryClick(category.name)}>
-                <div className='mb-3 flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl bg-gray-50 transition-all duration-300 ease-in-out'>
-                  <img
-                    src={category.icon}
-                    alt={category.name}
-                    className='h-12 w-12 object-contain transition-all duration-300 ease-in-out group-hover:scale-110'
-                  />
+            {rowCategories.map((category, index) => {
+              const categoryId = i + index + 1; // Calculate the actual category ID
+              const isClickable = categoryId <= 5;
+              return (
+                <div
+                  key={category.name}
+                  className={`group flex flex-col items-center justify-center transition-all duration-300 ease-in-out ${
+                    isClickable
+                      ? "cursor-pointer hover:scale-105 hover:transform"
+                      : "cursor-default opacity-50"
+                  }`}
+                  onClick={() => handleCategoryClick(categoryId)}>
+                  <div className='mb-3 flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl bg-gray-50 transition-all duration-300 ease-in-out'>
+                    <img
+                      src={category.icon}
+                      alt={category.name}
+                      className={`h-12 w-12 object-contain transition-all duration-300 ease-in-out ${
+                        isClickable ? "group-hover:scale-110" : ""
+                      }`}
+                    />
+                  </div>
+                  <span
+                    className={`-mt-2 text-center text-sm font-medium ${
+                      isClickable ? "text-gray-700 group-hover:text-gray-900" : "text-gray-400"
+                    }`}>
+                    {category.name}
+                  </span>
                 </div>
-                <span className='-mt-2 text-center text-sm font-medium text-gray-700 group-hover:text-gray-900'>
-                  {category.name}
-                </span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </React.Fragment>
       );

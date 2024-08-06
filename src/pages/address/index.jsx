@@ -7,7 +7,8 @@ import AddressEditModal from "../../components/Order/AddressEditModal";
 import useAuthStore from "../../stores/useAuthStore";
 import AddressSkeleton from "../../components/Skeletons/AddressSkeleton";
 import NoAddress from "./NoAddress";
-import toast from "react-hot-toast";
+import { showCustomToast } from "../../components/Toast/ToastDisplay";
+import { AddressError } from "../../components/Errors/ErrorDisplay";
 
 const Address = () => {
   const { username } = useAuthStore();
@@ -48,31 +49,11 @@ const Address = () => {
   });
 
   const handleDelete = memberAddressId => {
-    toast(
-      t => (
-        <span>
-          배송지를 삭제하시겠습니까?
-          <button
-            className='btn ml-2 h-10 rounded bg-transparent px-2 py-1 text-black hover:bg-white'
-            onClick={() => {
-              deleteMutation.mutate(memberAddressId);
-              toast.dismiss(t.id);
-            }}>
-            확인
-          </button>
-          <button
-            className='btn ml-2 h-10 rounded bg-red-500 px-2 py-1 text-white hover:bg-red-500'
-            onClick={() => {
-              toast.dismiss(t.id);
-            }}>
-            취소
-          </button>
-        </span>
-      ),
-      {
-        duration: 2000,
-      }
-    );
+    showCustomToast({
+      message: "배송지를 삭제하시겠습니까?",
+      onConfirm: () => deleteMutation.mutate(memberAddressId),
+      onCancel: () => {},
+    });
   };
 
   const handleSetDefault = memberAddressId => {
@@ -85,14 +66,10 @@ const Address = () => {
   };
 
   if (isLoading) return <AddressSkeleton />;
-  if (isError)
-    return <div className='alert alert-error'>주소 정보를 불러오는 중 오류가 발생했습니다.</div>;
+  if (isError) return <AddressError />;
 
   return (
     <div className='container mx-auto p-4 pb-20'>
-      {/* <h1 className='mb-6 text-xl font-semibold'>
-        {addresses && addresses.length > 0 ? `등록 배송지 ${addresses.length} / 3` : "등록된 카드"}
-      </h1> */}
       {addresses && addresses.length > 0 ? (
         addresses.map(address => (
           <div key={address.memberAddressId} className='mb-4 rounded-lg border p-4'>

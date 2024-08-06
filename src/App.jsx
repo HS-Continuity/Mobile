@@ -39,6 +39,8 @@ import TimeSaleDetail from "./pages/timeSale/timeSaleDetail";
 import useAuthStore from "./stores/useAuthStore";
 import { Toaster } from "react-hot-toast";
 import NotFound from "./pages/error/NotFound";
+import Category from "./pages/product/Category";
+import DetailCategory from "./pages/product/DetailCategory";
 
 function App() {
   const location = useLocation();
@@ -84,7 +86,11 @@ function App() {
             <Route path='/general' element={<General key={location.pathname} />} />
             <Route path='/eco' element={<Eco key={location.pathname} />} />
             <Route path='/timesale' element={<Timesale key={location.pathname} />} />
-            {/* <Route path='/detailcategory' element={<DetailCategory key={location.pathname} />} /> */}
+            <Route path='/category/:categoryId' element={<Category key={location.pathname} />} />
+            <Route
+              path='/detailcategory/:detailCategoryId'
+              element={<DetailCategory key={location.pathname} />}
+            />
             <Route path='/shop/:customerId' element={<Shop key={location.pathname} />} />
           </Route>
 

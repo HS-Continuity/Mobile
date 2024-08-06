@@ -1,9 +1,13 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useOrderListQuery } from "../../apis";
-import { FaChevronRight } from "react-icons/fa";
+import { FaChevronRight, FaLeaf } from "react-icons/fa";
 import getStatusText from "../../components/Order/GetStatusText";
 import getStatusStyle from "../../components/Order/GetStatusStyle";
+import OrderListSkeleton from "../../components/Skeletons/OrderListSkeleton";
+import FetchAllSkeleton from "../../components/Skeletons/FetchAllSkeleton";
+import FetchingNextSkeleton from "../../components/Skeletons/FetchingNextSkeleton";
+import { OrderListError } from "../../components/Errors/ErrorDisplay";
 
 const OrderList = ({ memberId, startDate, endDate }) => {
   const observerTarget = useRef(null);
@@ -43,11 +47,8 @@ const OrderList = ({ memberId, startDate, endDate }) => {
     };
   }, [handleObserver]);
 
-  if (isLoading) return <div className='flex h-screen items-center justify-center'>Loading...</div>;
-  if (isError)
-    return (
-      <div className='flex h-screen items-center justify-center text-red-500'>{error.message}</div>
-    );
+  if (isLoading) return <OrderListSkeleton />;
+  if (isError || error) return <OrderListError />;
 
   const orders = data?.pages.flatMap(page => page.result.content) || [];
 
@@ -81,11 +82,23 @@ const OrderList = ({ memberId, startDate, endDate }) => {
             </div>
           </div>
           <div className='flex items-start space-x-4'>
-            <img
-              src={order.image || "https://via.placeholder.com/80"}
-              alt={order.mainProduct.name || "상품 이미지"}
-              className='h-20 w-20 object-cover'
-            />
+            {order.image ? (
+              <img
+                src={order.image}
+                alt={order.mainProduct.name || "상품 이미지"}
+                className='h-20 w-20 object-cover'
+                onError={e => {
+                  e.target.style.display = "none";
+                  e.target.nextSibling.style.display = "flex";
+                }}
+              />
+            ) : (
+              <div
+                className='flex h-20 w-20 items-center justify-center bg-gradient-to-br from-green-100 to-green-200'
+                style={{ display: order.image ? "none" : "flex" }}>
+                <FaLeaf className='mx-auto mb-2 text-4xl text-green-500' />
+              </div>
+            )}
             <div className='flex-grow'>
               <div className='text-sm font-light'>
                 {order.isAvailableProductInformation ? order.storeName || "판매자명" : ""}
@@ -114,12 +127,8 @@ const OrderList = ({ memberId, startDate, endDate }) => {
           </div>
         </div>
       ))}
-      {isFetchingNextPage && (
-        <div className='mt-4 text-center'>더 많은 주문 내역 가져오는 중...</div>
-      )}
-      {!hasNextPage && orders.length > 0 && (
-        <div className='mt-4 text-center text-gray-500'>모든 주문 내역을 불러왔습니다.</div>
-      )}
+      {isFetchingNextPage && <FetchingNextSkeleton message={"주문 내역"} />}
+      {!hasNextPage && orders.length > 0 && <FetchAllSkeleton name={"주문 내역을"} />}
       {hasNextPage && <div ref={observerTarget} className='h-10' />}
     </div>
   );

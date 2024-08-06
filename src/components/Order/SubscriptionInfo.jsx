@@ -1,5 +1,3 @@
-import React from "react";
-
 const SubscriptionInfo = ({ subscriptionDetails }) => {
   return (
     <div className='rounded-lg border bg-white p-4'>

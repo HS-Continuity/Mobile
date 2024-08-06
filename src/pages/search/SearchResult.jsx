@@ -62,7 +62,7 @@ const SearchResult = () => {
               />
             )}
           </form>
-          <h2 className='mb-4 text-2xl font-bold'>{initialKeyword} 검색 결과</h2>
+          <h2 className='p-4 text-center text-2xl font-bold'>`{initialKeyword}` 검색 결과</h2>
           <ProductList
             useQueryHook={useSearchProductsQuery}
             additionalProps={initialKeyword}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import useAuthStore from "../../stores/useAuthStore";
+import Logo from "../../assets/images/logo.png";
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, initializeAuth } = useAuthStore();
@@ -16,7 +17,11 @@ const ProtectedRoute = ({ children }) => {
   }, [initializeAuth]);
 
   if (isLoading) {
-    return <div>Loading...</div>; // 또는 로딩 스피너 컴포넌트
+    return (
+      <div className='flex h-screen w-screen items-center justify-center'>
+        <img src={Logo} alt='logo' className='h-8 w-14' />
+      </div>
+    );
   }
 
   if (!isAuthenticated) {

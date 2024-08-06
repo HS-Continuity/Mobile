@@ -31,11 +31,12 @@ const Shop = () => {
     <div className='container mx-auto px-4 py-8'>
       {/* 판매자 사진 또는 이니셜 */}
       <div className='mb-8'>
-        <div className='mx-auto h-40 w-full overflow-hidden'>
+        <div className='mx-auto overflow-hidden'>
           {sellerInfo.storeImage ? (
             <img
               src={sellerInfo.storeImage}
               alt={sellerInfo.customerName}
+              className='h-48 w-full object-contain'
               onError={e => {
                 e.target.onerror = null;
                 e.target.style.display = "none";

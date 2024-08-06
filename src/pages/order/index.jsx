@@ -5,6 +5,8 @@ import useCardColorStore from "../../stores/useCardColorStore";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   addMemberCard,
+  deleteCartItem,
+  deleteCartItems,
   deleteMemberCard,
   fetchMemberAddresses,
   fetchMemberCard,
@@ -38,9 +40,10 @@ const Order = () => {
   const location = useLocation();
 
   // 주문 아이템
-  const { groupedItems, totalProductPrice, totalDeliveryFee } = location.state || {
-    groupedItems: [],
-  };
+  const { groupedItems, totalProductPrice, totalDeliveryFee, selectedCartProductIds } =
+    location.state || {
+      groupedItems: [],
+    };
   // 쿠폰
   const [selectedCoupon, setSelectedCoupon] = useState(null);
 
@@ -135,6 +138,30 @@ const Order = () => {
     },
   });
 
+  // [DELETE] 장바구니 개별 삭제
+  const deleteCartItemMutation = useMutation({
+    mutationFn: deleteCartItem,
+    onSuccess: () => {
+      queryClient.invalidateQueries(["cart", memberId]);
+    },
+    onError: error => {
+      console.error("Failed to delete cart item:", error);
+    },
+  });
+
+  // [DELETE] 장바구니 상품 일괄 삭제
+  const deleteCartProductsMutation = useMutation({
+    mutationFn: deleteCartItems,
+    onSuccess: () => {
+      queryClient.invalidateQueries(["cart", memberId]);
+      // 성공 메시지 또는 추가 작업
+    },
+    onError: error => {
+      console.error("Failed to delete cart items:", error);
+      // 에러 처리
+    },
+  });
+
   // 주문 생성
   const createOrderMutation = useMutation({
     mutationFn: postOrder,
@@ -215,9 +242,24 @@ const Order = () => {
       paymentCardId: cards[selectedCardIndex - 1].memberPaymentCardId,
     }));
 
-    orderRequests.forEach(orderData => {
-      createOrderMutation.mutate(orderData);
-    });
+    // orderRequests.forEach(orderData => {
+    //   createOrderMutation.mutate(orderData);
+    // });
+
+    // 주문 생성
+    Promise.all(orderRequests.map(orderData => createOrderMutation.mutateAsync(orderData)))
+      .then(() => {
+        // 주문 완료 후 장바구니 아이템 개별 삭제
+        if (selectedCartProductIds.length > 0) {
+          return Promise.all(
+            selectedCartProductIds.map(id => deleteCartItemMutation.mutateAsync(id))
+          );
+        }
+      })
+      .then(() => {})
+      .catch(error => {
+        console.error("Error during order process:", error);
+      });
   };
 
   // EVENT HANDLERS

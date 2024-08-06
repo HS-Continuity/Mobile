@@ -94,7 +94,6 @@ const Profile = () => {
   const verifyPasswordMutation = useMutation({
     mutationFn: () => verifyPassword(memberId, passwordForm.currentPassword),
     onSuccess: isValid => {
-      console.log(isValid);
       if (isValid) {
         changePasswordMutation.mutate();
       } else {

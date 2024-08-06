@@ -95,7 +95,6 @@ const CardEditModal = ({ isOpen, onClose, onSubmit, cardData }) => {
 
   const handleSubmit = e => {
     e.preventDefault();
-    console.log(editedCard);
     const formattedData = {
       member_id: editedCard.member_id,
       card_number: `${editedCard.card_number_1}-${editedCard.card_number_2}-${editedCard.card_number_3}-${editedCard.card_number_4}`,

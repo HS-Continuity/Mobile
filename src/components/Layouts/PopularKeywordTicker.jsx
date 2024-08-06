@@ -10,7 +10,6 @@ const PopularKeywordTicker = ({ keywords, onKeywordClick }) => {
 
     return () => clearInterval(interval);
   }, [keywords.length]);
-  console.log(currentIndex);
 
   return (
     <div className='ml-2 h-6 overflow-hidden'>

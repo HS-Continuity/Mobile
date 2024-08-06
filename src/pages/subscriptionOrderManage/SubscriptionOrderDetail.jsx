@@ -26,7 +26,6 @@ const SubscriptionOrderDetail = () => {
     enabled: !!regularOrderId,
   });
 
-  console.log(data);
   const postponeMutation = useMutation({
     mutationFn: regularOrderId => putSubscriptionOrderPostpone(regularOrderId),
     onSuccess: () => {

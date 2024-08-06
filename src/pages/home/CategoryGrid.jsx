@@ -21,7 +21,7 @@ const CategoryGrid = () => {
         <React.Fragment key={i}>
           <div className='mb-6 mt-3 grid grid-cols-5 gap-1'>
             {rowCategories.map((category, index) => {
-              const categoryId = i + index + 1; // Calculate the actual category ID
+              const categoryId = i + index + 1;
               const isClickable = categoryId <= 5;
               return (
                 <div

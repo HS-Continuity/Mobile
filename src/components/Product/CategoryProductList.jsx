@@ -16,7 +16,6 @@ const CategoryProductList = ({ useQueryHook, additionalProps = {}, gridCols = 1 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError, refetch } =
     useQueryHook(additionalProps);
 
-  console.log(data);
   const categoryName =
     data?.pages[0]?.content[0].categoryName || data?.pages[0]?.content[0].detailCategoryName;
 

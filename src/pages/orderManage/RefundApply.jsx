@@ -5,7 +5,6 @@ const RefundApply = () => {
 
   const handleSubmit = e => {
     e.preventDefault();
-    console.log({ refundReason });
   };
 
   return (

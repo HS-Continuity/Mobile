@@ -14,8 +14,6 @@ const OrderItems = ({ groupedItems }) => {
     }));
   };
 
-  console.log(groupedItems);
-
   return (
     <div className='w-full'>
       <div className='mb-2 mt-2 space-y-4 rounded-lg border bg-white p-4'>

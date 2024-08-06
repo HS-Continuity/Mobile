@@ -93,7 +93,6 @@ const TopHeader = () => {
             </div>
             {isAuthenticated ? (
               <div className='col-span-1 -ml-1 flex justify-center text-base text-[#00835F]'>
-                {/* <span>🌿{username}</span> */}
                 <button
                   onClick={handleLogout}
                   className='col-span-1 -ml-1 flex justify-center text-base text-[#00835F]'>

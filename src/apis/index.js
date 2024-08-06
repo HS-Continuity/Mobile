@@ -287,14 +287,6 @@ export const postLogin = memberData => {
     username: memberData.username,
     password: memberData.password,
   });
-  // return memberApiPost(
-  //   "/auth/login",
-  //   {
-  //     username: memberData.username,
-  //     password: memberData.password,
-  //   },
-  //   true
-  // );
 };
 
 // 소셜 로그인
@@ -304,7 +296,6 @@ export const handleSocialLogin = provider => {
 
 // [POST] 회원 가입
 export const postMember = memberData => {
-  console.log(memberData);
   memberApiPost(`/member`, {
     memberId: memberData.memberId,
     memberName: memberData.memberName,
@@ -378,8 +369,6 @@ export const addAddress = addressData =>
 
 // [PUT] 회원 기본 배송지 설정
 export const setDefaultAddress = (memberAddressId, memberId) => {
-  console.log(memberAddressId);
-  console.log(memberId);
   memberApiPut(`/member-address/${memberAddressId}?memberId=${memberId}`);
 };
 
@@ -407,7 +396,6 @@ export const fetchMemberCard = memberId => memberApiGet(`/member-payment/list`, 
 
 // [POST] 회원 카드 등록
 export const addMemberCard = cardData => {
-  console.log(cardData);
   return memberApiPost("/member-payment", {
     memberId: cardData.memberId,
     cardCompany: cardData.cardCompany,
@@ -427,8 +415,6 @@ export const deleteMemberCard = memberPaymentCardId =>
 
 // [PUT] 회원 대표 카드 설정
 export const putDefaultCard = (memberPaymentCardId, memberId) => {
-  console.log(memberPaymentCardId);
-  console.log(memberId);
   memberApiPut(`/member-payment/${memberPaymentCardId}?memberId=${memberId}`);
 };
 
@@ -436,7 +422,6 @@ export const putDefaultCard = (memberPaymentCardId, memberId) => {
 
 // [POST] 일반 주문 생성
 export const postOrder = async orderData => {
-  console.log(orderData);
   try {
     const response = await axios.post(`${ORDER_DB_URL}/order`, {
       customerId: orderData.customerId,
@@ -510,18 +495,12 @@ export const fetchMemberOrderList = async ({ memberId, startDate, endDate, pageP
   const response = await axios.get(
     `${ORDER_DB_URL}/order/member-service?memberId=${memberId}&startDate=${startDate}&endDate=${endDate}&page=${pageParam}&size=${size}`
   );
-  console.log(response.data);
   return response.data;
 };
 
 // [GET] 일반 주문 상세 조회
 export const fetchMemberOrderDetail = async orderDetailId => {
   return orderApiGet(`/order/member-service/${orderDetailId}`, null, true);
-  // console.log(orderDetailId);
-  // const response = await axios.get(
-  //   `http://localhost:8040/orderservice/api/order/member-service/${orderDetailId}`
-  // );
-  // return response;
 };
 
 // [GET] 일반 주문 목록 조회 무한 스크롤링
@@ -560,7 +539,6 @@ export const fetchMemberSubscriptionDetail = async regularOrderId => {
 };
 
 // [PATCH] 주문 취소
-// export const patchOrderStatus = async (orderId, productId, orderStatusCode) => {
 export const patchOrderStatus = async orderId => {
   try {
     const response = await axios.patch(

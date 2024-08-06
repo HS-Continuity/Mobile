@@ -18,7 +18,7 @@ import {
 import OrderItems from "../../components/Order/OrderItems";
 import OrderMemberInfo from "../../components/Order/OrderMemberInfo";
 import DeliveryAddress from "../../components/Order/DeliveryAddress";
-import MemberCouponList from "../../components/Order/MemberCouponList";
+// import MemberCouponList from "../../components/Order/MemberCouponList";
 import OrderPrice from "../../components/Order/OrderPrice";
 import Payment from "../../components/Order/Payment";
 import DeliveryMemo from "../../components/Order/DeliveryMemo";
@@ -75,7 +75,6 @@ const Order = () => {
   // 설정 값
   const { username } = useAuthStore();
   const memberId = username;
-  // const memberId = import.meta.env.VITE_memberId;
   const couponDiscount = selectedCoupon ? selectedCoupon.discountAmount : 0;
   const finalPrice = totalProductPrice + totalDeliveryFee - couponDiscount;
 
@@ -149,26 +148,12 @@ const Order = () => {
     },
   });
 
-  // [DELETE] 장바구니 상품 일괄 삭제
-  const deleteCartProductsMutation = useMutation({
-    mutationFn: deleteCartItems,
-    onSuccess: () => {
-      queryClient.invalidateQueries(["cart", memberId]);
-      // 성공 메시지 또는 추가 작업
-    },
-    onError: error => {
-      console.error("Failed to delete cart items:", error);
-      // 에러 처리
-    },
-  });
-
   // 주문 생성
   const createOrderMutation = useMutation({
     mutationFn: postOrder,
     onSuccess: (data, variables) => {
       // 응답 구조 확인 및 안전한 접근
       const orderDetailId = data?.data?.result?.orderDetailId;
-      console.log(data);
       if (!orderDetailId) {
         console.error("Order detail ID not found in the response");
         toast.error("주문 생성 중 오류가 발생했습니다.");
@@ -242,10 +227,6 @@ const Order = () => {
       paymentCardId: cards[selectedCardIndex - 1].memberPaymentCardId,
     }));
 
-    // orderRequests.forEach(orderData => {
-    //   createOrderMutation.mutate(orderData);
-    // });
-
     // 주문 생성
     Promise.all(orderRequests.map(orderData => createOrderMutation.mutateAsync(orderData)))
       .then(() => {
@@ -296,17 +277,16 @@ const Order = () => {
     setConsentPayment(!consentPayment);
   };
 
-  // 쿠폰 핸들러
-  const handleCouponChange = e => {
-    const memberCouponId = e.target.value;
-    console.log(memberCouponId);
-    if (memberCouponId == "") {
-      setSelectedCoupon(null);
-    } else {
-      const selected = coupons.find(coupon => coupon.memberCouponId == memberCouponId);
-      setSelectedCoupon(selected || null);
-    }
-  };
+  // 쿠폰 핸들러 -> 정기배송만 쿠폰(추후에 사용 가능)
+  // const handleCouponChange = e => {
+  //   const memberCouponId = e.target.value;
+  //   if (memberCouponId == "") {
+  //     setSelectedCoupon(null);
+  //   } else {
+  //     const selected = coupons.find(coupon => coupon.memberCouponId == memberCouponId);
+  //     setSelectedCoupon(selected || null);
+  //   }
+  // };
 
   // 주소지 관리 Modal 열기 핸들러
   const handleOpenAddressModal = () => {
@@ -358,9 +338,6 @@ const Order = () => {
       !isCardExpired(cards[selectedCardIndex - 1].cardExpiration);
     const isValidAddress = selectedAddress !== null;
 
-    console.log(isValidCard);
-    console.log(isValidAddress);
-    console.log(consentPayment);
     setIsPaymentEnabled(isValidAddress && isValidCard && consentPayment);
   }, [selectedAddress, cards, selectedCardIndex, consentPayment]);
 

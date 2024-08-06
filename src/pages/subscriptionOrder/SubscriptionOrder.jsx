@@ -74,8 +74,6 @@ const SubscriptionOrder = () => {
   const [isPaymentEnabled, setIsPaymentEnabled] = useState(false);
   const [hasUserSelectedAddress, setHasUserSelectedAddress] = useState(false);
 
-  // const { subscriptionDetails } = useSubscriptionSetupStore();
-
   useOrderItemsValidation(groupedItems);
   useCheckSubscriptionDetails(subscriptionDetails);
 
@@ -88,7 +86,6 @@ const SubscriptionOrder = () => {
   const createOrderMutation = useMutation({
     mutationFn: postSubscriptionOrder,
     onSuccess: (data, variables) => {
-      console.log(data.data.result.regularDeliveryApplicationId);
       const successData = {
         recipientName: selectedAddress.recipientName,
         recipientAddress: `${selectedAddress.generalAddress} ${selectedAddress.detailAddress}`,
@@ -180,7 +177,7 @@ const SubscriptionOrder = () => {
     const [expirationYear, expirationMonth] = expirationDate.split("-").map(Number);
     const today = new Date();
     const currentYear = today.getFullYear();
-    const currentMonth = today.getMonth() + 1; // getMonth()는 0부터 시작하므로 1을 더해줍니다.
+    const currentMonth = today.getMonth() + 1;
 
     // 년도가 현재보다 크거나, 년도가 같고 월이 현재 이상이면 만료되지 않은 것
     return (
@@ -225,7 +222,6 @@ const SubscriptionOrder = () => {
   // 쿠폰 핸들러
   const handleCouponChange = e => {
     const memberCouponId = e.target.value;
-    console.log(memberCouponId);
     if (memberCouponId == "") {
       setSelectedCoupon(null);
     } else {
@@ -345,10 +341,6 @@ const SubscriptionOrder = () => {
         recipientAddress: `${selectedAddress.generalAddress} ${selectedAddress.detailAddress}`,
       },
     }));
-
-    // orderRequests.forEach(orderData => {
-    //   createOrderMutation.mutate(orderData);
-    // });
 
     // 주문 생성
     Promise.all(orderRequests.map(orderData => createOrderMutation.mutateAsync(orderData)))

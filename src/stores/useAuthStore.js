@@ -59,8 +59,7 @@ const useAuthStore = create((set, get) => ({
     } catch (error) {
       console.error("Failed to refresh token:", error);
       if (error.code === "ECONNREFUSED") {
-        console.log("Server is not responding. Retrying in 5 seconds...");
-        //setTimeout(() => get().initializeAuth(), 5000);
+        console.log("서버가 응답하지 않습니다.");
       } else {
         set({
           accessToken: null,

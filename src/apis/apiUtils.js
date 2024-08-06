@@ -27,7 +27,6 @@ const apiCall = async (
       params,
       ...config,
     });
-    console.log(response);
     return fullResponse ? response : response.data.result;
   } catch (error) {
     handleApiError(error, `API call failed: ${method} ${url}`);

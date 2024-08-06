@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   addMemberCard,
+  deleteCartItem,
   deleteMemberCard,
   fetchMemberAddresses,
   fetchMemberCard,
@@ -41,13 +42,18 @@ const SubscriptionOrder = () => {
   const navigate = useNavigate();
 
   // 주문 아이템
-  const { groupedItems, totalProductPrice, totalDeliveryFee, subscriptionDetails } =
-    location.state || {
-      groupedItems: {},
-      totalProductPrice: 0,
-      totalDeliveryFee: 0,
-      subscriptionDetails: {},
-    };
+  const {
+    groupedItems,
+    totalProductPrice,
+    totalDeliveryFee,
+    subscriptionDetails,
+    selectedCartProductIds,
+  } = location.state || {
+    groupedItems: {},
+    totalProductPrice: 0,
+    totalDeliveryFee: 0,
+    subscriptionDetails: {},
+  };
   // 쿠폰
   const [selectedCoupon, setSelectedCoupon] = useState(null);
   // 받는 사람
@@ -156,6 +162,17 @@ const SubscriptionOrder = () => {
     mutationFn: deleteMemberCard,
     onSuccess: () => {
       queryClient.invalidateQueries(["card", memberId]);
+    },
+  });
+
+  // [DELETE] 장바구니 개별 삭제
+  const deleteCartItemMutation = useMutation({
+    mutationFn: deleteCartItem,
+    onSuccess: () => {
+      queryClient.invalidateQueries(["cart", memberId]);
+    },
+    onError: error => {
+      console.error("Failed to delete cart item:", error);
     },
   });
 
@@ -329,9 +346,24 @@ const SubscriptionOrder = () => {
       },
     }));
 
-    orderRequests.forEach(orderData => {
-      createOrderMutation.mutate(orderData);
-    });
+    // orderRequests.forEach(orderData => {
+    //   createOrderMutation.mutate(orderData);
+    // });
+
+    // 주문 생성
+    Promise.all(orderRequests.map(orderData => createOrderMutation.mutateAsync(orderData)))
+      .then(() => {
+        // 주문 완료 후 장바구니 아이템 개별 삭제
+        if (selectedCartProductIds.length > 0) {
+          return Promise.all(
+            selectedCartProductIds.map(id => deleteCartItemMutation.mutateAsync(id))
+          );
+        }
+      })
+      .then(() => {})
+      .catch(error => {
+        console.error("Error during order process:", error);
+      });
   };
 
   return (

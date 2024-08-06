@@ -135,7 +135,7 @@ const Payment = ({
                           </div>
                         </div>
                         <div className='mb-2 mt-4'>
-                          <p className='text-lg tracking-wider'>{maskDigits(card.cardNumber)}</p>
+                          <p className='text-base tracking-wider'>{maskDigits(card.cardNumber)}</p>
                         </div>
                         <div className='flex justify-between'>
                           <div>

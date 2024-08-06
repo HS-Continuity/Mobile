@@ -36,6 +36,10 @@ export const decrementCartItemQuantity = cartProductId =>
 // [DELETE] 장바구니 상품 삭제
 export const deleteCartItem = cartProductId => apiDelete(`/cart-product/${cartProductId}`);
 
+// [DELETE] 장바구니 상품 일괄 삭제
+export const deleteCartItems = ({ cartTypeId, cartIds }) =>
+  apiDelete(`/cart-product?cartTypeId=${cartTypeId}&cartId=${cartIds.join(",")}`);
+
 // [GET] 장바구니 탭마다 상품 수량 조회
 export const fetchCartItemsCount = (memberId, cartTypeId) =>
   apiGet("/cart-product/count", { memberId, cartTypeId });

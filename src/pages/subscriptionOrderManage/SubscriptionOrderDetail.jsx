@@ -154,31 +154,39 @@ const SubscriptionOrderDetail = () => {
 
       <div className='mb-2 mt-2 space-y-4 rounded-lg border p-4'>
         <h2 className='text-xl font-semibold'>주문 상품</h2>
-        {data.productOrderList.productOrderList.map((product, index) => (
-          <div key={index} className='flex flex-col border-t border-gray-100 pt-4'>
-            <div className='flex items-start'>
-              <div className='font-normal text-gray-500'>{product.status}</div>
-              {!imageErrors[product.productId] ? (
-                <img
-                  src={product.productImage}
-                  alt={product.productName || "상품 이미지"}
-                  className='h-20 w-20 object-cover'
-                  onError={() => handleImageError(product.productId)}
-                />
-              ) : (
-                <div className='flex h-20 w-20 items-center justify-center bg-gradient-to-br from-green-100 to-green-200'>
-                  <FaLeaf className='mx-auto mb-2 text-4xl text-green-500' />
-                </div>
-              )}
-              <div className='ml-3 flex-grow'>
-                <p className='font-medium'>{product.productName}</p>
-                <div className='text-sm'>
-                  {formatPrice(product.finalPrice)} | {product.productAmount}개
+          {data.isAvailableProductService ? (
+            data.productOrderList.productOrderList.map((product, index) => (
+              <div key={index} className='flex flex-col border-t border-gray-100 pt-4'>
+                <div className='flex items-start'>
+                  <div className='font-normal text-gray-500'>{product.status}</div>
+                  {!imageErrors[product.productId] ? (
+                    <img
+                      src={product.productImage}
+                      alt={product.productName || "상품 이미지"}
+                      className='h-20 w-20 object-cover'
+                      onError={() => handleImageError(product.productId)}
+                    />
+                  ) : (
+                    <div className='flex h-20 w-20 items-center justify-center bg-gradient-to-br from-green-100 to-green-200'>
+                      <FaLeaf className='mx-auto mb-2 text-4xl text-green-500' />
+                    </div>
+                  )}
+                  <div className='ml-3 flex-grow'>
+                    <p className='font-medium'>{product.productName}</p>
+                    <div className='text-sm'>
+                      {formatPrice(product.finalPrice)} | {product.productAmount}개
+                  </div>
                 </div>
               </div>
             </div>
+          ))
+        ) : (
+          <div className='flex flex-col border-t border-gray-100 pt-4'>
+            <p className='font-medium text-red-600'>
+              현재 정기배송 상품 조회서비스가 이용 불가합니다.
+            </p>
           </div>
-        ))}
+        )}
       </div>
 
       <div className='mb-2 rounded-lg border p-4'>

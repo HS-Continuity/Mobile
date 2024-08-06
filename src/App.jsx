@@ -139,8 +139,22 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            <Route path='/order-success' element={<OrderSuccess key={location.pathname} />} />
-            <Route path='/order-fail' element={<OrderFail key={location.pathname} />} />
+            <Route
+              path='/order-success'
+              element={
+                <ProtectedRoute>
+                  <OrderSuccess key={location.pathname} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/order-fail'
+              element={
+                <ProtectedRoute>
+                  <OrderFail key={location.pathname} />
+                </ProtectedRoute>
+              }
+            />
           </Route>
 
           <Route element={<MypageLayout />}>

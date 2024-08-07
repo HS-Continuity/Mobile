@@ -359,7 +359,7 @@ const SubscriptionOrder = () => {
   };
 
   return (
-    <div className='noScrollbar flex h-screen flex-col bg-gray-50 pb-16'>
+    <div className='noScrollbar flex flex-col bg-gray-50 pb-16'>
       <div className='noScrollbar flex-1 space-y-2 overflow-auto'>
         {/* 주문 아이템 */}
         <OrderItems groupedItems={groupedItems} />

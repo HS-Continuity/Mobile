@@ -8,8 +8,6 @@ import FetchingNextSkeleton from "../Skeletons/FetchingNextSkeleton";
 import { fallbackProducts } from "./FallbackProduct";
 import { ProductError } from "../Errors/ErrorDisplay";
 
-// 가짜 기본 데이터
-
 const ProductList = ({ useQueryHook, additionalProps = {}, gridCols = 1 }) => {
   const observerTarget = useRef(null);
   const queryClient = useQueryClient();

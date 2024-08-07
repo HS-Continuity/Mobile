@@ -266,7 +266,6 @@ const Cart = () => {
 
     const totalDeliveryFee = activeTab === 2 ? 0 : calculateTotalDeliveryFee(selectedItems);
 
-    console.log(selectedCartProductIds);
     navigate(activeTab === 2 ? "/subscription-setup" : "/order", {
       state: {
         groupedItems: groupedItems,

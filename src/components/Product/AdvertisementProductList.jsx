@@ -32,9 +32,7 @@ function AdvertisementProductList() {
     centerPadding: "20px",
     slidesToShow: 2.7,
     swipeToSlide: true,
-    afterChange: function (index) {
-      console.log(`Slider Changed to: ${index + 1}, background: #222; color: #bada55`);
-    },
+    afterChange: function (index) {},
   };
 
   if (isError || error === 0) {

@@ -8,7 +8,6 @@ const OrderHeader = () => {
 
   const getHeaderText = () => {
     const previousPath = location.state?.from;
-    console.log(previousPath);
 
     if (location.pathname === "/cart") {
       return "장바구니";

@@ -23,11 +23,9 @@ const Login = () => {
   const loginMutation = useMutation({
     mutationFn: login,
     onSuccess: data => {
-      console.log(data);
       if (data) {
         toast.success("로그인 성공!");
         const { from } = location.state || { from: { pathname: "/" } };
-        console.log(from);
         if (from.pathname === "/signup") {
           navigate("/");
         } else {

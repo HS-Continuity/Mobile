@@ -138,13 +138,11 @@ const SignUp = () => {
   const sendVerificationCodeMutation = useMutation({
     mutationFn: postMessage,
     onSuccess: data => {
-      console.log(data);
       setIsCodeSent(true);
       setTimeLeft(150);
       toast.success("인증번호가 발송되었습니다.");
     },
     onError: error => {
-      console.log(error.response.status);
       if (error.response.status == 409 || error.response.status == 401) {
         toast.error("이미 가입된 전화번호 입니다.");
       } else {

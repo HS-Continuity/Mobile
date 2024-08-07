@@ -5,7 +5,6 @@ import toast from "react-hot-toast";
 import useAuthStore from "../../stores/useAuthStore";
 
 const CardRegisterModal = ({ isOpen, onClose, onSubmit }) => {
-  // const memberId = import.meta.env.VITE_MEMBER_ID;
   const { username } = useAuthStore();
   const memberId = username;
 
@@ -328,7 +327,7 @@ const CardRegisterModal = ({ isOpen, onClose, onSubmit }) => {
             </div>
           </div>
 
-          {/* Card password and CVC */}
+          {/* 비밀번호 CVC */}
           <div className='flex space-x-4'>
             <div className='flex-1'>
               <label className='mb-1 block text-sm font-medium text-gray-700'>
@@ -394,7 +393,7 @@ const CardRegisterModal = ({ isOpen, onClose, onSubmit }) => {
             )}
           </div>
 
-          {/* Checkboxes */}
+          {/* 동의 */}
           <div>
             <label className='flex items-center'>
               <input
@@ -421,7 +420,7 @@ const CardRegisterModal = ({ isOpen, onClose, onSubmit }) => {
             </label>
           </div>
 
-          {/* Submit button */}
+          {/* 등록 */}
           <button
             type='submit'
             className={`w-full rounded-md px-4 py-4 text-white focus:outline-none focus:ring-2 focus:ring-opacity-50 ${

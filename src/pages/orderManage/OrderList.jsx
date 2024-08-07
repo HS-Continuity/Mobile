@@ -101,10 +101,10 @@ const OrderList = ({ memberId, startDate, endDate }) => {
             )}
             <div className='flex-grow'>
               <div className='text-sm font-light'>
-                {order.isAvailableProductInformation ? order.storeName || "판매자명" : ""}
+                {order.availableProductInformation ? order.storeName || "판매자명" : ""}
               </div>
               <div className='font-semibold'>
-                {order.isAvailableProductInformation ? (
+                {order.availableProductInformation ? (
                   order.mainProduct.name || "상품명 없음"
                 ) : (
                   <p className='font-small text-red-600'>

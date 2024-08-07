@@ -16,8 +16,6 @@ const SubscriptionOrderList = ({ memberId, startDate, endDate }) => {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError, error } =
     useSubscriptionOrderListQuery({ startDate, endDate });
 
-  console.log(data);
-
   const handleObserver = useCallback(
     entries => {
       const [target] = entries;
@@ -117,7 +115,7 @@ const SubscriptionOrderList = ({ memberId, startDate, endDate }) => {
                 {order.isAvailableProductService ? order.storeName || "판매자명" : ""}
               </div>
               <div className='font-semibold'>
-                {order.isAvailableProductService ? (
+                {order.availableProductService ? (
                   order.productOrder.productName || "상품명 없음"
                 ) : (
                   <p className='font-small text-red-600'>
@@ -127,14 +125,14 @@ const SubscriptionOrderList = ({ memberId, startDate, endDate }) => {
                   </p>
                 )}
                 <span className='text-sm text-gray-500'>
-                  {order.isAvailableProductService
+                  {order.availableProductService
                     ? order.productOrder.length > 1 && ` 외 ${order.productOrder.length - 1}건`
                     : ""}
                 </span>
               </div>
               <div className='text-sm'>
-                {order.isAvailableProductService ? formatPrice(order.productOrder.finalPrice) : ""}{" "}
-                | {order.isAvailableProductService ? order.productOrder.productAmount : ""}개
+                {order.availableProductService ? formatPrice(order.productOrder.finalPrice) : ""} |{" "}
+                {order.availableProductService ? order.productOrder.productAmount : ""}개
               </div>
               <div className='relative'>
                 <FaChevronRight className='absolute -top-8 right-6 ml-2 text-xl text-gray-400' />

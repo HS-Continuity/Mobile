@@ -112,7 +112,7 @@ const SubscriptionOrderList = ({ memberId, startDate, endDate }) => {
             )}
             <div className='flex-grow'>
               <div className='text-sm font-light'>
-                {order.isAvailableProductService ? order.storeName || "판매자명" : ""}
+                {order.availableProductService ? order.storeName || "판매자명" : ""}
               </div>
               <div className='font-semibold'>
                 {order.availableProductService ? (

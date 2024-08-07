@@ -95,7 +95,7 @@ const SubscriptionOrderList = ({ memberId, startDate, endDate }) => {
             </div>
           </div>
           <div className='flex items-start space-x-4'>
-            {order.productOrder.productImage ? (
+            {order.availableProductService && order.productOrder.productImage ? (
               <img
                 src={order.productOrder.productImage}
                 alt={order.productOrder.productName || "상품 이미지"}

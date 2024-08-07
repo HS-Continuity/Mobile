@@ -33,8 +33,8 @@ const DetailCategory = () => {
   };
 
   return (
-    <div className='container mx-auto px-4 py-6'>
-      <div className='mb-6 flex flex-wrap items-center justify-between rounded-lg p-4 shadow-sm'>
+    <div className='container mx-auto px-4'>
+      <div className='mb-6 flex flex-wrap items-center justify-between rounded-lg p-4'>
         <div className='mb-4 sm:mb-0'>
           <button
             onClick={() => handleCertificationChange("INACTIVE")}

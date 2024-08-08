@@ -153,7 +153,7 @@ const SubscriptionOrderDetail = () => {
 
       <div className='mb-2 mt-2 space-y-4 rounded-lg border p-4'>
         <h2 className='text-xl font-semibold'>주문 상품</h2>
-        {data.availableProductInformation ? (
+        {data.availableProductService ? (
           data.productOrderList.productOrderList.map((product, index) => (
             <div key={index} className='flex flex-col border-t border-gray-100 pt-4'>
               <div className='flex items-start'>

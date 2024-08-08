@@ -109,7 +109,7 @@ const useAuthStore = create((set, get) => ({
   logout: async () => {
     try {
       await axios.post(
-        "http://localhost:8010/memberservice/api/auth/logout",
+        "https://api.yeonieum.com/memberservice/api/auth/logout",
         {},
         {
           withCredentials: true,
